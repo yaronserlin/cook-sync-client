@@ -2,7 +2,10 @@ package com.cooksync.app.ui.auth;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -12,11 +15,19 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.SkeletonHelper;
 
 /**
- * Activity presenting the "Create account" registration screen. Delegates all field
- * validation and the network call to {@link RegisterViewModel}; the View layer contains
- * no business logic whatsoever.
+ * Activity presenting the "Create account" registration screen.
+ *
+ * <h3>Skeleton behaviour</h3>
+ * The skeleton is displayed for a brief {@value #SKELETON_DELAY_MS} ms on every entry to
+ * give the screen a polished, deliberate loading feel consistent with the rest of the app.
+ * This also covers the case where fonts or drawables are still being fetched from disk on
+ * the first run.
+ *
+ * <p>All field validation and the network call are delegated to {@link RegisterViewModel};
+ * the View layer contains no business logic.</p>
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -24,29 +35,40 @@ import com.cooksync.app.domain.ApiResult;
  */
 public class RegisterActivity extends AppCompatActivity {
 
-    private RegisterViewModel viewModel;
+    /**
+     * Duration in milliseconds the skeleton is shown before the form is revealed.
+     * Gives the impression of purposeful loading even on fast devices.
+     */
+    private static final long SKELETON_DELAY_MS = 400L;
 
+    private RegisterViewModel viewModel;
+    private SkeletonHelper skeletonHelper;
+    private final Handler uiHandler = new Handler(Looper.getMainLooper());
+
+    // ── Skeleton ─────────────────────────────────────────────────────────────────
+    private ViewGroup skeletonContainer;
+
+    // ── Form ─────────────────────────────────────────────────────────────────────
+    private View formContainer;
     private EditText etFirstName;
     private EditText etLastName;
     private EditText etEmail;
     private EditText etPassword;
     private EditText etRepeatPassword;
-
     private TextView tvFirstNameError;
     private TextView tvLastNameError;
     private TextView tvEmailError;
     private TextView tvPasswordError;
     private TextView tvRepeatPasswordError;
-
     private ProgressBar progress;
 
     /**
-     * Inflates the registration layout, initialises the ViewModel, and attaches all
-     * observers and click listeners.
+     * Inflates the registration layout, starts the skeleton shimmer, and schedules a
+     * delayed transition to the real form.
      *
      * Complexity:
-     * Time: O(1)
-     * Space: O(1)
+     * Time: O(n) — n is the number of skeleton bone views
+     * Space: O(n)
      *
      * @param savedInstanceState saved instance state bundle (may be {@code null})
      */
@@ -58,23 +80,59 @@ public class RegisterActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
 
         bindViews();
+        startSkeletonShimmer();
         observeViewModel();
         setListeners();
+
+        // Reveal the form after a brief skeleton moment.
+        uiHandler.postDelayed(this::transitionToForm, SKELETON_DELAY_MS);
     }
 
     /**
-     * Binds all view references from the inflated layout.
+     * Stops the shimmer animator and cancels the pending skeleton-transition runnable.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        skeletonHelper.stop();
+        uiHandler.removeCallbacksAndMessages(null);
+    }
+
+    /**
+     * Releases skeleton view references and the animator to prevent memory leaks.
+     *
+     * Complexity:
+     * Time: O(n) where n is the number of skeleton bone views
+     * Space: O(1)
+     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        skeletonHelper.release();
+    }
+
+    // ─── Private setup ───────────────────────────────────────────────────────────
+
+    /**
+     * Binds all view references.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
      */
     private void bindViews() {
-        etFirstName       = findViewById(R.id.et_first_name);
-        etLastName        = findViewById(R.id.et_last_name);
-        etEmail           = findViewById(R.id.et_email);
-        etPassword        = findViewById(R.id.et_password);
-        etRepeatPassword  = findViewById(R.id.et_repeat_password);
+        skeletonContainer = findViewById(R.id.skeleton_container);
+        formContainer     = findViewById(R.id.form_container);
+
+        etFirstName      = findViewById(R.id.et_first_name);
+        etLastName       = findViewById(R.id.et_last_name);
+        etEmail          = findViewById(R.id.et_email);
+        etPassword       = findViewById(R.id.et_password);
+        etRepeatPassword = findViewById(R.id.et_repeat_password);
 
         tvFirstNameError      = findViewById(R.id.tv_first_name_error);
         tvLastNameError       = findViewById(R.id.tv_last_name_error);
@@ -86,7 +144,20 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * Subscribes to all LiveData streams exposed by {@link RegisterViewModel}.
+     * Attaches the {@link SkeletonHelper} to all leaf bones in the skeleton container
+     * and starts the pulse animation.
+     *
+     * Complexity:
+     * Time: O(n) where n is the number of views in the skeleton hierarchy
+     * Space: O(n)
+     */
+    private void startSkeletonShimmer() {
+        skeletonHelper = new SkeletonHelper();
+        skeletonHelper.attachAll(skeletonContainer).start();
+    }
+
+    /**
+     * Subscribes to all LiveData streams from {@link RegisterViewModel}.
      *
      * Complexity:
      * Time: O(1)
@@ -102,20 +173,19 @@ public class RegisterActivity extends AppCompatActivity {
         viewModel.getRegisterResult().observe(this, result -> {
             if (result instanceof ApiResult.Loading) {
                 progress.setVisibility(View.VISIBLE);
-                setButtonsEnabled(false);
+                setFormButtonsEnabled(false);
             } else if (result instanceof ApiResult.Success) {
                 navigateToMain();
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
-                setButtonsEnabled(true);
-                tvPasswordError.setText(error.getMessage());
-                tvPasswordError.setVisibility(View.VISIBLE);
+                setFormButtonsEnabled(true);
+                showFieldError(tvPasswordError, error.getMessage());
             }
         });
     }
 
     /**
-     * Attaches click listeners to interactive elements.
+     * Attaches click listeners.
      *
      * Complexity:
      * Time: O(1)
@@ -131,16 +201,29 @@ public class RegisterActivity extends AppCompatActivity {
                         etRepeatPassword.getText().toString()
                 )
         );
-
         findViewById(R.id.btn_have_account).setOnClickListener(v -> {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
     }
 
+    // ─── Transition helpers ──────────────────────────────────────────────────────
+
     /**
-     * Enables or disables both form-submission buttons simultaneously to prevent
-     * double-tap during an in-flight network call.
+     * Hides the skeleton, stops the shimmer animator, and reveals the registration form.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    private void transitionToForm() {
+        skeletonHelper.stop();
+        skeletonContainer.setVisibility(View.GONE);
+        formContainer.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Enables or disables both submission buttons simultaneously to prevent double-tap.
      *
      * Complexity:
      * Time: O(1)
@@ -148,13 +231,13 @@ public class RegisterActivity extends AppCompatActivity {
      *
      * @param enabled {@code true} to re-enable, {@code false} to disable
      */
-    private void setButtonsEnabled(boolean enabled) {
+    private void setFormButtonsEnabled(boolean enabled) {
         findViewById(R.id.btn_create_account).setEnabled(enabled);
         findViewById(R.id.btn_have_account).setEnabled(enabled);
     }
 
     /**
-     * Displays or hides a field-level validation error.
+     * Displays or hides a per-field validation error.
      *
      * Complexity:
      * Time: O(1)
@@ -173,15 +256,14 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * Navigates to the application main screen after successful registration. Clears
-     * the back stack so the user cannot navigate back to the auth flow.
+     * Navigates to the main screen after a successful registration.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
      */
     private void navigateToMain() {
-        // TODO (Module 2): replace with MainActivity once it exists.
+        // TODO (Module 2): replace with MainActivity.
         finish();
     }
 }

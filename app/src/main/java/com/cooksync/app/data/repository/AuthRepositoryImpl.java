@@ -165,7 +165,29 @@ public class AuthRepositoryImpl implements AuthRepository {
         });
     }
 
-    // ─── Shared execution helpers ────────────────────────────────────────────────
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Calls {@code GET /api/auth/validate-token} with the currently stored access token.
+     * On success the cached session profile is refreshed; on any failure the local session
+     * is cleared so the login form is shown instead of leaving stale credentials on device.</p>
+     */
+    @Override
+    public void validateToken(MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> {
+            ApiResult<AuthResponse> result = executeAuthCall(apiService.validateToken());
+            if (result instanceof ApiResult.Success) {
+                SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
+            } else {
+                // Token invalid or expired: clear stale local session
+                SessionManager.getInstance().forceLogout();
+            }
+            resultTarget.postValue(result);
+        });
+    }
+
+
 
     /**
      * Executes a Retrofit call that returns {@link ApiResponse}{@code <AuthResponse>} and

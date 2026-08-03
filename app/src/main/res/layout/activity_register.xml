@@ -1,203 +1,227 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Register screen — implements the "Create account" screen from the Organic design prototype.
-  All field-label, input, button, and error-text styles are reused from themes.xml (DRY).
+  Register screen root: FrameLayout with skeleton_container (visible first) and
+  form_container (shown after skeleton hides). All EditTexts carry android:maxLength
+  matching the server-side @Size constraints on RegisterRequestDTO:
+    firstName/lastName: max 50 chars
+    email:              max 254 chars (RFC 5321 hard limit)
+    password:           max 100 chars (mirrors @Size(max=100))
 -->
-<ScrollView
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/color_bg"
-    android:fillViewport="true">
+    android:background="@color/color_bg">
 
-    <LinearLayout
+    <!-- ── Skeleton (shown on entry, hidden when form is ready) ───── -->
+    <include
+        android:id="@+id/skeleton_container"
+        layout="@layout/activity_register_skeleton"
+        android:visibility="visible" />
+
+    <!-- ── Real form ─────────────────────────────────────────────── -->
+    <ScrollView
+        android:id="@+id/form_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
-        android:paddingTop="64dp"
-        android:paddingBottom="32dp">
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:visibility="gone">
 
-        <!-- ── Brand wordmark ─────────────────────────────────────── -->
-        <TextView
-            android:id="@+id/tv_brand"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/app_name"
-            android:textSize="38sp"
-            android:fontFamily="@font/caprasimo"
-            android:textColor="@color/color_accent"
-            android:layout_marginBottom="32dp" />
-
-        <!-- ── Headline ───────────────────────────────────────────── -->
-        <TextView
-            android:id="@+id/tv_headline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/register_title"
-            android:textSize="26sp"
-            android:fontFamily="@font/caprasimo"
-            android:textColor="@color/color_text"
-            android:layout_marginBottom="32dp" />
-
-        <!-- ── First name ─────────────────────────────────────────── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_first_name"
-            style="@style/CookSync.FieldLabel" />
-
-        <EditText
-            android:id="@+id/et_first_name"
-            style="@style/CookSync.Input"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Jane"
-            android:inputType="textPersonName|textCapWords"
-            android:imeOptions="actionNext"
-            android:autofillHints="name"
-            tools:ignore="Autofill" />
+            android:orientation="vertical"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="64dp"
+            android:paddingBottom="32dp">
 
-        <TextView
-            android:id="@+id/tv_first_name_error"
-            style="@style/CookSync.ErrorText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone" />
+            <!-- ── Brand wordmark ─────────────────────────────────────── -->
+            <TextView
+                android:id="@+id/tv_brand"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textSize="38sp"
+                android:fontFamily="@font/caprasimo"
+                android:textColor="@color/color_accent"
+                android:layout_marginBottom="32dp" />
 
-        <!-- ── Last name ──────────────────────────────────────────── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_last_name"
-            style="@style/CookSync.FieldLabel" />
+            <!-- ── Headline ───────────────────────────────────────────── -->
+            <TextView
+                android:id="@+id/tv_headline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/register_title"
+                android:textSize="26sp"
+                android:fontFamily="@font/caprasimo"
+                android:textColor="@color/color_text"
+                android:layout_marginBottom="32dp" />
 
-        <EditText
-            android:id="@+id/et_last_name"
-            style="@style/CookSync.Input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Smith"
-            android:inputType="textPersonName|textCapWords"
-            android:imeOptions="actionNext"
-            android:autofillHints="familyName"
-            tools:ignore="Autofill" />
+            <!-- ── First name ─────────────────────────────────────────── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_first_name"
+                style="@style/CookSync.FieldLabel" />
 
-        <TextView
-            android:id="@+id/tv_last_name_error"
-            style="@style/CookSync.ErrorText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone" />
+            <EditText
+                android:id="@+id/et_first_name"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Jane"
+                android:inputType="textPersonName|textCapWords"
+                android:imeOptions="actionNext"
+                android:maxLength="50"
+                android:autofillHints="name"
+                tools:ignore="Autofill" />
 
-        <!-- ── Email ──────────────────────────────────────────────── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_email"
-            style="@style/CookSync.FieldLabel" />
+            <TextView
+                android:id="@+id/tv_first_name_error"
+                style="@style/CookSync.ErrorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone" />
 
-        <EditText
-            android:id="@+id/et_email"
-            style="@style/CookSync.Input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="you@example.com"
-            android:inputType="textEmailAddress"
-            android:imeOptions="actionNext"
-            android:autofillHints="emailAddress"
-            tools:ignore="Autofill" />
+            <!-- ── Last name ──────────────────────────────────────────── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_last_name"
+                style="@style/CookSync.FieldLabel" />
 
-        <TextView
-            android:id="@+id/tv_email_error"
-            style="@style/CookSync.ErrorText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone" />
+            <EditText
+                android:id="@+id/et_last_name"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Smith"
+                android:inputType="textPersonName|textCapWords"
+                android:imeOptions="actionNext"
+                android:maxLength="50"
+                android:autofillHints="familyName"
+                tools:ignore="Autofill" />
 
-        <!-- ── Password ───────────────────────────────────────────── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_password"
-            style="@style/CookSync.FieldLabel" />
+            <TextView
+                android:id="@+id/tv_last_name_error"
+                style="@style/CookSync.ErrorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone" />
 
-        <EditText
-            android:id="@+id/et_password"
-            style="@style/CookSync.Input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="••••••••"
-            android:inputType="textPassword"
-            android:imeOptions="actionNext"
-            android:autofillHints="newPassword"
-            tools:ignore="Autofill" />
+            <!-- ── Email ──────────────────────────────────────────────── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_email"
+                style="@style/CookSync.FieldLabel" />
 
-        <TextView
-            android:id="@+id/tv_password_error"
-            style="@style/CookSync.ErrorText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone" />
+            <EditText
+                android:id="@+id/et_email"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="you@example.com"
+                android:inputType="textEmailAddress"
+                android:imeOptions="actionNext"
+                android:maxLength="254"
+                android:autofillHints="emailAddress"
+                tools:ignore="Autofill" />
 
-        <!-- ── Repeat password ────────────────────────────────────── -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/label_repeat_password"
-            style="@style/CookSync.FieldLabel" />
+            <TextView
+                android:id="@+id/tv_email_error"
+                style="@style/CookSync.ErrorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone" />
 
-        <EditText
-            android:id="@+id/et_repeat_password"
-            style="@style/CookSync.Input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="••••••••"
-            android:inputType="textPassword"
-            android:imeOptions="actionDone"
-            android:autofillHints="newPassword"
-            tools:ignore="Autofill" />
+            <!-- ── Password ───────────────────────────────────────────── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_password"
+                style="@style/CookSync.FieldLabel" />
 
-        <TextView
-            android:id="@+id/tv_repeat_password_error"
-            style="@style/CookSync.ErrorText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="28dp"
-            android:visibility="gone" />
+            <EditText
+                android:id="@+id/et_password"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="••••••••"
+                android:inputType="textPassword"
+                android:imeOptions="actionNext"
+                android:maxLength="100"
+                android:autofillHints="newPassword"
+                tools:ignore="Autofill" />
 
-        <!-- ── Create account button ──────────────────────────────── -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_create_account"
-            style="@style/CookSync.Button.Primary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/action_create_account_submit"
-            android:layout_marginBottom="12dp" />
+            <TextView
+                android:id="@+id/tv_password_error"
+                style="@style/CookSync.ErrorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:visibility="gone" />
 
-        <!-- ── Already have account button ───────────────────────── -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_have_account"
-            style="@style/CookSync.Button.Secondary"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/action_already_have_account"
-            android:layout_marginBottom="24dp" />
+            <!-- ── Repeat password ────────────────────────────────────── -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_repeat_password"
+                style="@style/CookSync.FieldLabel" />
 
-        <!-- ── Loading indicator (hidden by default) ──────────────── -->
-        <ProgressBar
-            android:id="@+id/progress"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_gravity="center_horizontal"
-            android:indeterminateTint="@color/color_accent"
-            android:visibility="gone" />
+            <EditText
+                android:id="@+id/et_repeat_password"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="••••••••"
+                android:inputType="textPassword"
+                android:imeOptions="actionDone"
+                android:maxLength="100"
+                android:autofillHints="newPassword"
+                tools:ignore="Autofill" />
 
-    </LinearLayout>
-</ScrollView>
+            <TextView
+                android:id="@+id/tv_repeat_password_error"
+                style="@style/CookSync.ErrorText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="28dp"
+                android:visibility="gone" />
+
+            <!-- ── Create account button ──────────────────────────────── -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_create_account"
+                style="@style/CookSync.Button.Primary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/action_create_account_submit"
+                android:layout_marginBottom="12dp" />
+
+            <!-- ── Already have account button ───────────────────────── -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_have_account"
+                style="@style/CookSync.Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/action_already_have_account"
+                android:layout_marginBottom="24dp" />
+
+            <!-- ── Loading indicator ─────────────────────────────────── -->
+            <ProgressBar
+                android:id="@+id/progress"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_gravity="center_horizontal"
+                android:indeterminateTint="@color/color_accent"
+                android:visibility="gone" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</FrameLayout>

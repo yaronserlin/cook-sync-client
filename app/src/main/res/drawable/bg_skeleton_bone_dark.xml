@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Slightly darker skeleton bone for button-sized placeholders, so they visually distinguish
+  from text-line and input bones on the same screen.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/color_neutral_400" />
+    <corners android:radius="999dp" />
+</shape>

@@ -83,4 +83,13 @@ public interface AuthRepository {
      * @param resultTarget live data target the result will be posted to
      */
     void deactivateAccount(MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Validates the stored access token against the server. Used on app startup to
+     * silently re-authenticate the user when a previous session exists, avoiding the
+     * need to show the login form again.
+     *
+     * @param resultTarget live data target the result will be posted to
+     */
+    void validateToken(MutableLiveData<ApiResult<AuthResponse>> resultTarget);
 }

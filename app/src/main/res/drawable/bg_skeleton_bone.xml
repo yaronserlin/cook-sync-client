@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Base skeleton placeholder shape: neutral-300 fill, generous corner radius, no stroke.
+  Apply this background to any View that acts as a skeleton bone (text line, input, button).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/color_neutral_300" />
+    <corners android:radius="999dp" />
+</shape>

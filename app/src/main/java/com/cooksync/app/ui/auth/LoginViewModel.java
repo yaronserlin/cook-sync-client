@@ -7,15 +7,19 @@ import androidx.lifecycle.ViewModel;
 import com.cooksync.app.data.repository.AuthRepository;
 import com.cooksync.app.data.repository.AuthRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.util.InputSanitizer;
+import com.cooksync.app.util.InputValidator;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 
 /**
- * ViewModel for {@link LoginActivity}. Holds observable state across configuration changes
- * and enforces all client-side field validation before delegating to {@link AuthRepository}.
+ * ViewModel for {@link LoginActivity}. Holds observable state across configuration changes,
+ * enforces client-side field validation via {@link InputValidator} (which in turn runs
+ * {@link InputSanitizer} security checks), and delegates authenticated network calls to
+ * {@link AuthRepository}.
  *
- * <p>Validation logic replicates the server-side constraints from {@code LoginRequestDTO}
- * without depending on {@code jakarta.validation} (which is unavailable on Android).</p>
+ * <p>A submission rate-limit of {@value #SUBMIT_COOLDOWN_MS} ms prevents rapid-fire
+ * button presses from flooding the server with duplicate login requests.</p>
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -23,13 +27,17 @@ import com.dtos.response.auth.AuthResponse;
  */
 public class LoginViewModel extends ViewModel {
 
-    private static final int MIN_PASSWORD_LENGTH = 6;
+    /** Minimum milliseconds between successive login attempts. */
+    private static final long SUBMIT_COOLDOWN_MS = 1500;
 
     private final AuthRepository authRepository;
 
-    private final MutableLiveData<ApiResult<AuthResponse>> loginResult = new MutableLiveData<>();
-    private final MutableLiveData<String> emailError = new MutableLiveData<>();
-    private final MutableLiveData<String> passwordError = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<AuthResponse>> loginResult       = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<AuthResponse>> validateResult    = new MutableLiveData<>();
+    private final MutableLiveData<String>                   emailError        = new MutableLiveData<>();
+    private final MutableLiveData<String>                   passwordError     = new MutableLiveData<>();
+
+    private long lastSubmitTimestamp = 0L;
 
     /**
      * Constructs the ViewModel with a concrete {@link AuthRepositoryImpl}.
@@ -42,81 +50,71 @@ public class LoginViewModel extends ViewModel {
         this.authRepository = new AuthRepositoryImpl();
     }
 
+    // ─── Actions ────────────────────────────────────────────────────────────────
+
     /**
-     * Validates fields and, if all pass, posts a {@link ApiResult.Loading} and initiates
-     * the login call via the repository.
+     * Validates both fields (security check + domain rules) and, if all pass, triggers
+     * the login call through the repository. Enforces a per-ViewModel rate limit to prevent
+     * double-tap submission.
      *
      * Complexity:
-     * Time: O(1)
+     * Time: O(n) where n is the combined length of both field values
      * Space: O(1)
      *
-     * @param email    raw text from the email field
-     * @param password raw text from the password field
+     * @param rawEmail    raw text from the email {@code EditText}
+     * @param rawPassword raw text from the password {@code EditText}
      */
-    public void login(String email, String password) {
-        boolean valid = true;
-
-        if (email == null || email.isBlank()) {
-            emailError.setValue("Email cannot be blank");
-            valid = false;
-        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email.trim()).matches()) {
-            emailError.setValue("Please enter a valid email address");
-            valid = false;
-        } else {
-            emailError.setValue(null);
+    public void login(String rawEmail, String rawPassword) {
+        long now = System.currentTimeMillis();
+        if (now - lastSubmitTimestamp < SUBMIT_COOLDOWN_MS) {
+            return; // rate-limit: silently ignore rapid re-taps
         }
+        lastSubmitTimestamp = now;
 
-        if (password == null || password.length() < MIN_PASSWORD_LENGTH) {
-            passwordError.setValue("Password must be at least " + MIN_PASSWORD_LENGTH + " characters");
-            valid = false;
-        } else {
-            passwordError.setValue(null);
-        }
+        // ── Sanitised values (trimmed) ──────────────────────────────────────────
+        String email    = InputSanitizer.trim(rawEmail);
+        String password = InputSanitizer.trim(rawPassword);
 
-        if (!valid) {
+        // ── Validate ────────────────────────────────────────────────────────────
+        InputValidator.ValidationResult emailRes    = InputValidator.validateEmail(email);
+        InputValidator.ValidationResult passwordRes = InputValidator.validateLoginPassword(password);
+
+        emailError.setValue(emailRes.errorMessage);
+        passwordError.setValue(passwordRes.errorMessage);
+
+        if (!emailRes.isValid || !passwordRes.isValid) {
             return;
         }
 
-        authRepository.login(new LoginRequestDTO(email.trim(), password), loginResult);
+        authRepository.login(new LoginRequestDTO(email, password), loginResult);
     }
 
     /**
-     * Returns the observable login result, emitting {@link ApiResult.Loading},
-     * {@link ApiResult.Success}, or {@link ApiResult.Error}.
+     * Verifies the stored access token with the server. Used by {@link LoginActivity}
+     * on startup to silently auto-login a user whose previous session is still valid.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
-     *
-     * @return observable login result
      */
-    public LiveData<ApiResult<AuthResponse>> getLoginResult() {
-        return loginResult;
+    public void validateExistingToken() {
+        authRepository.validateToken(validateResult);
     }
 
-    /**
-     * Returns the observable email field validation error, or {@code null} when valid.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @return observable email error message
-     */
-    public LiveData<String> getEmailError() {
-        return emailError;
-    }
+    // ─── Observable state ────────────────────────────────────────────────────────
+
+    /** @return observable login result (Loading → Success/Error) */
+    public LiveData<ApiResult<AuthResponse>> getLoginResult()    { return loginResult; }
 
     /**
-     * Returns the observable password field validation error, or {@code null} when valid.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @return observable password error message
+     * @return observable token-validation result, used to decide whether to skip the
+     *         login screen on startup
      */
-    public LiveData<String> getPasswordError() {
-        return passwordError;
-    }
+    public LiveData<ApiResult<AuthResponse>> getValidateResult()  { return validateResult; }
+
+    /** @return observable email field error, {@code null} when the field is valid */
+    public LiveData<String> getEmailError()    { return emailError; }
+
+    /** @return observable password field error, {@code null} when the field is valid */
+    public LiveData<String> getPasswordError() { return passwordError; }
 }
