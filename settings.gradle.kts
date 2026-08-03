@@ -19,11 +19,11 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        maven("https://jitpack.io")
         mavenLocal()
         // Serves the shared cooksync-DTOs repository (github.com/yaronserlin/cooksync-DTOs)
         // as a Maven artifact, built directly from its git tags/branches. Both this client
         // and the cook-sync-server depend on the exact same DTO sources through this.
-        maven { url = uri("https://jitpack.io") }
     }
 }
 

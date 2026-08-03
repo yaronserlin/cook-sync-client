@@ -8,6 +8,8 @@
         <item name="android:textColorPrimary">@color/color_text</item>
     </style>
 
+    <style name="CookSync" />
+
     <!-- Reusable field label, shared across every text-entry field in the app (DRY: see
          requirement to extract repeated UI into styles rather than duplicating attributes). -->
     <style name="CookSync.FieldLabel">
