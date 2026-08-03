@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Organic design system tokens (see design/_ds/organic-.../styles.css) -->
+    <color name="color_bg">#F5EAD8</color>
+    <color name="color_surface">#EBDDC5</color>
+    <color name="color_text">#201E1D</color>
+    <color name="color_accent">#C67139</color>
+    <color name="color_accent_2">#7A8A5E</color>
+    <color name="color_divider">#29201E1D</color>
+
+    <color name="color_accent_100">#FFF2EB</color>
+    <color name="color_accent_200">#FFE1D0</color>
+    <color name="color_accent_600">#B2622D</color>
+    <color name="color_accent_700">#8C491A</color>
+    <color name="color_accent_800">#643312</color>
+
+    <color name="color_neutral_300">#DCD3C4</color>
+    <color name="color_neutral_400">#C0B6A5</color>
+</resources>

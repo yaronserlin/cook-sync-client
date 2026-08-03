@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CookSync</string>
+
+    <string name="login_title">Welcome back to the kitchen</string>
+    <string name="login_subtitle">Sign in to keep your recipes, notes and favorites in one place.</string>
+    <string name="label_email">Email</string>
+    <string name="label_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_create_account">Create an account</string>
+    <string name="footer_privacy">Recipes stay yours. Publish only what you want to share.</string>
+
+    <string name="register_title">Create account</string>
+    <string name="label_first_name">First name</string>
+    <string name="label_last_name">Last name</string>
+    <string name="label_repeat_password">Repeat password</string>
+    <string name="action_create_account_submit">Create account</string>
+    <string name="action_already_have_account">I already have one</string>
+
+    <string name="error_email_blank">Email cannot be blank</string>
+    <string name="error_email_invalid">Email should be valid</string>
+    <string name="error_password_too_short">Password must be at least 6 characters long</string>
+    <string name="error_password_policy">Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character</string>
+    <string name="error_first_name_length">First name must be between 2 and 50 characters</string>
+    <string name="error_last_name_length">Last name must be between 2 and 50 characters</string>
+    <string name="error_passwords_mismatch">Passwords do not match</string>
+    <string name="error_network">Could not reach the server. Check your connection and try again.</string>
+    <string name="error_session_expired">Your session has expired. Please sign in again.</string>
+</resources>

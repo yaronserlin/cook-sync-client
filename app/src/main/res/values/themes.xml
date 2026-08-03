@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.CookSync" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/color_accent</item>
+        <item name="colorPrimaryDark">@color/color_accent_700</item>
+        <item name="colorAccent">@color/color_accent</item>
+        <item name="android:windowBackground">@color/color_bg</item>
+        <item name="android:textColorPrimary">@color/color_text</item>
+    </style>
+
+    <!-- Reusable field label, shared across every text-entry field in the app (DRY: see
+         requirement to extract repeated UI into styles rather than duplicating attributes). -->
+    <style name="CookSync.FieldLabel">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/color_text</item>
+        <item name="android:alpha">0.7</item>
+        <item name="android:layout_marginBottom">5dp</item>
+    </style>
+
+    <!-- Reusable text input, matching the design system's pill-shaped ".input" component. -->
+    <style name="CookSync.Input" parent="Widget.AppCompat.EditText">
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/color_text</item>
+        <item name="android:textColorHint">#73201E1D</item>
+    </style>
+
+    <!-- Reusable primary/filled button, matching the design system's ".btn-primary". -->
+    <style name="CookSync.Button.Primary" parent="Widget.MaterialComponents.Button">
+        <item name="android:minHeight">54dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="backgroundTint">@color/color_accent</item>
+        <item name="android:textColor">@color/color_bg</item>
+        <item name="cornerRadius">27dp</item>
+    </style>
+
+    <!-- Reusable secondary/outline button, matching the design system's ".btn-secondary". -->
+    <style name="CookSync.Button.Secondary" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:minHeight">54dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/color_text</item>
+        <item name="strokeColor">@color/color_divider</item>
+        <item name="cornerRadius">27dp</item>
+    </style>
+
+    <!-- Reusable ghost/text button, matching the design system's ".btn-ghost". -->
+    <style name="CookSync.Button.Ghost" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/color_accent</item>
+    </style>
+
+    <!-- Reusable inline validation error label, matching the design system's ".err". -->
+    <style name="CookSync.ErrorText">
+        <item name="android:textColor">@color/color_accent_700</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">5dp</item>
+    </style>
+</resources>
