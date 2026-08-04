@@ -7,6 +7,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
@@ -16,8 +17,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.NoteEditDialog;
 import com.cooksync.app.ui.common.SkeletonHelper;
 import com.cooksync.app.ui.home.TagChipAdapter;
+import com.dtos.response.instruction.InstructionResponse;
+import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.review.ReviewResponse;
@@ -28,8 +32,10 @@ import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * Detailed view of a single recipe, showing ingredients, instructions, and reviews.
@@ -81,9 +87,12 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private View reviewsHeader;
     private View ratingRow;
     private ImageButton btnFavorite;
+    private View noteCard;
+    private TextView tvNote;
 
     private boolean isFavorite = false;
     private final List<ReviewResponse> allReviews = new ArrayList<>();
+    private final List<NoteResponse> currentNotes = new ArrayList<>();
     private final java.util.Map<Integer, com.google.android.material.card.MaterialCardView> starChips = new java.util.HashMap<>();
     private Integer activeStarFilter = null;
     private int sortIndex = 0;
@@ -108,6 +117,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
         showSkeleton(true);
         viewModel.loadRecipe(recipeId);
         viewModel.loadFavorites();
+        viewModel.loadNotes(recipeId);
     }
 
     private void initViews() {
@@ -135,6 +145,9 @@ public class RecipeDetailActivity extends AppCompatActivity {
         reviewsHeader = findViewById(R.id.detail_reviews_header);
         ratingRow = findViewById(R.id.detail_rating_row);
         btnFavorite = findViewById(R.id.btn_favorite);
+        noteCard = findViewById(R.id.detail_note_card);
+        tvNote = findViewById(R.id.tv_detail_note);
+        noteCard.setOnClickListener(v -> openRecipeNoteEditor());
 
         starChips.put(5, findViewById(R.id.chip_star_5));
         starChips.put(4, findViewById(R.id.chip_star_4));
@@ -153,8 +166,11 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
         ratingRow.setOnClickListener(v -> scrollView.smoothScrollTo(0, reviewsHeader.getTop() + ((View) reviewsHeader.getParent()).getTop()));
 
-        findViewById(R.id.btn_start_cooking).setOnClickListener(v ->
-                Toast.makeText(this, "Cooking Mode coming soon!", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.btn_start_cooking).setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, com.cooksync.app.ui.recipe.CookingModeActivity.class);
+            intent.putExtra(EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
+            startActivity(intent);
+        });
 
         findViewById(R.id.btn_review).setOnClickListener(v ->
                 Toast.makeText(this, "Review functionality coming soon!", Toast.LENGTH_SHORT).show());
@@ -181,6 +197,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
         RecyclerView rvInstructions = findViewById(R.id.rv_instructions);
         instructionAdapter = new InstructionAdapter();
+        instructionAdapter.setOnNoteEditListener(this::openStepNoteEditor);
         rvInstructions.setAdapter(instructionAdapter);
 
         RecyclerView rvReviews = findViewById(R.id.rv_reviews);
@@ -221,6 +238,94 @@ public class RecipeDetailActivity extends AppCompatActivity {
                     }
                 }
                 updateFavoriteIcon();
+            }
+        });
+
+        viewModel.getNotesResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<List<NoteResponse>> success) {
+                currentNotes.clear();
+                currentNotes.addAll(success.getData());
+                renderRecipeNote();
+                renderStepNotes();
+            }
+        });
+
+        viewModel.getNoteSaveResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<Void>) {
+                viewModel.loadNotes(getIntent().getStringExtra(EXTRA_RECIPE_ID));
+            } else if (result instanceof ApiResult.Error<Void> error) {
+                Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private NoteResponse findRecipeNote() {
+        for (NoteResponse note : currentNotes) {
+            if (note.instructionId() == null) {
+                return note;
+            }
+        }
+        return null;
+    }
+
+    private NoteResponse findStepNote(String instructionId) {
+        for (NoteResponse note : currentNotes) {
+            if (instructionId.equals(note.instructionId())) {
+                return note;
+            }
+        }
+        return null;
+    }
+
+    private void renderRecipeNote() {
+        NoteResponse note = findRecipeNote();
+        boolean hasNote = note != null;
+        tvNote.setText(hasNote ? note.note() : "Add a private note");
+        tvNote.setAlpha(hasNote ? 1f : 0.7f);
+    }
+
+    private void renderStepNotes() {
+        Map<String, String> stepNotes = new HashMap<>();
+        for (NoteResponse note : currentNotes) {
+            if (note.instructionId() != null) {
+                stepNotes.put(note.instructionId(), note.note());
+            }
+        }
+        instructionAdapter.setNotes(stepNotes);
+    }
+
+    private void openRecipeNoteEditor() {
+        String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+        NoteResponse existing = findRecipeNote();
+        NoteEditDialog.show(this, "Recipe note", existing != null ? existing.note() : null, new NoteEditDialog.Callback() {
+            @Override
+            public void onSave(@NonNull String noteText) {
+                viewModel.saveNote(recipeId, null, noteText);
+            }
+
+            @Override
+            public void onDelete() {
+                if (existing != null) {
+                    viewModel.deleteNote(existing.id());
+                }
+            }
+        });
+    }
+
+    private void openStepNoteEditor(InstructionResponse step, String existingNote) {
+        String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+        NoteResponse existing = findStepNote(step.id());
+        NoteEditDialog.show(this, "Note for step " + step.stepNumber(), existingNote, new NoteEditDialog.Callback() {
+            @Override
+            public void onSave(@NonNull String noteText) {
+                viewModel.saveNote(recipeId, step.id(), noteText);
+            }
+
+            @Override
+            public void onDelete() {
+                if (existing != null) {
+                    viewModel.deleteNote(existing.id());
+                }
             }
         });
     }

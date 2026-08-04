@@ -1,14 +1,18 @@
 package com.cooksync.app.ui.recipe;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.cooksync.app.R;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
@@ -66,10 +70,40 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
         this.initialTags = tags == null ? Collections.emptySet() : tags;
     }
 
+    @NonNull
+    @Override
+    public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
+        return new BottomSheetDialog(requireContext(), R.style.Theme_CookSync_BottomSheetDialog);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.layout_filters_bottom_sheet, container, false);
+    }
+
+    /**
+     * Matches the design's {@code .sheetbody { max-height:82% }}: opens the sheet already
+     * expanded to (up to) 82% of the screen height, rather than Material's default collapsed
+     * peek state, which used to hide the "Apply Filters" button and everything below the peek
+     * line unless the user knew to drag the sheet up first.
+     */
+    @Override
+    public void onStart() {
+        super.onStart();
+        Dialog dialog = getDialog();
+        if (!(dialog instanceof BottomSheetDialog)) {
+            return;
+        }
+        FrameLayout bottomSheet = ((BottomSheetDialog) dialog)
+                .findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        if (bottomSheet == null) {
+            return;
+        }
+        BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+        behavior.setMaxHeight((int) (getResources().getDisplayMetrics().heightPixels * 0.82f));
+        behavior.setSkipCollapsed(true);
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override

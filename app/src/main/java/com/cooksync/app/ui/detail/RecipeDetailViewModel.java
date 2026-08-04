@@ -17,7 +17,7 @@ import java.util.List;
  * Manages data state for {@link RecipeDetailActivity}.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public class RecipeDetailViewModel extends ViewModel {
@@ -25,8 +25,9 @@ public class RecipeDetailViewModel extends ViewModel {
     private final RecipeRepository repository;
 
     private final MutableLiveData<ApiResult<RecipeResponse>> recipeResult = new MutableLiveData<>();
-    private final MutableLiveData<ApiResult<NoteResponse>> noteResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<List<NoteResponse>>> notesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> favoritesResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<Void>> noteSaveResult = new MutableLiveData<>();
 
     public RecipeDetailViewModel() {
         this.repository = new RecipeRepositoryImpl();
@@ -36,20 +37,28 @@ public class RecipeDetailViewModel extends ViewModel {
         return recipeResult;
     }
 
-    public LiveData<ApiResult<NoteResponse>> getNoteResult() {
-        return noteResult;
+    /**
+     * Every private note attached to the recipe: the recipe-wide note (if any) plus one per
+     * annotated instruction step, distinguished by {@link NoteResponse#instructionId()}.
+     */
+    public LiveData<ApiResult<List<NoteResponse>>> getNotesResult() {
+        return notesResult;
     }
 
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() {
         return favoritesResult;
     }
 
+    public LiveData<ApiResult<Void>> getNoteSaveResult() {
+        return noteSaveResult;
+    }
+
     public void loadRecipe(String recipeId) {
         repository.getRecipeDetail(recipeId, recipeResult);
     }
 
-    public void loadNote(String recipeId) {
-        repository.getPersonalNote(recipeId, noteResult);
+    public void loadNotes(String recipeId) {
+        repository.getAllPersonalNotes(recipeId, notesResult);
     }
 
     public void loadFavorites() {
@@ -62,5 +71,26 @@ public class RecipeDetailViewModel extends ViewModel {
         } else {
             repository.addFavorite(recipeId, new MutableLiveData<>());
         }
+    }
+
+    /**
+     * Creates or updates a private note on the recipe, or on one of its instruction steps.
+     *
+     * @param recipeId the recipe the note belongs to
+     * @param instructionId the instruction step the note is attached to, or {@code null} for
+     *                      a recipe-wide note
+     * @param note the note text
+     */
+    public void saveNote(String recipeId, String instructionId, String note) {
+        repository.saveNote(recipeId, instructionId, note, noteSaveResult);
+    }
+
+    /**
+     * Deletes a private note.
+     *
+     * @param noteId the ID of the note to delete
+     */
+    public void deleteNote(String noteId) {
+        repository.deleteNote(noteId, noteSaveResult);
     }
 }

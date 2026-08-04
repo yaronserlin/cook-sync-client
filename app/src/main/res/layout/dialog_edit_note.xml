@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Body for the shared private-note edit dialog (NoteEditDialog), reused for the recipe-wide
+     note and every per-step note across the recipe detail and cooking-mode screens. -->
+<EditText
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/et_note"
+    style="@style/CookSync.Input"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:gravity="top|start"
+    android:inputType="textMultiLine|textCapSentences"
+    android:minLines="3"
+    android:paddingVertical="12dp" />

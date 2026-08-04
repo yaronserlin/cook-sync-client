@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Minimal placeholder for the Review/Rating screen (a separate, not-yet-built module).
+     Exists only so Cooking Mode's "Done — rate it" button has somewhere real to land instead
+     of crashing on an unregistered activity. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="32dp">
+
+    <TextView
+        style="@style/CookSync.Heading.H2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Nice cooking!" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="Rating and reviews are coming soon."
+        android:textColor="@color/color_text"
+        android:textSize="14sp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_review_close"
+        style="@style/CookSync.Button.Secondary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Back to recipe" />
+
+</LinearLayout>

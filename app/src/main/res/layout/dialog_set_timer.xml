@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Minutes/seconds picker shown when the user taps the cooking-mode timer clock to change
+     its duration. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:paddingHorizontal="24dp"
+    android:paddingVertical="8dp">
+
+    <NumberPicker
+        android:id="@+id/np_minutes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="4dp"
+        android:text=":"
+        android:textColor="@color/color_text"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <NumberPicker
+        android:id="@+id/np_seconds"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

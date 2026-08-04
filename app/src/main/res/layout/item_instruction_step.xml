@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -17,14 +18,54 @@
         android:textSize="14sp"
         tools:text="1" />
 
-    <TextView
-        android:id="@+id/step_description"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:lineSpacingMultiplier="1.4"
-        android:textColor="@color/color_text"
-        android:textSize="15sp"
-        tools:text="Warm the olive oil and fry the onion and pepper until soft, about 8 minutes." />
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/step_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:lineSpacingMultiplier="1.4"
+            android:textColor="@color/color_text"
+            android:textSize="15sp"
+            tools:text="Warm the olive oil and fry the onion and pepper until soft, about 8 minutes." />
+
+        <!-- Private note for this step; hidden when there isn't one. -->
+        <TextView
+            android:id="@+id/step_note"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/bg_note_filled"
+            android:drawablePadding="7dp"
+            android:lineSpacingMultiplier="1.35"
+            android:padding="10dp"
+            android:textColor="@color/color_accent_2_800"
+            android:textSize="12.5sp"
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/ic_edit"
+            app:drawableTint="@color/color_accent_2_800"
+            tools:text="My note — only 10 minutes on my stove."
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_step_note"
+            style="@style/CookSync.Button.Ghost"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingHorizontal="0dp"
+            android:text="Add a note"
+            android:textSize="12sp" />
+
+    </LinearLayout>
 
 </LinearLayout>

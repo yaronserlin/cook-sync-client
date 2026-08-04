@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Full-screen step-by-step cooking view, matching the design's dark "is.cook" screen:
+     dark accent-900 background, per-step progress bar row, one instruction step at a time,
+     "this step uses" ingredient tags, an optional private note, and an optional circular
+     countdown timer. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_accent_900"
+    android:orientation="vertical">
+
+    <!-- Top bar: Exit / recipe title / overflow (decorative, matches the design's unwired
+         ellipsis menu). -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="12dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_exit"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="Exit"
+            android:textAllCaps="false"
+            android:textColor="@color/color_accent_200"
+            android:textSize="13sp"
+            app:icon="@drawable/ic_close"
+            app:iconGravity="textStart"
+            app:iconSize="16dp"
+            app:iconTint="@color/color_accent_200" />
+
+        <TextView
+            android:id="@+id/tv_cook_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/caprasimo"
+            android:textColor="@color/color_accent_100"
+            android:textSize="15sp"
+            tools:text="Shakshuka with feta" />
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_more_horiz"
+            app:tint="@color/color_accent_200" />
+
+    </RelativeLayout>
+
+    <!-- Per-step progress row; segments are added at runtime in CookingModeActivity, one per
+         instruction step, since the step count is only known once the recipe loads. -->
+    <LinearLayout
+        android:id="@+id/ll_progress_bars"
+        android:layout_width="match_parent"
+        android:layout_height="5dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:orientation="horizontal" />
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
+        android:paddingTop="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_step_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.16"
+                android:textColor="@color/color_accent_300"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                tools:text="STEP 1 OF 5" />
+
+            <TextView
+                android:id="@+id/tv_step_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:fontFamily="@font/caprasimo"
+                android:lineSpacingMultiplier="1.15"
+                android:textColor="@color/color_accent_100"
+                android:textSize="26sp"
+                tools:text="Whisk the cornflour into a little cold milk until smooth." />
+
+            <!-- "This step uses" ingredient tags. -->
+            <LinearLayout
+                android:id="@+id/uses_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_uses_card"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="THIS STEP USES"
+                    android:textColor="@color/color_accent_300"
+                    android:textSize="10.5sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.chip.ChipGroup
+                    android:id="@+id/cg_uses"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:chipSpacingHorizontal="6dp"
+                    app:chipSpacingVertical="6dp" />
+
+            </LinearLayout>
+
+            <!-- Private note callout for this step; hidden when the step has no note. Tapping
+                 it, or the button below, opens the note editor. -->
+            <TextView
+                android:id="@+id/tv_step_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_note_dashed"
+                android:lineSpacingMultiplier="1.3"
+                android:padding="14dp"
+                android:textColor="@color/color_accent_2_300"
+                android:textSize="13sp"
+                android:visibility="gone"
+                tools:text="My note — only 10 minutes on my stove." />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_step_note_edit"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:text="Add a note"
+                android:textAllCaps="false"
+                android:textColor="@color/color_accent_300"
+                android:textSize="12sp" />
+
+            <!-- Optional per-step countdown timer; hidden for steps with no timer. -->
+            <LinearLayout
+                android:id="@+id/timer_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <FrameLayout
+                    android:layout_width="120dp"
+                    android:layout_height="120dp">
+
+                    <com.google.android.material.progressindicator.CircularProgressIndicator
+                        android:id="@+id/timer_ring"
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:indeterminate="false"
+                        android:max="1000"
+                        app:indicatorColor="@color/color_accent_400"
+                        app:trackColor="@color/color_accent_800"
+                        app:trackCornerRadius="4dp"
+                        app:trackThickness="6dp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tv_timer_clock"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/caprasimo"
+                            android:textColor="@color/color_accent_100"
+                            android:textSize="24sp"
+                            tools:text="08:00" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.1"
+                            android:text="REMAINING"
+                            android:textColor="@color/color_accent_300"
+                            android:textSize="9sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <!-- Tapping the clock (or this badge) opens a dialog to change the
+                         timer's duration; the badge exists purely so it's discoverable as
+                         tappable, since a bare number doesn't read as an editable control. -->
+                    <ImageView
+                        android:id="@+id/btn_timer_edit"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="bottom|end"
+                        android:background="@drawable/bg_uses_card"
+                        android:contentDescription="@string/cook_edit_timer_description"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/color_accent_100" />
+
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_timer_toggle"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="Pause"
+                        android:textAllCaps="false"
+                        android:textColor="@color/color_accent_100"
+                        app:backgroundTint="@color/color_accent_800"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_pause"
+                        app:iconTint="@color/color_accent_100" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_timer_add"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_marginTop="8dp"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="+1 min"
+                        android:textAllCaps="false"
+                        android:textColor="@color/color_accent_100"
+                        app:backgroundTint="@color/color_accent_800"
+                        app:cornerRadius="12dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Fixed footer: Prev + Next/Done, always reachable regardless of step content length. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_prev"
+            android:layout_width="98dp"
+            android:layout_height="match_parent"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Prev"
+            android:textAllCaps="false"
+            android:textColor="@color/color_accent_100"
+            app:backgroundTint="@color/color_accent_800"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_arrow_back"
+            app:iconTint="@color/color_accent_100" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_primary_action"
+            android:layout_width="0dp"
+            android:layout_height="58dp"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Next step"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            app:backgroundTint="@color/color_accent"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_arrow_forward"
+            app:iconGravity="end"
+            app:iconTint="@color/color_bg" />
+
+    </LinearLayout>
+
+</LinearLayout>

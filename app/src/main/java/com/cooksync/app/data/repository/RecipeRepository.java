@@ -84,4 +84,32 @@ public interface RecipeRepository {
      * @param resultTarget LiveData target to post the outcome
      */
     void getPersonalNote(String recipeId, MutableLiveData<ApiResult<NoteResponse>> resultTarget);
+
+    /**
+     * Fetches every private note for a recipe, both the general recipe-wide note and any
+     * notes attached to individual instruction steps.
+     *
+     * @param recipeId recipe ID
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getAllPersonalNotes(String recipeId, MutableLiveData<ApiResult<List<NoteResponse>>> resultTarget);
+
+    /**
+     * Creates or updates a personal note on a recipe, or on one of its instruction steps.
+     *
+     * @param recipeId the recipe the note belongs to
+     * @param instructionId the instruction step the note is attached to, or {@code null} for
+     *                      a recipe-wide note
+     * @param note the note text
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void saveNote(String recipeId, String instructionId, String note, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Deletes a personal note.
+     *
+     * @param noteId the ID of the note to delete
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deleteNote(String noteId, MutableLiveData<ApiResult<Void>> resultTarget);
 }

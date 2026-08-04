@@ -236,6 +236,48 @@
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_tag_chip" />
 
+                <!-- Recipe-wide private note: tappable to add/edit/delete, visible only to the
+                     signed-in user. Shows a neutral placeholder until a note exists. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/detail_note_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:id="@+id/iv_detail_note_icon"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:src="@drawable/ic_edit"
+                            app:tint="@color/color_text" />
+
+                        <TextView
+                            android:id="@+id/tv_detail_note"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:layout_weight="1"
+                            android:alpha="0.7"
+                            android:lineSpacingMultiplier="1.3"
+                            android:textColor="@color/color_text"
+                            android:textSize="13sp"
+                            tools:text="Add a private note" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
                 <TextView
                     android:id="@+id/detail_ingredients_header"
                     android:layout_width="match_parent"

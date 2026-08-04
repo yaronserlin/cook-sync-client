@@ -84,4 +84,24 @@
         <item name="android:textSize">14sp</item>
         <item name="android:gravity">center</item>
     </style>
+
+    <!-- Rounds only the top corners of a modal bottom sheet, matching the design's
+         ".sheetbody { border-radius:32px 32px 0 0 }". -->
+    <style name="ShapeAppearance.CookSync.BottomSheet" parent="">
+        <item name="cornerSizeTopLeft">32dp</item>
+        <item name="cornerSizeTopRight">32dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="Widget.CookSync.BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.CookSync.BottomSheet</item>
+        <item name="backgroundTint">@color/color_bg</item>
+    </style>
+
+    <!-- Applied to CookSync's modal bottom sheets (e.g. filters) so they pick up the rounded
+         top corners above instead of Material's default square-cornered modal sheet. -->
+    <style name="Theme.CookSync.BottomSheetDialog" parent="ThemeOverlay.MaterialComponents.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.CookSync.BottomSheet</item>
+    </style>
 </resources>

@@ -10,10 +10,20 @@
 
     <color name="color_accent_100">#FFF2EB</color>
     <color name="color_accent_200">#FFE1D0</color>
+    <color name="color_accent_300">#FFC6A5</color>
     <color name="color_accent_400">#F6A06B</color>
     <color name="color_accent_600">#B2622D</color>
     <color name="color_accent_700">#8C491A</color>
     <color name="color_accent_800">#643312</color>
+    <color name="color_accent_900">#402310</color>
+
+    <!-- "Accent-2" is the design system's secondary/olive accent, used for the private-note
+         callouts on the recipe detail, review, and cooking-mode screens. -->
+    <color name="color_accent_2_100">#F0FAE1</color>
+    <color name="color_accent_2_200">#E1EECC</color>
+    <color name="color_accent_2_300">#CCDBB2</color>
+    <color name="color_accent_2_700">#56633F</color>
+    <color name="color_accent_2_800">#3D472B</color>
 
     <color name="color_neutral_300">#DCD3C4</color>
     <color name="color_neutral_400">#C0B6A5</color>

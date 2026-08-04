@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Height is capped at runtime to 82% of the screen (matching the design's
+     ".sheetbody{max-height:82%}") via BottomSheetBehavior#setMaxHeight in
+     FiltersBottomSheetDialogFragment#onStart, so wrap_content here just means "as tall as the
+     content needs, up to that cap"; the NestedScrollView below absorbs whatever doesn't fit. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:paddingHorizontal="24dp"
+    android:paddingTop="24dp"
     android:background="@color/color_bg">
 
     <View
@@ -41,6 +46,22 @@
             android:textSize="13sp" />
 
     </LinearLayout>
+
+    <!-- Scrollable body: everything between the header and the pinned Apply button below.
+         NestedScrollView is what makes BottomSheetBehavior treat this sheet as internally
+         scrollable once expanded, so overflow content is reachable by dragging/scrolling
+         instead of being clipped off-screen. -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
     <TextView
         android:layout_width="wrap_content"
@@ -148,11 +169,15 @@
             android:text="Gluten Free" />
     </com.google.android.material.chip.ChipGroup>
 
+    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_apply"
         android:layout_width="match_parent"
         android:layout_height="54dp"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp"
         android:text="Apply Filters"
         android:textAllCaps="false"
         android:textSize="16sp"

@@ -125,7 +125,7 @@ public interface ApiService {
      *
      * @return call yielding Cloudinary upload credentials
      */
-    @GET("api/media/signature")
+    @GET("api/cloudinary/signature")
     Call<ApiResponse<CloudinarySignatureResponse>> getMediaSignature();
 
     // ── Recipe Feed & Discovery ────────────────────────────────────
@@ -230,4 +230,37 @@ public interface ApiService {
     Call<ApiResponse<com.dtos.response.note.NoteResponse>> getPersonalNote(
             @retrofit2.http.Path("recipeId") String recipeId
     );
+
+    /**
+     * Fetches every private note the user has attached to a recipe, both the general
+     * recipe-wide note and any notes attached to individual instruction steps
+     * (distinguished by {@link com.dtos.response.note.NoteResponse#instructionId()} being
+     * non-null). Used by Cooking Mode to show the right note alongside each step.
+     *
+     * @param recipeId the ID of the recipe
+     * @return call yielding every note (general + per-step) for the recipe
+     */
+    @GET("api/notes/recipe/{recipeId}/all")
+    Call<ApiResponse<java.util.List<com.dtos.response.note.NoteResponse>>> getAllPersonalNotes(
+            @retrofit2.http.Path("recipeId") String recipeId
+    );
+
+    /**
+     * Creates or updates a personal note on a recipe (when {@code instructionId} is null) or
+     * on a specific instruction step (when it's set).
+     *
+     * @param request the note payload
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/notes")
+    Call<ApiResponse<Void>> saveNote(@Body com.dtos.request.note.NoteRequestDTO request);
+
+    /**
+     * Deletes a personal note.
+     *
+     * @param noteId the ID of the note to delete
+     * @return call yielding an empty acknowledgement
+     */
+    @retrofit2.http.DELETE("api/notes/{noteId}")
+    Call<ApiResponse<Void>> deleteNote(@retrofit2.http.Path("noteId") String noteId);
 }

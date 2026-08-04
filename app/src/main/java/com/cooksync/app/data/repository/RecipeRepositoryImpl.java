@@ -77,4 +77,25 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getPersonalNote(recipeId))));
     }
+
+    @Override
+    public void getAllPersonalNotes(String recipeId, MutableLiveData<ApiResult<List<NoteResponse>>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getAllPersonalNotes(recipeId))));
+    }
+
+    @Override
+    public void saveNote(String recipeId, String instructionId, String note, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        java.util.UUID recipeUuid = java.util.UUID.fromString(recipeId);
+        java.util.UUID instructionUuid = instructionId == null ? null : java.util.UUID.fromString(instructionId);
+        com.dtos.request.note.NoteRequestDTO request = new com.dtos.request.note.NoteRequestDTO(recipeUuid, instructionUuid, note);
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.saveNote(request))));
+    }
+
+    @Override
+    public void deleteNote(String noteId, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.deleteNote(noteId))));
+    }
 }
