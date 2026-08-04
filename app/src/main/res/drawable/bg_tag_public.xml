@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- "Public" visibility badge background for My Recipes cards, matching the design's
+     accent-2 tag styling (".tag-accent-2"). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/color_accent_2_100" />
+    <corners android:radius="12dp" />
+</shape>

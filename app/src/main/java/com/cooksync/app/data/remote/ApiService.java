@@ -180,6 +180,38 @@ public interface ApiService {
             @retrofit2.http.Path("id") String id
     );
 
+    /**
+     * Fetches every recipe (published or private) authored by the currently authenticated
+     * user, for the "My Recipes" screen.
+     *
+     * @return call yielding the user's own recipes
+     */
+    @GET("api/recipes/mine")
+    Call<ApiResponse<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>>> getMyRecipes();
+
+    /**
+     * Deletes one of the authenticated user's own recipes.
+     *
+     * @param id the ID of the recipe to delete
+     * @return call yielding an empty acknowledgement
+     */
+    @retrofit2.http.DELETE("api/recipes/{id}")
+    Call<ApiResponse<Void>> deleteRecipe(@retrofit2.http.Path("id") String id);
+
+    /**
+     * Changes only a recipe's visibility (Public/Private) without resubmitting the rest of
+     * its fields.
+     *
+     * @param id the ID of the recipe to update
+     * @param request the new visibility
+     * @return call yielding the updated recipe
+     */
+    @PATCH("api/recipes/{id}/visibility")
+    Call<ApiResponse<com.dtos.response.recipe.RecipeResponse>> updateRecipeVisibility(
+            @retrofit2.http.Path("id") String id,
+            @Body com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO request
+    );
+
     // ── Tags ───────────────────────────────────────────────────────
 
     /**

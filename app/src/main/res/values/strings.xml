@@ -31,6 +31,7 @@
     <string name="nav_search">Search</string>
     <string name="nav_my_recipes">My Recipes</string>
     <string name="nav_profile">Profile</string>
+    <string name="nav_favorites">Favorites</string>
 
     <string name="home_title">Discover</string>
     <string name="profile_coming_soon">Profile — coming soon</string>
@@ -49,4 +50,10 @@
     <string name="cook_uses_chip_format">%1$s · %2$s %3$s</string>
     <string name="cook_timer_clock_format">%1$02d:%2$02d</string>
     <string name="cook_edit_timer_description">Change timer duration</string>
+    <string name="recipe_options_description">Recipe options</string>
+    <string name="my_recipes_title_format">My recipes · %d published</string>
+    <string name="review_count_plain_format">%d reviews</string>
+    <string name="favorites_subtitle_format">%1$d recipes · %2$d with private notes</string>
+    <string name="favorites_with_notes_chip_format">With notes %d</string>
+    <string name="recipe_note_strip_format">Private note — %s</string>
 </resources>

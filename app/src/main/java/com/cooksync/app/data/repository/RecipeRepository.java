@@ -112,4 +112,28 @@ public interface RecipeRepository {
      * @param resultTarget LiveData target to post the outcome
      */
     void deleteNote(String noteId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Fetches every recipe (published or private) authored by the current user.
+     *
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getMyRecipes(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Deletes one of the current user's own recipes.
+     *
+     * @param recipeId the ID of the recipe to delete
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deleteRecipe(String recipeId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Changes a recipe's visibility between public and private.
+     *
+     * @param recipeId the ID of the recipe to update
+     * @param visibility the new visibility ("PUBLIC" or "PRIVATE")
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void updateRecipeVisibility(String recipeId, String visibility, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
 }

@@ -16,6 +16,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.common.SkeletonHelper;
 import com.cooksync.app.ui.recipe.FiltersBottomSheetDialogFragment;
+import com.cooksync.app.ui.recipe.MyRecipesActivity;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.response.tags.TagResponse;
 
@@ -96,6 +97,25 @@ public class HomeActivity extends AppCompatActivity {
                 }
                 return false;
             }
+        });
+
+        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        bottomNav.setSelectedItemId(R.id.nav_home);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_home) {
+                return true;
+            }
+            if (id == R.id.nav_my_recipes) {
+                startActivity(new Intent(this, MyRecipesActivity.class));
+                return true;
+            }
+            if (id == R.id.nav_favorites) {
+                startActivity(new Intent(this, com.cooksync.app.ui.recipe.FavoriteRecipesActivity.class));
+                return true;
+            }
+            Toast.makeText(this, R.string.profile_coming_soon, Toast.LENGTH_SHORT).show();
+            return false;
         });
     }
 

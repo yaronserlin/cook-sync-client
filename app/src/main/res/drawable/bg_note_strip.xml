@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Flat (no corners) private-note strip background for item_recipe_row_card: sits flush
+     beneath the row above it, with the outer MaterialCardView clipping the overall shape's
+     bottom corners, so this drawable itself needs no rounding. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/color_accent_2_100" />
+</shape>

@@ -98,4 +98,24 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.deleteNote(noteId))));
     }
+
+    @Override
+    public void getMyRecipes(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getMyRecipes())));
+    }
+
+    @Override
+    public void deleteRecipe(String recipeId, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.deleteRecipe(recipeId))));
+    }
+
+    @Override
+    public void updateRecipeVisibility(String recipeId, String visibility, MutableLiveData<ApiResult<RecipeResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO request =
+                new com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO(visibility);
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.updateRecipeVisibility(recipeId, request))));
+    }
 }

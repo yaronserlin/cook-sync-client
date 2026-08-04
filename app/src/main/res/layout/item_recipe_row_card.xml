@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared horizontal recipe row, used by both "My Recipes" and "Favorites" (which use
+     identical card styling in the design, differing only in the trailing action: an overflow
+     menu for My Recipes, a heart toggle for Favorites) and a bottom note strip when the user
+     has a private note on that recipe, matching the design's favorites-list note callout. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/color_surface"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="12dp">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <ImageView
+                    android:id="@+id/recipe_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    tools:src="@tools:sample/backgrounds/scenic" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/recipe_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/caprasimo"
+                    android:maxLines="1"
+                    android:textColor="@color/color_text"
+                    android:textSize="17sp"
+                    tools:text="Shakshuka with feta" />
+
+                <TextView
+                    android:id="@+id/recipe_subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:alpha="0.65"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textColor="@color/color_text"
+                    android:textSize="12sp"
+                    tools:text="6 reviews" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:src="@drawable/ic_star"
+                        app:tint="@color/color_accent_700" />
+
+                    <TextView
+                        android:id="@+id/rating_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginEnd="10dp"
+                        android:textColor="@color/color_accent_700"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        tools:text="3.8" />
+
+                    <TextView
+                        android:id="@+id/visibility_badge"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/bg_tag_public"
+                        android:paddingHorizontal="9dp"
+                        android:paddingVertical="3dp"
+                        android:textColor="@color/color_accent_2_800"
+                        android:textSize="10.5sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:text="Public"
+                        tools:visibility="visible" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btn_trailing_action"
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/recipe_options_description"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_more_horiz"
+                app:tint="@color/color_text" />
+
+        </LinearLayout>
+
+        <!-- Private note strip, matching the design's favorites-list note callout; hidden
+             when the recipe has no personal note. -->
+        <TextView
+            android:id="@+id/recipe_note_strip"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_note_strip"
+            android:drawablePadding="7dp"
+            android:lineSpacingMultiplier="1.35"
+            android:padding="12dp"
+            android:textColor="@color/color_accent_2_800"
+            android:textSize="12.5sp"
+            android:visibility="gone"
+            app:drawableStartCompat="@drawable/ic_edit"
+            app:drawableTint="@color/color_accent_2_800"
+            tools:text="Private note — step 3 only needs 10 minutes on my stove."
+            tools:visibility="visible" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

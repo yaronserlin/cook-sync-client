@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared page template for "My Recipes" and "Favorites": title/subtitle, search, a Filters
+     button + a row of screen-specific chips, the recipe list (with skeleton + empty state),
+     and the bottom nav. Both screens inflate this same layout so they stay visually identical
+     as required by the design, differing only in which chips/empty-state copy each Activity
+     configures at runtime. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_list_title"
+        style="@style/CookSync.Heading.H2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="16dp"
+        tools:text="My recipes · 3 published" />
+
+    <TextView
+        android:id="@+id/tv_list_subtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="16dp"
+        android:alpha="0.65"
+        android:textColor="@color/color_text"
+        android:textSize="13sp"
+        android:visibility="gone"
+        tools:text="12 recipes · 4 with private notes"
+        tools:visibility="visible" />
+
+    <androidx.appcompat.widget.SearchView
+        android:id="@+id/search_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/bg_input"
+        app:iconifiedByDefault="false"
+        app:queryBackground="@android:color/transparent"
+        tools:queryHint="Search..." />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:clipToPadding="false"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_filters"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_tag_neutral"
+                android:insetTop="0dp"
+                android:insetBottom="0dp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingHorizontal="16dp"
+                android:text="Filters · 0"
+                android:textAllCaps="false"
+                android:textColor="@color/color_text"
+                android:textSize="14sp"
+                app:cornerRadius="999dp"
+                app:icon="@drawable/ic_filter"
+                app:iconPadding="8dp"
+                app:iconSize="18dp"
+                app:iconTint="@color/color_accent" />
+
+            <View
+                android:layout_width="10dp"
+                android:layout_height="0dp" />
+
+            <!-- Screen-specific chips (My Recipes: All/Public/Private; Favorites: All/With
+                 notes) are added here at runtime by the host Activity. -->
+            <LinearLayout
+                android:id="@+id/chip_container"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal" />
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+            tools:listitem="@layout/item_recipe_row_card" />
+
+        <include
+            android:id="@+id/skeleton_view"
+            layout="@layout/activity_recipe_list_skeleton"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="40dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/iv_empty_icon"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                app:tint="@color/color_accent_700"
+                tools:src="@drawable/ic_book" />
+
+            <TextView
+                android:id="@+id/tv_empty_title"
+                style="@style/CookSync.Heading.H2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                tools:text="No recipes yet" />
+
+            <TextView
+                android:id="@+id/tv_empty_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:alpha="0.7"
+                android:gravity="center"
+                android:textColor="@color/color_text"
+                android:textSize="14sp"
+                tools:text="Recipes you publish will show up here." />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/color_surface"
+        app:itemIconTint="@color/color_text"
+        app:itemTextColor="@color/color_text"
+        app:menu="@menu/bottom_nav_menu" />
+
+</LinearLayout>

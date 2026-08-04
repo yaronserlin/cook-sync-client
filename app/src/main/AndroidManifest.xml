@@ -44,6 +44,14 @@
             android:name=".ui.recipe.ReviewActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.recipe.MyRecipesActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.recipe.FavoriteRecipesActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>
