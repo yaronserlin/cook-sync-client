@@ -1,0 +1,254 @@
+package com.cooksync.app.ui.home;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.cooksync.app.R;
+import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.domain.FeedState;
+import com.cooksync.app.ui.common.SkeletonHelper;
+import com.cooksync.app.ui.recipe.FiltersBottomSheetDialogFragment;
+import com.cooksync.app.util.SessionManager;
+import com.dtos.response.tags.TagResponse;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * Main entry point of the app after login. Displays a paginated feed of recipes,
+ * tag-based filtering, and search functionality.
+ *
+ * @author Yaron Serlin
+ * @version 1.0
+ * @since 04/08/2026
+ */
+public class HomeActivity extends AppCompatActivity {
+
+    private HomeViewModel viewModel;
+    private RecipeCardAdapter recipeAdapter;
+    private TagChipAdapter tagAdapter;
+    private SkeletonHelper skeletonHelper;
+
+    private View skeletonView;
+    private RecyclerView rvFeed;
+    private List<String> loadedTagNames = new ArrayList<>();
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_home);
+
+        viewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+        
+        initViews();
+        setupAdapters();
+        setupObservers();
+
+        viewModel.loadInitialFeed();
+        viewModel.loadTags();
+        viewModel.loadFavorites();
+
+        findViewById(R.id.btn_filters).setOnClickListener(v -> {
+                FiltersBottomSheetDialogFragment dialog = new FiltersBottomSheetDialogFragment();
+                dialog.setAvailableTags(loadedTagNames);
+                dialog.setInitialState(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags());
+                dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags) -> {
+                    viewModel.applyFilters(sortBy, difficulty, tags);
+                    tagAdapter.setSelectedTags(viewModel.getSelectedTags());
+                });
+                dialog.show(getSupportFragmentManager(), "filters");
+        });
+    }
+
+    private void initViews() {
+        rvFeed = findViewById(R.id.rv_feed);
+        skeletonView = findViewById(R.id.skeleton_view);
+
+        skeletonHelper = new SkeletonHelper();
+        skeletonHelper.attachAll(findViewById(R.id.skeleton_view));
+
+        android.widget.TextView avatar = findViewById(R.id.tv_profile_avatar);
+        avatar.setText(SessionManager.getInstance().getInitials());
+        avatar.setOnClickListener(v ->
+                Toast.makeText(this, R.string.profile_coming_soon, Toast.LENGTH_SHORT).show());
+
+        SearchView searchView = findViewById(R.id.search_view);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                viewModel.search(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                if (newText.isEmpty()) {
+                    viewModel.loadInitialFeed();
+                }
+                return false;
+            }
+        });
+    }
+
+    private void setupAdapters() {
+        recipeAdapter = new RecipeCardAdapter();
+        recipeAdapter.setOnRecipeClickListener(new RecipeCardAdapter.OnRecipeClickListener() {
+            @Override
+            public void onRecipeClick(String recipeId) {
+                Intent intent = new Intent(HomeActivity.this, com.cooksync.app.ui.detail.RecipeDetailActivity.class);
+                intent.putExtra(com.cooksync.app.ui.detail.RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onFavoriteClick(String recipeId) {
+                viewModel.toggleFavorite(recipeId);
+            }
+        });
+        rvFeed.setAdapter(recipeAdapter);
+
+        // Infinite scroll
+        rvFeed.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (!recyclerView.canScrollVertically(1)) {
+                    viewModel.loadNextPage();
+                }
+            }
+        });
+
+        RecyclerView rvTags = findViewById(R.id.rv_tags);
+        tagAdapter = new TagChipAdapter();
+        tagAdapter.setOnTagClickListener(tagName -> {
+            if (tagName == null) {
+                viewModel.clearTags();
+            } else {
+                viewModel.toggleTag(tagName);
+            }
+            tagAdapter.setSelectedTags(viewModel.getSelectedTags());
+        });
+        rvTags.setAdapter(tagAdapter);
+    }
+
+    private void setupObservers() {
+        viewModel.getFeedState().observe(this, state -> {
+            if (state instanceof FeedState.Loading loading) {
+                if (loading.isInitial()) {
+                    showSkeleton(true);
+                }
+            } else if (state instanceof FeedState.Success success) {
+                showSkeleton(false);
+                recipeAdapter.setRecipes(success.getRecipes());
+                updateFeedSummary(success.getRecipes().size());
+                updateFilterButton(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags());
+            } else if (state instanceof FeedState.Error error) {
+                showSkeleton(false);
+                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
+
+        viewModel.getTagsResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<java.util.List<TagResponse>> success) {
+                tagAdapter.setTags(success.getData());
+                loadedTagNames = success.getData().stream().map(TagResponse::name).collect(Collectors.toList());
+            }
+        });
+
+        viewModel.getFavoritesResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>> success) {
+                recipeAdapter.setFavorites(success.getData());
+            }
+        });
+
+        viewModel.getErrorEvent().observe(this, event -> {
+            String message = event.getContentIfNotHandled();
+            if (message != null) {
+                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * Updates the "Filters · N" button to reflect the currently active non-default filters
+     * (difficulty and/or however many tags are selected — sort is ignored since one sort
+     * option is always selected).
+     *
+     * <p>Uses {@code setBackgroundResource} rather than {@code setBackgroundColor} so the
+     * button's rounded-pill shape (defined by the drawable, not by MaterialButton's own shape
+     * appearance once a raw background is set) is preserved instead of being replaced by a
+     * flat {@code ColorDrawable} rectangle.</p>
+     *
+     * @param sortBy the active sort choice (always non-null, not counted)
+     * @param difficulty the active difficulty filter, or {@code null}
+     * @param tags the selected tag names, possibly empty
+     */
+    private void updateFilterButton(String sortBy, String difficulty, java.util.Collection<String> tags) {
+        int count = (difficulty != null ? 1 : 0) + (tags == null ? 0 : tags.size());
+        boolean active = count > 0;
+
+        com.google.android.material.button.MaterialButton btn = findViewById(R.id.btn_filters);
+        btn.setText(getString(R.string.filters_count_format, count));
+        btn.setBackgroundResource(active ? R.drawable.bg_filters_active : R.drawable.bg_tag_neutral);
+        btn.setTextColor(active ? getColor(R.color.color_bg) : getColor(R.color.color_text));
+
+        android.content.res.ColorStateList tint = android.content.res.ColorStateList.valueOf(
+                active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
+        btn.setIconTint(tint);
+    }
+
+    /**
+     * Updates the "N recipes · sorted by X · filters..." summary line beneath the filter row,
+     * matching the design's active-results summary (e.g. the search screen's
+     * "3 recipes · sorted by rating"). In plain browse mode (no search, tags, or difficulty
+     * active) this shows the server's true catalog-wide total rather than just how many
+     * recipes have been scrolled into view so far.
+     *
+     * @param displayedCount how many recipes are currently displayed after filtering
+     */
+    private void updateFeedSummary(int displayedCount) {
+        long recipeCount = viewModel.getTotalCount(displayedCount);
+
+        StringBuilder summary = new StringBuilder();
+        summary.append(recipeCount).append(recipeCount == 1 ? " recipe" : " recipes");
+        summary.append(" · sorted by ").append(viewModel.getCurrentSort());
+
+        List<String> activeFilters = new ArrayList<>();
+        if (viewModel.getCurrentDifficulty() != null) {
+            activeFilters.add(viewModel.getCurrentDifficulty());
+        }
+        activeFilters.addAll(viewModel.getSelectedTags());
+        if (!activeFilters.isEmpty()) {
+            summary.append(" · ").append(String.join(", ", activeFilters));
+        }
+
+        android.widget.TextView tvSummary = findViewById(R.id.tv_feed_summary);
+        tvSummary.setText(summary.toString());
+    }
+
+    private void showSkeleton(boolean show) {
+        if (show) {
+            skeletonView.setVisibility(View.VISIBLE);
+            rvFeed.setVisibility(View.GONE);
+            skeletonHelper.start();
+        } else {
+            skeletonHelper.stop();
+            skeletonView.setVisibility(View.GONE);
+            rvFeed.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        skeletonHelper.release();
+    }
+}

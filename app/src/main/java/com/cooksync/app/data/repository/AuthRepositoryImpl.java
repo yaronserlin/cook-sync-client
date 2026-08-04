@@ -15,16 +15,12 @@ import com.dtos.response.ApiResponse;
 import com.dtos.response.auth.AuthResponse;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import retrofit2.Response;
 
 /**
  * Concrete implementation of {@link AuthRepository} that delegates every call to the remote
- * REST API via Retrofit, executes the network work on a dedicated background thread pool,
- * and posts typed {@link ApiResult} values back to the provided {@link MutableLiveData}
- * targets on the main thread.
+ * REST API via Retrofit, executes the network work on a dedicated background thread pool
+ * (inherited from {@link BaseRepository}), and posts typed {@link ApiResult} values back to
+ * the provided {@link MutableLiveData} targets on the main thread.
  *
  * <p>Session side-effects (persisting tokens, broadcasting login/logout state) are handled
  * here through {@link SessionManager} so neither the ViewModel nor the UI ever touch raw
@@ -34,10 +30,7 @@ import retrofit2.Response;
  * @version 1.0
  * @since 04/08/2026
  */
-public class AuthRepositoryImpl implements AuthRepository {
-
-    /** Thread pool for network I/O — keeps the main thread unblocked at all times. */
-    private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+public class AuthRepositoryImpl extends BaseRepository implements AuthRepository {
 
     private final ApiService apiService;
 
@@ -64,7 +57,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     public void login(LoginRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            ApiResult<AuthResponse> result = executeAuthCall(apiService.login(request));
+            ApiResult<AuthResponse> result = executeCall(apiService.login(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
             }
@@ -83,7 +76,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     public void register(RegisterRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            ApiResult<AuthResponse> result = executeAuthCall(apiService.register(request));
+            ApiResult<AuthResponse> result = executeCall(apiService.register(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
             }
@@ -118,7 +111,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     @Override
     public void updateProfile(ProfileUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeVoidCall(apiService.updateProfile(request))));
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.updateProfile(request))));
     }
 
     /**
@@ -127,7 +120,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     @Override
     public void changePassword(ChangePasswordRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeVoidCall(apiService.changePassword(request))));
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.changePassword(request))));
     }
 
     /**
@@ -140,7 +133,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     public void updateEmail(EmailUpdateRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            ApiResult<AuthResponse> result = executeAuthCall(apiService.updateEmail(request));
+            ApiResult<AuthResponse> result = executeCall(apiService.updateEmail(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
             }
@@ -157,7 +150,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     public void deactivateAccount(MutableLiveData<ApiResult<Void>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            ApiResult<Void> result = executeVoidCall(apiService.deactivateAccount());
+            ApiResult<Void> result = executeCall(apiService.deactivateAccount());
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().logout();
             }
@@ -176,7 +169,7 @@ public class AuthRepositoryImpl implements AuthRepository {
     public void validateToken(MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            ApiResult<AuthResponse> result = executeAuthCall(apiService.validateToken());
+            ApiResult<AuthResponse> result = executeCall(apiService.validateToken());
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
             } else {
@@ -187,83 +180,4 @@ public class AuthRepositoryImpl implements AuthRepository {
         });
     }
 
-
-
-    /**
-     * Executes a Retrofit call that returns {@link ApiResponse}{@code <AuthResponse>} and
-     * maps the outcome to the appropriate {@link ApiResult} subtype.
-     *
-     * Complexity:
-     * Time: O(1) plus one synchronous network round-trip
-     * Space: O(1)
-     *
-     * @param call the Retrofit call to execute
-     * @return {@link ApiResult.Success} on HTTP 2xx with {@code success=true},
-     *         {@link ApiResult.Error} on any failure
-     */
-    private ApiResult<AuthResponse> executeAuthCall(retrofit2.Call<ApiResponse<AuthResponse>> call) {
-        try {
-            Response<ApiResponse<AuthResponse>> response = call.execute();
-            if (response.isSuccessful() && response.body() != null && response.body().success()) {
-                return new ApiResult.Success<>(response.body().data());
-            }
-            String message = extractErrorMessage(response);
-            return new ApiResult.Error<>(message, null);
-        } catch (IOException e) {
-            return new ApiResult.Error<>("Network error. Check your connection and try again.", e);
-        }
-    }
-
-    /**
-     * Executes a Retrofit call that returns {@link ApiResponse}{@code <Void>} and maps
-     * the outcome to the appropriate {@link ApiResult} subtype.
-     *
-     * Complexity:
-     * Time: O(1) plus one synchronous network round-trip
-     * Space: O(1)
-     *
-     * @param call the Retrofit call to execute
-     * @return {@link ApiResult.Success} on HTTP 2xx with {@code success=true},
-     *         {@link ApiResult.Error} on any failure
-     */
-    private ApiResult<Void> executeVoidCall(retrofit2.Call<ApiResponse<Void>> call) {
-        try {
-            Response<ApiResponse<Void>> response = call.execute();
-            if (response.isSuccessful() && response.body() != null && response.body().success()) {
-                return new ApiResult.Success<>(null);
-            }
-            String message = extractErrorMessage(response);
-            return new ApiResult.Error<>(message, null);
-        } catch (IOException e) {
-            return new ApiResult.Error<>("Network error. Check your connection and try again.", e);
-        }
-    }
-
-    /**
-     * Extracts a human-readable error message from a failed HTTP response, preferring the
-     * {@code message} field in the JSON body if present.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @param response the non-successful HTTP response
-     * @return a user-facing error string
-     */
-    private String extractErrorMessage(Response<?> response) {
-        if (response.body() instanceof ApiResponse<?> apiResponse) {
-            String msg = apiResponse.message();
-            if (msg != null && !msg.isBlank()) {
-                return msg;
-            }
-        }
-        return switch (response.code()) {
-            case 400 -> "Invalid request. Please check your input.";
-            case 401 -> "Invalid credentials. Please try again.";
-            case 403 -> "You do not have permission to perform this action.";
-            case 409 -> "An account with this email already exists.";
-            case 500 -> "Server error. Please try again later.";
-            default  -> "Unexpected error (" + response.code() + "). Please try again.";
-        };
-    }
 }

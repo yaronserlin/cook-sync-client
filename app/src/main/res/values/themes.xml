@@ -63,4 +63,25 @@
         <item name="android:textStyle">bold</item>
         <item name="android:layout_marginTop">5dp</item>
     </style>
+
+    <style name="CookSync.Heading" />
+
+    <!-- Reusable screen-title heading, matching the design system's "h2" (Caprasimo, 30px). -->
+    <style name="CookSync.Heading.H2">
+        <item name="android:fontFamily">@font/caprasimo</item>
+        <item name="android:textColor">@color/color_text</item>
+        <item name="android:textSize">30sp</item>
+    </style>
+
+    <!-- Reusable profile-avatar chip: circular initials badge, matching the design system's
+         top-right avatar tap target seen on Discover/Home. -->
+    <style name="CookSync.AvatarChip">
+        <item name="android:layout_width">38dp</item>
+        <item name="android:layout_height">38dp</item>
+        <item name="android:background">@drawable/bg_avatar_circle</item>
+        <item name="android:fontFamily">@font/caprasimo</item>
+        <item name="android:textColor">@color/color_accent_800</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:gravity">center</item>
+    </style>
 </resources>

@@ -260,7 +260,9 @@ public class LoginActivity extends AppCompatActivity {
      * Space: O(1)
      */
     private void navigateToMain() {
-        // TODO (Module 2): replace with MainActivity once it exists.
+        Intent intent = new Intent(this, com.cooksync.app.ui.home.HomeActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
         finish();
     }
 }

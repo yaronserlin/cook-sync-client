@@ -128,4 +128,41 @@ public final class SessionManager {
     public String getFirstName() {
         return TokenStore.getFirstName();
     }
+
+    /**
+     * Returns the cached last name of the currently authenticated user.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return the last name, or {@code null} if no session is active
+     */
+    @Nullable
+    public String getLastName() {
+        return TokenStore.getLastName();
+    }
+
+    /**
+     * Builds a two-letter initials string (e.g. "YS") from the cached first/last name, for
+     * the avatar chip shown in the app bar. Falls back to a single "?" if no session is active.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return the initials to render in the profile avatar
+     */
+    public String getInitials() {
+        String first = getFirstName();
+        String last = getLastName();
+        StringBuilder initials = new StringBuilder();
+        if (first != null && !first.isEmpty()) {
+            initials.append(Character.toUpperCase(first.charAt(0)));
+        }
+        if (last != null && !last.isEmpty()) {
+            initials.append(Character.toUpperCase(last.charAt(0)));
+        }
+        return initials.length() > 0 ? initials.toString() : "?";
+    }
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingVertical="12dp">
+
+    <TextView
+        android:id="@+id/step_number"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:background="@drawable/bg_accent_circle"
+        android:fontFamily="@font/caprasimo"
+        android:gravity="center"
+        android:textColor="@color/color_bg"
+        android:textSize="14sp"
+        tools:text="1" />
+
+    <TextView
+        android:id="@+id/step_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:lineSpacingMultiplier="1.4"
+        android:textColor="@color/color_text"
+        android:textSize="15sp"
+        tools:text="Warm the olive oil and fry the onion and pepper until soft, about 8 minutes." />
+
+</LinearLayout>

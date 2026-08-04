@@ -26,4 +26,21 @@
     <string name="error_passwords_mismatch">Passwords do not match</string>
     <string name="error_network">Could not reach the server. Check your connection and try again.</string>
     <string name="error_session_expired">Your session has expired. Please sign in again.</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_search">Search</string>
+    <string name="nav_my_recipes">My Recipes</string>
+    <string name="nav_profile">Profile</string>
+
+    <string name="home_title">Discover</string>
+    <string name="profile_coming_soon">Profile — coming soon</string>
+    <string name="filters_count_format">Filters · %d</string>
+
+    <string name="time_format">%d mins</string>
+    <string name="review_count_format">· %d reviews</string>
+    <string name="time_format_short">%d min</string>
+
+    <string name="recipe_kicker_format">%1$s · published %2$s</string>
+    <string name="ingredients_header_format">Ingredients · %d servings</string>
+    <string name="star_chip_label_format">%d★</string>
 </resources>

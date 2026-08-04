@@ -1,0 +1,542 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    tools:context=".ui.detail.RecipeDetailActivity">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/detail_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="80dp"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="280dp">
+
+                <ImageView
+                    android:id="@+id/detail_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    tools:src="@tools:sample/backgrounds/scenic" />
+
+                <ImageButton
+                    android:id="@+id/btn_back"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/bg_white_circle"
+                    android:contentDescription="Back"
+                    android:elevation="4dp"
+                    android:src="@drawable/ic_arrow_back"
+                    app:tint="@color/color_text" />
+
+                <ImageButton
+                    android:id="@+id/btn_favorite"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="16dp"
+                    android:background="@drawable/bg_white_circle"
+                    android:contentDescription="Favorite"
+                    android:elevation="4dp"
+                    android:src="@drawable/ic_heart_outline"
+                    app:tint="@color/color_accent" />
+
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <!-- Kicker: author + publish date, matching the design's ".card-kicker". -->
+                <TextView
+                    android:id="@+id/detail_kicker"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.06"
+                    android:textAllCaps="true"
+                    android:textColor="@color/color_accent"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    tools:text="Yaron Serlin · published April 2026" />
+
+                <TextView
+                    android:id="@+id/detail_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/caprasimo"
+                    android:textColor="@color/color_text"
+                    android:textSize="28sp"
+                    tools:text="Shakshuka with feta" />
+
+                <!-- Description as a vertical sequence of text and image blocks, matching the
+                     design's descBlocks (paragraphs and full-width photos interspersed). -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_description_blocks"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="0dp"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_description_text" />
+
+                <!-- Rating row: tappable, jumps to the Reviews section, matching the design's
+                     tap target linking to reviews. -->
+                <LinearLayout
+                    android:id="@+id/detail_rating_row"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="4dp">
+
+                    <ImageView
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:src="@drawable/ic_star"
+                        app:tint="@color/color_accent" />
+
+                    <TextView
+                        android:id="@+id/detail_rating"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:textColor="@color/color_text"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        tools:text="4.6" />
+
+                    <TextView
+                        android:id="@+id/detail_review_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:alpha="0.6"
+                        android:textColor="@color/color_text"
+                        android:textSize="14sp"
+                        tools:text="· 124 reviews" />
+
+                    <ImageView
+                        android:layout_width="15dp"
+                        android:layout_height="15dp"
+                        android:layout_marginStart="2dp"
+                        android:alpha="0.5"
+                        android:src="@drawable/ic_arrow_back"
+                        android:rotation="180"
+                        app:tint="@color/color_text" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_info_card"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PREP"
+                            android:alpha="0.6"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.08" />
+                        <TextView
+                            android:id="@+id/detail_prep_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/caprasimo"
+                            android:textSize="18sp"
+                            tools:text="15 min" />
+                    </LinearLayout>
+
+                    <Space android:layout_width="8dp" android:layout_height="0dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_info_card"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="COOK"
+                            android:alpha="0.6"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.08" />
+                        <TextView
+                            android:id="@+id/detail_cook_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/caprasimo"
+                            android:textSize="18sp"
+                            tools:text="30 min" />
+                    </LinearLayout>
+
+                    <Space android:layout_width="8dp" android:layout_height="0dp" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_info_card"
+                        android:gravity="center_vertical"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="SERVES"
+                            android:alpha="0.6"
+                            android:textSize="10sp"
+                            android:letterSpacing="0.08" />
+                        <TextView
+                            android:id="@+id/detail_servings"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/caprasimo"
+                            android:textSize="18sp"
+                            tools:text="4" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_tags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:orientation="horizontal"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_tag_chip" />
+
+                <TextView
+                    android:id="@+id/detail_ingredients_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:textColor="@color/color_text"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/caprasimo"
+                    tools:text="Ingredients · 4 servings" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_ingredients"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_ingredient" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:text="Instructions"
+                    android:textColor="@color/color_text"
+                    android:textSize="20sp"
+                    android:fontFamily="@font/caprasimo" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_instructions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_instruction_step" />
+
+                <LinearLayout
+                    android:id="@+id/detail_reviews_header"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/caprasimo"
+                        android:text="Reviews"
+                        android:textColor="@color/color_text"
+                        android:textSize="20sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_review"
+                        style="@style/CookSync.Button.Ghost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="Write one"
+                        android:textSize="13sp" />
+
+                </LinearLayout>
+
+                <!-- Rating summary card: average score + per-star breakdown bars, matching the
+                     design's reviews-summary ".card". -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/detail_summary_rating"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/caprasimo"
+                                android:textColor="@color/color_text"
+                                android:textSize="32sp"
+                                tools:text="4.6" />
+
+                            <TextView
+                                android:id="@+id/detail_summary_stars"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:textColor="@color/color_accent_700"
+                                android:textSize="11sp"
+                                tools:text="★★★★★" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <include layout="@layout/item_rating_bar_row" android:id="@+id/bar_row_5" />
+                            <include layout="@layout/item_rating_bar_row" android:id="@+id/bar_row_4" />
+                            <include layout="@layout/item_rating_bar_row" android:id="@+id/bar_row_3" />
+                            <include layout="@layout/item_rating_bar_row" android:id="@+id/bar_row_2" />
+                            <include layout="@layout/item_rating_bar_row" android:id="@+id/bar_row_1" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Star-rating filter chips, matching the design's "{{ rev.chips }}" row.
+                     Each chip shows a star value and how many reviews have that rating; tapping
+                     toggles filtering the review list down to that rating. -->
+                <HorizontalScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:clipToPadding="false"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/review_star_chip_group"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <include layout="@layout/item_review_star_chip" android:id="@+id/chip_star_5" />
+                        <include layout="@layout/item_review_star_chip" android:id="@+id/chip_star_4" />
+                        <include layout="@layout/item_review_star_chip" android:id="@+id/chip_star_3" />
+                        <include layout="@layout/item_review_star_chip" android:id="@+id/chip_star_2" />
+                        <include layout="@layout/item_review_star_chip" android:id="@+id/chip_star_1" />
+
+                    </LinearLayout>
+
+                </HorizontalScrollView>
+
+                <!-- Review list controls: active-filter/count summary + sort toggle, matching
+                     the design's "{{ rev.summary }}" label and "{{ rev.toggleSort }}" button. -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/detail_reviews_summary_label"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:alpha="0.6"
+                        android:textColor="@color/color_text"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        tools:text="6 reviews · filtered by 5★" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_sort_reviews"
+                        style="@style/CookSync.Button.Ghost"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
+                        android:text="Newest"
+                        android:textSize="12.5sp"
+                        app:icon="@drawable/ic_filter"
+                        app:iconGravity="textStart"
+                        app:iconSize="15dp"
+                        app:iconTint="@color/color_accent" />
+
+                </LinearLayout>
+
+                <!-- Empty state shown when the active star filter matches no reviews, matching
+                     the design's "{{ rev.empty }}" card. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/reviews_empty_state"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="@color/color_surface"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
+                    tools:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical"
+                        android:padding="24dp">
+
+                        <ImageView
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:src="@drawable/ic_filter"
+                            app:tint="@color/color_accent_700" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:fontFamily="@font/caprasimo"
+                            android:text="No reviews match that filter"
+                            android:textColor="@color/color_text"
+                            android:textSize="17sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btn_clear_review_filter"
+                            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:text="Show all reviews"
+                            android:textAllCaps="false"
+                            app:cornerRadius="16dp"
+                            app:strokeColor="@color/color_divider" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:listitem="@layout/item_review" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/detail_skeleton"
+        layout="@layout/activity_recipe_detail_skeleton" />
+
+    <LinearLayout
+        android:id="@+id/detail_bottom_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/color_bg"
+        android:orientation="horizontal"
+        android:padding="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_start_cooking"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_weight="1"
+            android:text="Start cooking"
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            app:backgroundTint="@color/color_accent"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_chef_hat"
+            app:iconGravity="textStart"
+            app:iconTint="@color/color_bg" />
+
+        <Space android:layout_width="12dp" android:layout_height="0dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_offline_download"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:contentDescription="Save for offline"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_download"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconTint="@color/color_accent_700"
+            app:strokeColor="@color/color_divider" />
+
+    </LinearLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

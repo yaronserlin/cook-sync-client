@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reusable single row of the rating breakdown bars shown in the Recipe Detail reviews
+     summary card (one row per star value, 5..1). Included 5x from activity_recipe_detail.xml
+     rather than duplicated, per the DRY requirement for repeated UI. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="4dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/star_label"
+        android:layout_width="10dp"
+        android:layout_height="wrap_content"
+        android:alpha="0.6"
+        android:textColor="@color/color_text"
+        android:textSize="10sp"
+        android:textStyle="bold"
+        tools:text="5" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="6dp"
+        android:layout_marginStart="7dp"
+        android:layout_marginEnd="7dp"
+        android:layout_weight="1"
+        android:background="@drawable/bg_tag_neutral"
+        android:orientation="horizontal">
+
+        <View
+            android:id="@+id/bar_fill"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0"
+            android:background="@color/color_accent_400" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@android:color/transparent" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/pct_label"
+        android:layout_width="26dp"
+        android:layout_height="wrap_content"
+        android:alpha="0.55"
+        android:gravity="end"
+        android:textColor="@color/color_text"
+        android:textSize="10sp"
+        tools:text="40%" />
+
+</LinearLayout>

@@ -10,6 +10,7 @@
 
     <color name="color_accent_100">#FFF2EB</color>
     <color name="color_accent_200">#FFE1D0</color>
+    <color name="color_accent_400">#F6A06B</color>
     <color name="color_accent_600">#B2622D</color>
     <color name="color_accent_700">#8C491A</color>
     <color name="color_accent_800">#643312</color>

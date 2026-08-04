@@ -25,9 +25,8 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // 10.0.2.2 is the Android emulator's alias for the host machine's localhost,
-        // where cook-sync-server runs during local development (server.port=8080).
-        buildConfigField("String", "BASE_URL", "\"http://10.0.2.2:8080/\"")
+        // Pointing to the specific backend server address provided.
+        buildConfigField("String", "BASE_URL", "\"http://192.168.0.223:8080/\"")
     }
 
     buildTypes {

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reusable standalone chip inflated for each dynamically-loaded diet/tag filter option in
+     FiltersBottomSheetDialogFragment, so the diet ChipGroup never hardcodes tag names that
+     may not exist in the actual catalog. -->
+<com.google.android.material.chip.Chip xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/filter_chip"
+    style="@style/Widget.MaterialComponents.Chip.Choice"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    tools:text="Vegan" />

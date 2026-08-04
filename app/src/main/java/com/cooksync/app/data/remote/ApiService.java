@@ -127,4 +127,107 @@ public interface ApiService {
      */
     @GET("api/media/signature")
     Call<ApiResponse<CloudinarySignatureResponse>> getMediaSignature();
+
+    // ── Recipe Feed & Discovery ────────────────────────────────────
+
+    /**
+     * Fetches a paginated list of public recipe previews for the home feed.
+     *
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of recipe previews
+     */
+    @GET("api/recipes/public/paged")
+    Call<ApiResponse<com.dtos.response.PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getPublicFeed(
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
+    );
+
+    /**
+     * Searches for public recipes matching a text query, author, or ingredient.
+     *
+     * @param query search text
+     * @param author optional author name filter
+     * @param ingredient optional ingredient name filter
+     * @return call yielding a list of matching recipe previews
+     */
+    @GET("api/recipes/public/search")
+    Call<ApiResponse<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>>> searchRecipes(
+            @retrofit2.http.Query("q") String query,
+            @retrofit2.http.Query("author") String author,
+            @retrofit2.http.Query("ingredient") String ingredient
+    );
+
+    /**
+     * Fetches public recipes associated with a specific tag.
+     *
+     * @param tagName the name of the tag to filter by
+     * @return call yielding a list of recipe previews
+     */
+    @GET("api/recipes/public/tag/{tagName}")
+    Call<ApiResponse<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>>> getRecipesByTag(
+            @retrofit2.http.Path("tagName") String tagName
+    );
+
+    /**
+     * Fetches the complete details for a specific recipe.
+     *
+     * @param id the unique identifier of the recipe
+     * @return call yielding the full recipe detail
+     */
+    @GET("api/recipes/public/{id}")
+    Call<ApiResponse<com.dtos.response.recipe.RecipeResponse>> getRecipeDetail(
+            @retrofit2.http.Path("id") String id
+    );
+
+    // ── Tags ───────────────────────────────────────────────────────
+
+    /**
+     * Fetches all available tags for the horizontal filter bar.
+     *
+     * @return call yielding the list of all tags
+     */
+    @GET("api/tags")
+    Call<ApiResponse<java.util.List<com.dtos.response.tags.TagResponse>>> getAllTags();
+
+    // ── Favorites ──────────────────────────────────────────────────
+
+    /**
+     * Fetches the list of recipes favorited by the currently authenticated user.
+     *
+     * @return call yielding the list of user's favorites
+     */
+    @GET("api/favorites")
+    Call<ApiResponse<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>>> getFavorites();
+
+    /**
+     * Adds a recipe to the user's favorites list.
+     *
+     * @param recipeId the ID of the recipe to favorite
+     * @return call yielding an empty response
+     */
+    @POST("api/favorites/{recipeId}")
+    Call<ApiResponse<Void>> addFavorite(@retrofit2.http.Path("recipeId") String recipeId);
+
+    /**
+     * Removes a recipe from the user's favorites list.
+     *
+     * @param recipeId the ID of the recipe to unfavorite
+     * @return call yielding an empty response
+     */
+    @retrofit2.http.DELETE("api/favorites/{recipeId}")
+    Call<ApiResponse<Void>> removeFavorite(@retrofit2.http.Path("recipeId") String recipeId);
+
+    // ── Personal Notes ─────────────────────────────────────────────
+
+    /**
+     * Fetches the private personal note attached by the user to a specific recipe.
+     *
+     * @param recipeId the ID of the recipe
+     * @return call yielding the personal note, if any
+     */
+    @GET("api/notes/recipe/{recipeId}")
+    Call<ApiResponse<com.dtos.response.note.NoteResponse>> getPersonalNote(
+            @retrofit2.http.Path("recipeId") String recipeId
+    );
 }
