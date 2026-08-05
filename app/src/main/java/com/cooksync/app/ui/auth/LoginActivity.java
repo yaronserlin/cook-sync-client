@@ -201,6 +201,9 @@ public class LoginActivity extends AppCompatActivity {
         findViewById(R.id.btn_create_account).setOnClickListener(v ->
                 startActivity(new Intent(this, RegisterActivity.class))
         );
+        findViewById(R.id.tv_forgot_password).setOnClickListener(v ->
+                startActivity(new Intent(this, ForgotPasswordActivity.class))
+        );
     }
 
     // ─── Transition helpers ──────────────────────────────────────────────────────

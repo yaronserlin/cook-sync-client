@@ -29,6 +29,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.auth.ForgotPasswordActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.home.HomeActivity"
             android:exported="false" />
 
@@ -51,6 +55,11 @@
         <activity
             android:name=".ui.recipe.FavoriteRecipesActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".ui.recipe.SearchActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateVisible" />
 
         <activity
             android:name=".ui.profile.ProfileActivity"

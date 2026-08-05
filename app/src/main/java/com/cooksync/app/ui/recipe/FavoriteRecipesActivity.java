@@ -102,9 +102,10 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
         btnFilters.setOnClickListener(v -> {
             FiltersBottomSheetDialogFragment dialog = new FiltersBottomSheetDialogFragment();
             dialog.setAvailableTags(loadedTagNames);
-            dialog.setInitialState(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags());
-            dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags) -> {
-                viewModel.applyFilters(sortBy, difficulty, tags);
+            dialog.setInitialState(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags(),
+                    viewModel.getCurrentMinRating(), viewModel.getCurrentMaxTotalTimeMinutes());
+            dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags, minRating, maxTotalTimeMinutes) -> {
+                viewModel.applyFilters(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
                 updateFilterButton(difficulty, tags);
             });
             dialog.show(getSupportFragmentManager(), "filters");

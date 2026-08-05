@@ -52,6 +52,8 @@ public class MyRecipesViewModel extends ViewModel {
     private String visibilityFilter = "ALL";
     private String currentSort = "Newest";
     private String currentDifficulty = null;
+    private Double currentMinRating = null;
+    private Integer currentMaxTotalTimeMinutes = null;
 
     public MyRecipesViewModel() {
         this.repository = new RecipeRepositoryImpl();
@@ -80,6 +82,14 @@ public class MyRecipesViewModel extends ViewModel {
 
     public String getCurrentDifficulty() {
         return currentDifficulty;
+    }
+
+    public Double getCurrentMinRating() {
+        return currentMinRating;
+    }
+
+    public Integer getCurrentMaxTotalTimeMinutes() {
+        return currentMaxTotalTimeMinutes;
     }
 
     public String getVisibilityFilterValue() {
@@ -148,10 +158,15 @@ public class MyRecipesViewModel extends ViewModel {
      * @param sortBy one of "Newest", "Top Rated", "Shortest Time"
      * @param difficulty one of "Easy", "Medium", "Hard", or {@code null}
      * @param tags the selected tag names, possibly empty
+     * @param minRating minimum average rating threshold, or {@code null} for no filter
+     * @param maxTotalTimeMinutes maximum prep+cook time in minutes, or {@code null} for no filter
      */
-    public void applyFilters(String sortBy, String difficulty, Collection<String> tags) {
+    public void applyFilters(String sortBy, String difficulty, Collection<String> tags,
+                              Double minRating, Integer maxTotalTimeMinutes) {
         this.currentSort = sortBy;
         this.currentDifficulty = difficulty;
+        this.currentMinRating = minRating;
+        this.currentMaxTotalTimeMinutes = maxTotalTimeMinutes;
         this.selectedTags.clear();
         if (tags != null) {
             this.selectedTags.addAll(tags);
@@ -187,6 +202,12 @@ public class MyRecipesViewModel extends ViewModel {
         }
         if (currentDifficulty != null) {
             displayed.removeIf(r -> r.difficulty() == null || !r.difficulty().equalsIgnoreCase(currentDifficulty));
+        }
+        if (currentMinRating != null) {
+            displayed.removeIf(r -> r.averageRating() == null || r.averageRating() < currentMinRating);
+        }
+        if (currentMaxTotalTimeMinutes != null) {
+            displayed.removeIf(r -> (r.prepTimeMinutes() + r.cookTimeMinutes()) > currentMaxTotalTimeMinutes);
         }
         if (!selectedTags.isEmpty()) {
             displayed.removeIf(r -> r.tags() == null || !selectedTags.stream().allMatch(selected ->

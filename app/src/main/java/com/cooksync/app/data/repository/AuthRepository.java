@@ -6,9 +6,11 @@ import com.cooksync.app.domain.ApiResult;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
+import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
+import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 
 /**
@@ -102,4 +104,21 @@ public interface AuthRepository {
      * @param resultTarget live data target the result will be posted to
      */
     void validateToken(MutableLiveData<ApiResult<AuthResponse>> resultTarget);
+
+    /**
+     * Requests a password-reset email for the given account, if one exists. Always succeeds
+     * from the caller's perspective regardless of whether the email is registered.
+     *
+     * @param request     forgot-password payload
+     * @param resultTarget live data target the result will be posted to
+     */
+    void forgotPassword(ForgotPasswordRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Completes a password reset using a token issued via {@link #forgotPassword}.
+     *
+     * @param request     reset-password payload
+     * @param resultTarget live data target the result will be posted to
+     */
+    void resetPassword(ResetPasswordRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
 }

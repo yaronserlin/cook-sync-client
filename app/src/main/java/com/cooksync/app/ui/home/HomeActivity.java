@@ -7,7 +7,6 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,8 +24,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Main entry point of the app after login. Displays a paginated feed of recipes,
- * tag-based filtering, and search functionality.
+ * Main entry point of the app after login. Displays a paginated feed of recipes and
+ * tag-based filtering. Tapping the search field navigates to the dedicated
+ * {@link com.cooksync.app.ui.recipe.SearchActivity} rather than filtering in place.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -61,9 +61,10 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.btn_filters).setOnClickListener(v -> {
                 FiltersBottomSheetDialogFragment dialog = new FiltersBottomSheetDialogFragment();
                 dialog.setAvailableTags(loadedTagNames);
-                dialog.setInitialState(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags());
-                dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags) -> {
-                    viewModel.applyFilters(sortBy, difficulty, tags);
+                dialog.setInitialState(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags(),
+                        viewModel.getCurrentMinRating(), viewModel.getCurrentMaxTotalTimeMinutes());
+                dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags, minRating, maxTotalTimeMinutes) -> {
+                    viewModel.applyFilters(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
                     tagAdapter.setSelectedTags(viewModel.getSelectedTags());
                 });
                 dialog.show(getSupportFragmentManager(), "filters");
@@ -82,22 +83,8 @@ public class HomeActivity extends AppCompatActivity {
         avatar.setOnClickListener(v ->
                 startActivity(new Intent(this, com.cooksync.app.ui.profile.ProfileActivity.class)));
 
-        SearchView searchView = findViewById(R.id.search_view);
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                viewModel.search(query);
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (newText.isEmpty()) {
-                    viewModel.loadInitialFeed();
-                }
-                return false;
-            }
-        });
+        findViewById(R.id.search_bar_tap_target).setOnClickListener(v ->
+                startActivity(new Intent(this, com.cooksync.app.ui.recipe.SearchActivity.class)));
 
         com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_home);
@@ -171,8 +158,7 @@ public class HomeActivity extends AppCompatActivity {
             } else if (state instanceof FeedState.Success success) {
                 showSkeleton(false);
                 recipeAdapter.setRecipes(success.getRecipes());
-                updateFeedSummary(success.getRecipes().size());
-                updateFilterButton(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags());
+                updateFilterButton();
             } else if (state instanceof FeedState.Error error) {
                 showSkeleton(false);
                 Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
@@ -202,20 +188,19 @@ public class HomeActivity extends AppCompatActivity {
 
     /**
      * Updates the "Filters · N" button to reflect the currently active non-default filters
-     * (difficulty and/or however many tags are selected — sort is ignored since one sort
-     * option is always selected).
+     * (difficulty, tags, minimum rating, and/or total time — sort is ignored since one sort
+     * option is always selected). Reads the active filters directly from {@link #viewModel}.
      *
      * <p>Uses {@code setBackgroundResource} rather than {@code setBackgroundColor} so the
      * button's rounded-pill shape (defined by the drawable, not by MaterialButton's own shape
      * appearance once a raw background is set) is preserved instead of being replaced by a
      * flat {@code ColorDrawable} rectangle.</p>
-     *
-     * @param sortBy the active sort choice (always non-null, not counted)
-     * @param difficulty the active difficulty filter, or {@code null}
-     * @param tags the selected tag names, possibly empty
      */
-    private void updateFilterButton(String sortBy, String difficulty, java.util.Collection<String> tags) {
-        int count = (difficulty != null ? 1 : 0) + (tags == null ? 0 : tags.size());
+    private void updateFilterButton() {
+        int count = (viewModel.getCurrentDifficulty() != null ? 1 : 0)
+                + viewModel.getSelectedTags().size()
+                + (viewModel.getCurrentMinRating() != null ? 1 : 0)
+                + (viewModel.getCurrentMaxTotalTimeMinutes() != null ? 1 : 0);
         boolean active = count > 0;
 
         com.google.android.material.button.MaterialButton btn = findViewById(R.id.btn_filters);
@@ -226,35 +211,6 @@ public class HomeActivity extends AppCompatActivity {
         android.content.res.ColorStateList tint = android.content.res.ColorStateList.valueOf(
                 active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
         btn.setIconTint(tint);
-    }
-
-    /**
-     * Updates the "N recipes · sorted by X · filters..." summary line beneath the filter row,
-     * matching the design's active-results summary (e.g. the search screen's
-     * "3 recipes · sorted by rating"). In plain browse mode (no search, tags, or difficulty
-     * active) this shows the server's true catalog-wide total rather than just how many
-     * recipes have been scrolled into view so far.
-     *
-     * @param displayedCount how many recipes are currently displayed after filtering
-     */
-    private void updateFeedSummary(int displayedCount) {
-        long recipeCount = viewModel.getTotalCount(displayedCount);
-
-        StringBuilder summary = new StringBuilder();
-        summary.append(recipeCount).append(recipeCount == 1 ? " recipe" : " recipes");
-        summary.append(" · sorted by ").append(viewModel.getCurrentSort());
-
-        List<String> activeFilters = new ArrayList<>();
-        if (viewModel.getCurrentDifficulty() != null) {
-            activeFilters.add(viewModel.getCurrentDifficulty());
-        }
-        activeFilters.addAll(viewModel.getSelectedTags());
-        if (!activeFilters.isEmpty()) {
-            summary.append(" · ").append(String.join(", ", activeFilters));
-        }
-
-        android.widget.TextView tvSummary = findViewById(R.id.tv_feed_summary);
-        tvSummary.setText(summary.toString());
     }
 
     private void showSkeleton(boolean show) {

@@ -3,9 +3,11 @@ package com.cooksync.app.data.remote;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
+import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
+import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.auth.AuthResponse;
@@ -118,6 +120,24 @@ public interface ApiService {
      */
     @PATCH("api/auth/deactivate")
     Call<ApiResponse<Void>> deactivateAccount();
+
+    /**
+     * Requests a password-reset email for the given account, if it exists.
+     *
+     * @param request forgot-password payload
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/auth/forgot-password")
+    Call<ApiResponse<Void>> forgotPassword(@Body ForgotPasswordRequestDTO request);
+
+    /**
+     * Completes a password reset using a token issued via {@link #forgotPassword}.
+     *
+     * @param request reset-password payload
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/auth/reset-password")
+    Call<ApiResponse<Void>> resetPassword(@Body ResetPasswordRequestDTO request);
 
     /**
      * Fetches a short-lived signed payload the client uses to upload media directly to

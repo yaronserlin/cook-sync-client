@@ -27,7 +27,8 @@ import java.util.function.Consumer;
 
 /**
  * Manages the data state for the {@link HomeActivity}, including paginated recipe
- * feed loading, tag filtering, and search query debouncing.
+ * feed loading and tag/difficulty/rating/time filtering. Keyword search lives on the
+ * dedicated {@link com.cooksync.app.ui.recipe.SearchActivity} instead.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -49,18 +50,10 @@ public class HomeViewModel extends ViewModel {
     private final Set<String> selectedTags = new LinkedHashSet<>();
     private int currentPage = 0;
     private boolean isLastPage = false;
-    private String currentQuery = null;
     private String currentSort = "Newest";
     private String currentDifficulty = null;
-
-    /**
-     * The server-reported total number of recipes matching the current unfiltered browse
-     * feed (from {@code PagedResponse.totalElements}) — the whole catalog's size, not just
-     * how many pages have been scrolled into {@link #currentRecipes} so far. Only meaningful
-     * in plain browse mode; search and single-tag fetches already load every match at once,
-     * so {@code currentRecipes.size()} (after client-side filtering) is the true total there.
-     */
-    private long totalElements = 0;
+    private Double currentMinRating = null;
+    private Integer currentMaxTotalTimeMinutes = null;
 
     public HomeViewModel() {
         this.recipeRepository = new RecipeRepositoryImpl();
@@ -90,12 +83,10 @@ public class HomeViewModel extends ViewModel {
     }
 
     /**
-     * Resets pagination and search, then reloads the feed from the first page. The active
-     * sort/difficulty/tag selections are left untouched — clearing the search box should
-     * return to whatever filters were already active, not silently drop them.
+     * Resets pagination, then reloads the feed from the first page. The active
+     * sort/difficulty/tag selections are left untouched.
      */
     public void loadInitialFeed() {
-        currentQuery = null;
         refresh();
     }
 
@@ -156,30 +147,12 @@ public class HomeViewModel extends ViewModel {
         return currentDifficulty;
     }
 
-    /**
-     * The best known true total for the current view: the server's catalog-wide total in
-     * plain browse mode (no search, no tags — {@link #totalElements}), or the number of
-     * recipes actually displayed otherwise, since search/single-tag fetches already load
-     * every match (so the displayed count already <em>is</em> the true total for that filter).
-     *
-     * @param displayedCount how many recipes are currently shown, after client-side filtering
-     * @return the total recipe count to present to the user
-     */
-    public long getTotalCount(int displayedCount) {
-        boolean unfilteredBrowse = currentQuery == null && selectedTags.isEmpty() && currentDifficulty == null;
-        return unfilteredBrowse ? totalElements : displayedCount;
+    public Double getCurrentMinRating() {
+        return currentMinRating;
     }
 
-    /**
-     * Searches for recipes matching a query. Resets pagination.
-     */
-    public void search(String query) {
-        if (query == null || query.isBlank()) {
-            loadInitialFeed();
-            return;
-        }
-        currentQuery = query;
-        refresh();
+    public Integer getCurrentMaxTotalTimeMinutes() {
+        return currentMaxTotalTimeMinutes;
     }
 
     /**
@@ -196,10 +169,15 @@ public class HomeViewModel extends ViewModel {
      * @param sortBy one of "Newest", "Top Rated", "Shortest Time"
      * @param difficulty one of "Easy", "Medium", "Hard", or {@code null} for no filter
      * @param tags the selected tag names (possibly empty, never {@code null})
+     * @param minRating minimum average rating threshold, or {@code null} for no filter
+     * @param maxTotalTimeMinutes maximum prep+cook time in minutes, or {@code null} for no filter
      */
-    public void applyFilters(String sortBy, String difficulty, Collection<String> tags) {
+    public void applyFilters(String sortBy, String difficulty, Collection<String> tags,
+                              Double minRating, Integer maxTotalTimeMinutes) {
         this.currentSort = sortBy;
         this.currentDifficulty = difficulty;
+        this.currentMinRating = minRating;
+        this.currentMaxTotalTimeMinutes = maxTotalTimeMinutes;
         this.selectedTags.clear();
         if (tags != null) {
             this.selectedTags.addAll(tags);
@@ -216,39 +194,21 @@ public class HomeViewModel extends ViewModel {
     }
 
     /**
-     * Resets pagination and re-runs whichever fetch matches the current mode: a text search, a
-     * single-tag full fetch (the one case the server can answer without pagination gaps), or
-     * the general paginated browse feed. Multi-tag selections (2+) fall back to the paginated
-     * feed with client-side filtering, since there is no multi-tag server endpoint.
+     * Resets pagination and re-runs whichever fetch matches the current mode: a single-tag
+     * full fetch (the one case the server can answer without pagination gaps), or the general
+     * paginated browse feed. Multi-tag selections (2+) fall back to the paginated feed with
+     * client-side filtering, since there is no multi-tag server endpoint.
      */
     private void refresh() {
         currentPage = 0;
         isLastPage = false;
         currentRecipes.clear();
 
-        if (currentQuery != null) {
-            runSearch(currentQuery);
-        } else if (selectedTags.size() == 1) {
+        if (selectedTags.size() == 1) {
             runSingleTagFetch(selectedTags.iterator().next());
         } else {
             fetchNextPage();
         }
-    }
-
-    private void runSearch(String query) {
-        feedState.setValue(new FeedState.Loading(true));
-        MutableLiveData<ApiResult<List<RecipePreviewResponse>>> result = new MutableLiveData<>();
-        observeOnce(result, apiResult -> {
-            if (apiResult instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
-                currentRecipes.addAll(success.getData());
-                // The search endpoint is not paginated server-side; it returns every match at once.
-                isLastPage = true;
-                feedState.postValue(new FeedState.Success(applyFiltersAndSort(currentRecipes), false));
-            } else if (apiResult instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
-                feedState.postValue(new FeedState.Error(error.getMessage()));
-            }
-        });
-        recipeRepository.searchRecipes(query, result);
     }
 
     private void runSingleTagFetch(String tagName) {
@@ -276,7 +236,6 @@ public class HomeViewModel extends ViewModel {
                 PagedResponse<RecipePreviewResponse> page = success.getData();
                 currentRecipes.addAll(page.content());
                 isLastPage = page.last();
-                totalElements = page.totalElements();
                 feedState.postValue(new FeedState.Success(applyFiltersAndSort(currentRecipes), !isLastPage));
             } else if (apiResult instanceof ApiResult.Error<PagedResponse<RecipePreviewResponse>> error) {
                 feedState.postValue(new FeedState.Error(error.getMessage()));
@@ -300,6 +259,12 @@ public class HomeViewModel extends ViewModel {
 
         if (currentDifficulty != null) {
             displayed.removeIf(r -> r.difficulty() == null || !r.difficulty().equalsIgnoreCase(currentDifficulty));
+        }
+        if (currentMinRating != null) {
+            displayed.removeIf(r -> r.averageRating() == null || r.averageRating() < currentMinRating);
+        }
+        if (currentMaxTotalTimeMinutes != null) {
+            displayed.removeIf(r -> (r.prepTimeMinutes() + r.cookTimeMinutes()) > currentMaxTotalTimeMinutes);
         }
         if (!selectedTags.isEmpty()) {
             displayed.removeIf(r -> r.tags() == null || !selectedTags.stream().allMatch(selected ->

@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.SkeletonHelper;
+import com.google.android.material.checkbox.MaterialCheckBox;
 
 /**
  * Activity presenting the "Create account" registration screen.
@@ -60,6 +61,9 @@ public class RegisterActivity extends AppCompatActivity {
     private TextView tvEmailError;
     private TextView tvPasswordError;
     private TextView tvRepeatPasswordError;
+    private TextView tvTermsError;
+    private MaterialCheckBox cbTerms;
+    private MaterialCheckBox cbMarketing;
     private ProgressBar progress;
 
     /**
@@ -139,6 +143,10 @@ public class RegisterActivity extends AppCompatActivity {
         tvEmailError          = findViewById(R.id.tv_email_error);
         tvPasswordError       = findViewById(R.id.tv_password_error);
         tvRepeatPasswordError = findViewById(R.id.tv_repeat_password_error);
+        tvTermsError          = findViewById(R.id.tv_terms_error);
+
+        cbTerms     = findViewById(R.id.cb_terms);
+        cbMarketing = findViewById(R.id.cb_marketing);
 
         progress = findViewById(R.id.progress);
     }
@@ -169,6 +177,7 @@ public class RegisterActivity extends AppCompatActivity {
         viewModel.getEmailError().observe(this,      e -> showFieldError(tvEmailError, e));
         viewModel.getPasswordError().observe(this,   e -> showFieldError(tvPasswordError, e));
         viewModel.getRepeatPassError().observe(this, e -> showFieldError(tvRepeatPasswordError, e));
+        viewModel.getTermsError().observe(this,      e -> showFieldError(tvTermsError, e));
 
         viewModel.getRegisterResult().observe(this, result -> {
             if (result instanceof ApiResult.Loading) {
@@ -198,13 +207,16 @@ public class RegisterActivity extends AppCompatActivity {
                         etLastName.getText().toString(),
                         etEmail.getText().toString(),
                         etPassword.getText().toString(),
-                        etRepeatPassword.getText().toString()
+                        etRepeatPassword.getText().toString(),
+                        cbTerms.isChecked(),
+                        cbMarketing.isChecked()
                 )
         );
         findViewById(R.id.btn_have_account).setOnClickListener(v -> {
             startActivity(new Intent(this, LoginActivity.class));
             finish();
         });
+        findViewById(R.id.btn_back).setOnClickListener(v -> finish());
     }
 
     // ─── Transition helpers ──────────────────────────────────────────────────────

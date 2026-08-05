@@ -4,10 +4,33 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="16dp">
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="32dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/bg_skeleton_bone" />
+
+        <View
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_skeleton_bone" />
+
+    </LinearLayout>
+
     <View
-        android:layout_width="120dp"
-        android:layout_height="32dp"
-        android:layout_margin="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/bg_skeleton_bone" />
 
     <LinearLayout
@@ -36,6 +59,7 @@
 
     </LinearLayout>
 
+    <include layout="@layout/skeleton_card" />
     <include layout="@layout/skeleton_card" />
     <include layout="@layout/skeleton_card" />
 

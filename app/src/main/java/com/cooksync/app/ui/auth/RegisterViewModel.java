@@ -38,6 +38,7 @@ public class RegisterViewModel extends ViewModel {
     private final MutableLiveData<String>                   emailError      = new MutableLiveData<>();
     private final MutableLiveData<String>                   passwordError   = new MutableLiveData<>();
     private final MutableLiveData<String>                   repeatPassError = new MutableLiveData<>();
+    private final MutableLiveData<String>                   termsError      = new MutableLiveData<>();
 
     private long lastSubmitTimestamp = 0L;
 
@@ -71,9 +72,12 @@ public class RegisterViewModel extends ViewModel {
      * @param rawEmail          raw text from the email {@code EditText}
      * @param rawPassword       raw text from the password {@code EditText}
      * @param rawRepeatPassword raw text from the repeat-password {@code EditText}
+     * @param termsAccepted     whether the terms-of-use checkbox is checked
+     * @param marketingOptIn    whether the marketing opt-in checkbox is checked
      */
     public void register(String rawFirstName, String rawLastName,
-                         String rawEmail, String rawPassword, String rawRepeatPassword) {
+                         String rawEmail, String rawPassword, String rawRepeatPassword,
+                         boolean termsAccepted, boolean marketingOptIn) {
         long now = System.currentTimeMillis();
         if (now - lastSubmitTimestamp < SUBMIT_COOLDOWN_MS) {
             return;
@@ -95,20 +99,22 @@ public class RegisterViewModel extends ViewModel {
         InputValidator.ValidationResult emResult  = InputValidator.validateEmail(email);
         InputValidator.ValidationResult pwResult  = InputValidator.validateNewPassword(password);
         InputValidator.ValidationResult rpResult  = InputValidator.validatePasswordsMatch(password, repeatPassword);
+        InputValidator.ValidationResult termsResult = InputValidator.validateTermsAccepted(termsAccepted);
 
         firstNameError.setValue(fnResult.errorMessage);
         lastNameError.setValue(lnResult.errorMessage);
         emailError.setValue(emResult.errorMessage);
         passwordError.setValue(pwResult.errorMessage);
         repeatPassError.setValue(rpResult.errorMessage);
+        termsError.setValue(termsResult.errorMessage);
 
         if (!fnResult.isValid || !lnResult.isValid || !emResult.isValid
-                || !pwResult.isValid || !rpResult.isValid) {
+                || !pwResult.isValid || !rpResult.isValid || !termsResult.isValid) {
             return;
         }
 
         authRepository.register(
-                new RegisterRequestDTO(firstName, lastName, email, password),
+                new RegisterRequestDTO(firstName, lastName, email, password, termsAccepted, marketingOptIn),
                 registerResult
         );
     }
@@ -127,4 +133,6 @@ public class RegisterViewModel extends ViewModel {
     public LiveData<String> getPasswordError()   { return passwordError;   }
     /** @return observable repeat-password mismatch error, {@code null} when valid */
     public LiveData<String> getRepeatPassError() { return repeatPassError; }
+    /** @return observable terms-of-use acceptance error, {@code null} when valid */
+    public LiveData<String> getTermsError() { return termsError; }
 }

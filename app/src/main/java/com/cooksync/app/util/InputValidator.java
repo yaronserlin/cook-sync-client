@@ -270,4 +270,27 @@ public final class InputValidator {
         }
         return ValidationResult.valid();
     }
+
+    /**
+     * Validates that the terms-of-use checkbox has been checked.
+     *
+     * <p>Rules (mirrors {@code RegisterRequestDTO#termsAccepted}'s {@code @AssertTrue}):</p>
+     * <ol>
+     *   <li>Must be {@code true}</li>
+     * </ol>
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param accepted the current checked state of the terms checkbox
+     * @return the validation result
+     */
+    @NonNull
+    public static ValidationResult validateTermsAccepted(boolean accepted) {
+        if (!accepted) {
+            return ValidationResult.invalid("You must accept the Terms of Use to continue");
+        }
+        return ValidationResult.valid();
+    }
 }

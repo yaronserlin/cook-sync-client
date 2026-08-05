@@ -67,36 +67,71 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/caprasimo"
-        android:text="Sort by"
+        android:text="Tags"
         android:textColor="@color/color_text"
         android:textSize="20sp" />
 
     <com.google.android.material.chip.ChipGroup
-        android:id="@+id/cg_sort"
+        android:id="@+id/cg_diet"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:singleSelection="false">
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_vegan"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vegan" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_vegetarian"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vegetarian" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_gluten_free"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gluten Free" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/caprasimo"
+        android:text="Total time"
+        android:textColor="@color/color_text"
+        android:textSize="20sp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/cg_time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         app:singleSelection="true"
         app:selectionRequired="true">
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_sort_newest"
+            android:id="@+id/chip_time_any"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Newest"
+            android:text="Any"
             android:checked="true" />
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_sort_rating"
+            android:id="@+id/chip_time_under_30"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Top Rated" />
+            android:text="Under 30 min" />
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_sort_time"
+            android:id="@+id/chip_time_under_60"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Shortest Time" />
+            android:text="Under 1h" />
     </com.google.android.material.chip.ChipGroup>
 
     <TextView
@@ -139,34 +174,79 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/caprasimo"
-        android:text="Dietary Preference"
+        android:text="Minimum rating"
         android:textColor="@color/color_text"
         android:textSize="20sp" />
 
     <com.google.android.material.chip.ChipGroup
-        android:id="@+id/cg_diet"
+        android:id="@+id/cg_rating"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        app:singleSelection="false">
+        app:singleSelection="true"
+        app:selectionRequired="true">
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_vegan"
+            android:id="@+id/chip_rating_any"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Vegan" />
+            android:text="Any"
+            android:checked="true" />
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_vegetarian"
+            android:id="@+id/chip_rating_35"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Vegetarian" />
+            android:text="3.5+" />
         <com.google.android.material.chip.Chip
-            android:id="@+id/chip_gluten_free"
+            android:id="@+id/chip_rating_40"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Gluten Free" />
+            android:text="4.0+" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_rating_45"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4.5+" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/caprasimo"
+        android:text="Sort by"
+        android:textColor="@color/color_text"
+        android:textSize="20sp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/cg_sort"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        app:singleSelection="true"
+        app:selectionRequired="true">
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_sort_newest"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Newest"
+            android:checked="true" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_sort_rating"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Top Rated" />
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_sort_time"
+            style="@style/Widget.MaterialComponents.Chip.Choice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Shortest Time" />
     </com.google.android.material.chip.ChipGroup>
 
     </LinearLayout>

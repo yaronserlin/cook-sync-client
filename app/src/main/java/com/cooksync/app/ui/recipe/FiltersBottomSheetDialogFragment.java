@@ -32,7 +32,8 @@ import java.util.Set;
 public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
     public interface OnFiltersAppliedListener {
-        void onFiltersApplied(String sortBy, String difficulty, List<String> tags);
+        void onFiltersApplied(String sortBy, String difficulty, List<String> tags,
+                               Double minRating, Integer maxTotalTimeMinutes);
     }
 
     private OnFiltersAppliedListener listener;
@@ -40,6 +41,8 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
     private String initialSort = "Newest";
     private String initialDifficulty = null;
     private Set<String> initialTags = Collections.emptySet();
+    private Double initialMinRating = null;
+    private Integer initialMaxTotalTimeMinutes = null;
 
     public void setOnFiltersAppliedListener(OnFiltersAppliedListener listener) {
         this.listener = listener;
@@ -63,11 +66,16 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
      * @param sortBy the active sort choice
      * @param difficulty the active difficulty filter, or {@code null}
      * @param tags the currently selected tag names
+     * @param minRating the active minimum-rating filter, or {@code null}
+     * @param maxTotalTimeMinutes the active total-time filter in minutes, or {@code null}
      */
-    public void setInitialState(String sortBy, String difficulty, Set<String> tags) {
+    public void setInitialState(String sortBy, String difficulty, Set<String> tags,
+                                 Double minRating, Integer maxTotalTimeMinutes) {
         this.initialSort = sortBy == null ? "Newest" : sortBy;
         this.initialDifficulty = difficulty;
         this.initialTags = tags == null ? Collections.emptySet() : tags;
+        this.initialMinRating = minRating;
+        this.initialMaxTotalTimeMinutes = maxTotalTimeMinutes;
     }
 
     @NonNull
@@ -113,6 +121,8 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
         ChipGroup cgSort = view.findViewById(R.id.cg_sort);
         ChipGroup cgDifficulty = view.findViewById(R.id.cg_difficulty);
         ChipGroup cgDiet = view.findViewById(R.id.cg_diet);
+        ChipGroup cgTime = view.findViewById(R.id.cg_time);
+        ChipGroup cgRating = view.findViewById(R.id.cg_rating);
 
         if (!availableTags.isEmpty()) {
             cgDiet.removeAllViews();
@@ -145,6 +155,24 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
             chip.setChecked(chip.getText().toString().equals(initialDifficulty));
         }
 
+        if (initialMaxTotalTimeMinutes != null) {
+            if (initialMaxTotalTimeMinutes <= 30) {
+                cgTime.check(R.id.chip_time_under_30);
+            } else if (initialMaxTotalTimeMinutes <= 60) {
+                cgTime.check(R.id.chip_time_under_60);
+            }
+        }
+
+        if (initialMinRating != null) {
+            if (initialMinRating >= 4.5) {
+                cgRating.check(R.id.chip_rating_45);
+            } else if (initialMinRating >= 4.0) {
+                cgRating.check(R.id.chip_rating_40);
+            } else if (initialMinRating >= 3.5) {
+                cgRating.check(R.id.chip_rating_35);
+            }
+        }
+
         view.findViewById(R.id.btn_apply).setOnClickListener(v -> {
             if (listener != null) {
                 String sortBy = null;
@@ -172,7 +200,25 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
                     }
                 }
 
-                listener.onFiltersApplied(sortBy, difficulty, tags);
+                Integer maxTotalTimeMinutes = null;
+                int timeId = cgTime.getCheckedChipId();
+                if (timeId == R.id.chip_time_under_30) {
+                    maxTotalTimeMinutes = 30;
+                } else if (timeId == R.id.chip_time_under_60) {
+                    maxTotalTimeMinutes = 60;
+                }
+
+                Double minRating = null;
+                int ratingId = cgRating.getCheckedChipId();
+                if (ratingId == R.id.chip_rating_35) {
+                    minRating = 3.5;
+                } else if (ratingId == R.id.chip_rating_40) {
+                    minRating = 4.0;
+                } else if (ratingId == R.id.chip_rating_45) {
+                    minRating = 4.5;
+                }
+
+                listener.onFiltersApplied(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
             }
             dismiss();
         });
@@ -181,9 +227,11 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
             cgSort.check(R.id.chip_sort_newest);
             cgDifficulty.clearCheck();
             cgDiet.clearCheck();
+            cgTime.check(R.id.chip_time_any);
+            cgRating.check(R.id.chip_rating_any);
 
             if (listener != null) {
-                listener.onFiltersApplied("Newest", null, Collections.emptyList());
+                listener.onFiltersApplied("Newest", null, Collections.emptyList(), null, null);
             }
             dismiss();
         });
