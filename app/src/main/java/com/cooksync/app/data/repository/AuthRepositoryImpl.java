@@ -6,6 +6,7 @@ import com.cooksync.app.data.remote.ApiService;
 import com.cooksync.app.data.remote.RetrofitClient;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.SessionManager;
+import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
@@ -60,6 +61,7 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
             ApiResult<AuthResponse> result = executeCall(apiService.login(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
+                SessionManager.getInstance().cacheEmail(request.email());
             }
             resultTarget.postValue(result);
         });
@@ -79,6 +81,7 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
             ApiResult<AuthResponse> result = executeCall(apiService.register(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
+                SessionManager.getInstance().cacheEmail(request.email());
             }
             resultTarget.postValue(result);
         });
@@ -107,11 +110,38 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
 
     /**
      * {@inheritDoc}
+     *
+     * <p>On success the new first/last name are also cached locally, since the server
+     * response carries no body to read them back from.</p>
      */
     @Override
     public void updateProfile(ProfileUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.updateProfile(request))));
+        EXECUTOR.execute(() -> {
+            ApiResult<Void> result = executeCall(apiService.updateProfile(request));
+            if (result instanceof ApiResult.Success) {
+                SessionManager.getInstance().updateCachedProfile(request.firstName(), request.lastName());
+            }
+            resultTarget.postValue(result);
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>On success the new avatar URL is also cached locally, since the server response
+     * carries no body to read it back from.</p>
+     */
+    @Override
+    public void updateAvatar(AvatarUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> {
+            ApiResult<Void> result = executeCall(apiService.updateAvatar(request));
+            if (result instanceof ApiResult.Success) {
+                SessionManager.getInstance().updateCachedAvatar(request.avatarUrl());
+            }
+            resultTarget.postValue(result);
+        });
     }
 
     /**
@@ -136,6 +166,7 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
             ApiResult<AuthResponse> result = executeCall(apiService.updateEmail(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
+                SessionManager.getInstance().cacheEmail(request.newEmail());
             }
             resultTarget.postValue(result);
         });

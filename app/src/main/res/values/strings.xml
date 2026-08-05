@@ -34,7 +34,6 @@
     <string name="nav_favorites">Favorites</string>
 
     <string name="home_title">Discover</string>
-    <string name="profile_coming_soon">Profile — coming soon</string>
     <string name="filters_count_format">Filters · %d</string>
 
     <string name="time_format">%d mins</string>
@@ -56,4 +55,42 @@
     <string name="favorites_subtitle_format">%1$d recipes · %2$d with private notes</string>
     <string name="favorites_with_notes_chip_format">With notes %d</string>
     <string name="recipe_note_strip_format">Private note — %s</string>
+
+    <string name="profile_title">Profile</string>
+    <string name="profile_avatar_content_description">Profile avatar</string>
+    <string name="profile_section_account">Account details</string>
+    <string name="profile_row_edit_name">Edit name</string>
+    <string name="profile_row_change_password">Change password</string>
+    <string name="profile_row_change_email">Change email</string>
+    <string name="profile_action_logout">Log out</string>
+    <string name="profile_action_deactivate">Deactivate account</string>
+    <string name="profile_dialog_edit_name_title">Edit name</string>
+    <string name="profile_dialog_change_password_title">Change password</string>
+    <string name="profile_dialog_change_email_title">Change email</string>
+    <string name="profile_dialog_deactivate_title">Deactivate account?</string>
+    <string name="profile_dialog_deactivate_message">You\'ll be signed out and your account will be deactivated. You can contact support to reactivate it later.</string>
+    <string name="profile_dialog_logout_title">Log out?</string>
+    <string name="profile_updated">Profile updated</string>
+    <string name="profile_avatar_updated">Avatar updated</string>
+    <string name="profile_password_updated">Password updated</string>
+    <string name="profile_email_updated">Email updated</string>
+    <string name="profile_account_deactivated">Account deactivated</string>
+    <string name="label_current_password">Current password</string>
+    <string name="label_new_password">New password</string>
+    <string name="label_new_email">New email</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+
+    <string name="review_title">Rate this recipe</string>
+    <string name="review_subtitle">Let other cooks know how it turned out.</string>
+    <string name="review_star_content_description">Star rating</string>
+    <string name="review_tap_to_rate">Tap a star to rate</string>
+    <string name="review_label_title">Title</string>
+    <string name="review_title_hint">Sum it up in a few words</string>
+    <string name="review_label_comment">Comment (optional)</string>
+    <string name="review_comment_hint">What did you think? Any changes you made?</string>
+    <string name="review_action_submit">Submit review</string>
+    <string name="review_action_skip">Skip for now</string>
+    <string name="review_submitted">Thanks for your review!</string>
+    <string name="review_rating_selected_format">%d out of 5</string>
 </resources>

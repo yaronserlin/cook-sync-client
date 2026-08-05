@@ -295,4 +295,41 @@ public interface ApiService {
      */
     @retrofit2.http.DELETE("api/notes/{noteId}")
     Call<ApiResponse<Void>> deleteNote(@retrofit2.http.Path("noteId") String noteId);
+
+    // ── Reviews ───────────────────────────────────────────────────
+
+    /**
+     * Submits a new rating/review for a recipe.
+     *
+     * @param recipeId the ID of the recipe being reviewed
+     * @param request the review payload (rating, title, optional comment)
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/recipes/{recipeId}/reviews")
+    Call<ApiResponse<Void>> submitReview(
+            @retrofit2.http.Path("recipeId") String recipeId,
+            @Body com.dtos.request.review.ReviewRequestDTO request
+    );
+
+    /**
+     * Deletes a review the current user authored.
+     *
+     * @param reviewId the ID of the review to delete
+     * @return call yielding an empty acknowledgement
+     */
+    @retrofit2.http.DELETE("api/reviews/{reviewId}")
+    Call<ApiResponse<Void>> deleteReview(@retrofit2.http.Path("reviewId") String reviewId);
+
+    /**
+     * Flags a review for moderator review.
+     *
+     * @param reviewId the ID of the review being reported
+     * @param request the report payload (reason + optional comment)
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/reviews/{reviewId}/report")
+    Call<ApiResponse<Void>> reportReview(
+            @retrofit2.http.Path("reviewId") String reviewId,
+            @Body com.dtos.request.review.ReportReviewRequestDTO request
+    );
 }

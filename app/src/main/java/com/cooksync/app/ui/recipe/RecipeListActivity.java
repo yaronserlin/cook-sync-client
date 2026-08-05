@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.IdRes;
 import androidx.annotation.NonNull;
@@ -91,9 +90,10 @@ public abstract class RecipeListActivity extends AppCompatActivity {
                 target = MyRecipesActivity.class;
             } else if (id == R.id.nav_favorites) {
                 target = FavoriteRecipesActivity.class;
+            } else if (id == R.id.nav_profile) {
+                target = com.cooksync.app.ui.profile.ProfileActivity.class;
             }
             if (target == null) {
-                Toast.makeText(this, R.string.profile_coming_soon, Toast.LENGTH_SHORT).show();
                 return false;
             }
             Intent intent = new Intent(this, target);

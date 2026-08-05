@@ -96,6 +96,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private final java.util.Map<Integer, com.google.android.material.card.MaterialCardView> starChips = new java.util.HashMap<>();
     private Integer activeStarFilter = null;
     private int sortIndex = 0;
+    private boolean isInitialLoad = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +119,29 @@ public class RecipeDetailActivity extends AppCompatActivity {
         viewModel.loadRecipe(recipeId);
         viewModel.loadFavorites();
         viewModel.loadNotes(recipeId);
+    }
+
+    /**
+     * Reloads the recipe on every return to this screen after the first creation, so a
+     * review just submitted from {@link com.cooksync.app.ui.recipe.ReviewActivity} (reached
+     * either from here or from the end of {@link com.cooksync.app.ui.recipe.CookingModeActivity})
+     * shows up immediately without a manual refresh.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isInitialLoad) {
+            isInitialLoad = false;
+            return;
+        }
+        String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+        if (recipeId != null) {
+            viewModel.loadRecipe(recipeId);
+        }
     }
 
     private void initViews() {
@@ -172,8 +196,11 @@ public class RecipeDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        findViewById(R.id.btn_review).setOnClickListener(v ->
-                Toast.makeText(this, "Review functionality coming soon!", Toast.LENGTH_SHORT).show());
+        findViewById(R.id.btn_review).setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, com.cooksync.app.ui.recipe.ReviewActivity.class);
+            intent.putExtra(com.cooksync.app.ui.recipe.ReviewActivity.EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
+            startActivity(intent);
+        });
 
         findViewById(R.id.btn_offline_download).setOnClickListener(v ->
                 Toast.makeText(this, "Offline download coming soon!", Toast.LENGTH_SHORT).show());

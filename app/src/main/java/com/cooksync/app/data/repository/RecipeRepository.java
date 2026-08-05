@@ -136,4 +136,35 @@ public interface RecipeRepository {
      * @param resultTarget LiveData target to post the outcome
      */
     void updateRecipeVisibility(String recipeId, String visibility, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
+
+    /**
+     * Submits a new rating/review for a recipe.
+     *
+     * @param recipeId the ID of the recipe being reviewed
+     * @param rating the numeric rating (1.0–5.0)
+     * @param title the review's headline title
+     * @param comment optional detailed commentary
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void submitReview(String recipeId, double rating, String title, String comment,
+                       MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Deletes a review the current user authored.
+     *
+     * @param reviewId the ID of the review to delete
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deleteReview(String reviewId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Flags a review for moderator review.
+     *
+     * @param reviewId the ID of the review being reported
+     * @param reason the report reason ("SPAM", "ABUSE", or "OFF_TOPIC")
+     * @param comment optional supplementary notes
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void reportReview(String reviewId, String reason, String comment,
+                       MutableLiveData<ApiResult<Void>> resultTarget);
 }

@@ -27,6 +27,12 @@ public final class SessionManager {
 
     private final MutableLiveData<Boolean> loggedIn = new MutableLiveData<>(false);
 
+    /** Whether the most recent transition to logged-out was a forced logout (expired/revoked
+     *  refresh token) rather than the user tapping "Log out". Consumed once by
+     *  {@link com.cooksync.app.CookSyncApplication} to decide whether to show the "session
+     *  expired" toast. */
+    private volatile boolean lastLogoutWasForced = false;
+
     private SessionManager() {
     }
 
@@ -85,6 +91,7 @@ public final class SessionManager {
      */
     public void logout() {
         TokenStore.clear();
+        lastLogoutWasForced = false;
         loggedIn.postValue(false);
     }
 
@@ -99,7 +106,25 @@ public final class SessionManager {
      */
     public void forceLogout() {
         TokenStore.clear();
+        lastLogoutWasForced = true;
         loggedIn.postValue(false);
+    }
+
+    /**
+     * Reads and resets whether the most recent logout was forced. Intended to be called
+     * exactly once, by the process-wide logged-out observer, immediately after reacting to a
+     * true → false transition.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return {@code true} if the logout was forced (expired/revoked session)
+     */
+    public boolean consumeWasForcedLogout() {
+        boolean wasForced = lastLogoutWasForced;
+        lastLogoutWasForced = false;
+        return wasForced;
     }
 
     /**
@@ -164,5 +189,75 @@ public final class SessionManager {
             initials.append(Character.toUpperCase(last.charAt(0)));
         }
         return initials.length() > 0 ? initials.toString() : "?";
+    }
+
+    /**
+     * Returns the cached email of the currently authenticated user.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return the email, or {@code null} if no session is active or it was never cached
+     */
+    @Nullable
+    public String getEmail() {
+        return TokenStore.getEmail();
+    }
+
+    /**
+     * Returns the cached avatar URL of the currently authenticated user.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return the avatar URL, or {@code null} if unset
+     */
+    @Nullable
+    public String getAvatarUrl() {
+        return TokenStore.getAvatarUrl();
+    }
+
+    /**
+     * Caches the authenticated user's email address. {@code AuthResponse} never carries an
+     * email field, so this is populated separately from whichever request payload already
+     * had it (login, register, or an email-change request), rather than from the response.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param email the email address to cache
+     */
+    public void cacheEmail(String email) {
+        TokenStore.saveEmail(email);
+    }
+
+    /**
+     * Updates the cached first/last name after a successful profile edit.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param firstName the updated first name
+     * @param lastName the updated last name
+     */
+    public void updateCachedProfile(String firstName, String lastName) {
+        TokenStore.updateNames(firstName, lastName);
+    }
+
+    /**
+     * Updates the cached avatar URL after a successful avatar edit.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param avatarUrl the updated avatar URL
+     */
+    public void updateCachedAvatar(String avatarUrl) {
+        TokenStore.updateAvatarUrl(avatarUrl);
     }
 }

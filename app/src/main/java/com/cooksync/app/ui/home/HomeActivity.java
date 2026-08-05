@@ -80,7 +80,7 @@ public class HomeActivity extends AppCompatActivity {
         android.widget.TextView avatar = findViewById(R.id.tv_profile_avatar);
         avatar.setText(SessionManager.getInstance().getInitials());
         avatar.setOnClickListener(v ->
-                Toast.makeText(this, R.string.profile_coming_soon, Toast.LENGTH_SHORT).show());
+                startActivity(new Intent(this, com.cooksync.app.ui.profile.ProfileActivity.class)));
 
         SearchView searchView = findViewById(R.id.search_view);
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -114,7 +114,10 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(this, com.cooksync.app.ui.recipe.FavoriteRecipesActivity.class));
                 return true;
             }
-            Toast.makeText(this, R.string.profile_coming_soon, Toast.LENGTH_SHORT).show();
+            if (id == R.id.nav_profile) {
+                startActivity(new Intent(this, com.cooksync.app.ui.profile.ProfileActivity.class));
+                return true;
+            }
             return false;
         });
     }

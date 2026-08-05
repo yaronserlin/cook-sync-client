@@ -3,6 +3,7 @@ package com.cooksync.app.data.repository;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
@@ -59,6 +60,15 @@ public interface AuthRepository {
      * @param resultTarget live data target the result will be posted to
      */
     void updateProfile(ProfileUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Updates the authenticated user's avatar URL, after it has already been uploaded to
+     * Cloudinary by the caller.
+     *
+     * @param request     avatar update payload
+     * @param resultTarget live data target the result will be posted to
+     */
+    void updateAvatar(AvatarUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
      * Changes the authenticated user's password.

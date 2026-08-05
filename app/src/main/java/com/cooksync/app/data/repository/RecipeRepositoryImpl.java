@@ -118,4 +118,28 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
                 new com.dtos.request.recipe.RecipeVisibilityUpdateRequestDTO(visibility);
         EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.updateRecipeVisibility(recipeId, request))));
     }
+
+    @Override
+    public void submitReview(String recipeId, double rating, String title, String comment,
+                              MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        com.dtos.request.review.ReviewRequestDTO request =
+                new com.dtos.request.review.ReviewRequestDTO(rating, title, comment);
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.submitReview(recipeId, request))));
+    }
+
+    @Override
+    public void deleteReview(String reviewId, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.deleteReview(reviewId))));
+    }
+
+    @Override
+    public void reportReview(String reviewId, String reason, String comment,
+                              MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        com.dtos.request.review.ReportReviewRequestDTO request =
+                new com.dtos.request.review.ReportReviewRequestDTO(reason, comment);
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.reportReview(reviewId, request))));
+    }
 }

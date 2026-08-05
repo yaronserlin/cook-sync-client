@@ -76,23 +76,29 @@ public class CookSyncApplication extends Application {
             return;
         }
         sessionWasActive = false;
-        redirectToLogin();
+        boolean wasForced = SessionManager.getInstance().consumeWasForcedLogout();
+        redirectToLogin(wasForced);
     }
 
     /**
      * Sends the user back to {@link LoginActivity} with a cleared back stack, unless they're
-     * already on the login/register flow (nothing to redirect away from there).
+     * already on the login/register flow (nothing to redirect away from there). Also the
+     * single place a logout-triggered navigation happens, whether the logout was forced
+     * (expired/revoked session) or explicitly requested by the user (e.g. from Profile) —
+     * only the toast message differs between the two.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
+     *
+     * @param wasForced whether this logout was involuntary (expired/revoked session)
      */
-    private void redirectToLogin() {
+    private void redirectToLogin(boolean wasForced) {
         Activity top = currentActivity.get();
         if (top instanceof LoginActivity || top instanceof RegisterActivity) {
             return;
         }
-        if (top != null) {
+        if (top != null && wasForced) {
             Toast.makeText(top, "Your session expired — please sign in again.", Toast.LENGTH_LONG).show();
         }
         Intent intent = new Intent(this, LoginActivity.class);

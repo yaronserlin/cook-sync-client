@@ -34,6 +34,7 @@ public final class TokenStore {
     private static final String KEY_LAST_NAME = "last_name";
     private static final String KEY_IS_ADMIN = "is_admin";
     private static final String KEY_AVATAR_URL = "avatar_url";
+    private static final String KEY_EMAIL = "email";
 
     private static volatile SharedPreferences preferences;
 
@@ -114,6 +115,67 @@ public final class TokenStore {
                 .putBoolean(KEY_IS_ADMIN, isAdmin)
                 .putString(KEY_AVATAR_URL, avatarUrl)
                 .apply();
+    }
+
+    /**
+     * Persists the authenticated user's email address. Kept separate from
+     * {@link #saveUserProfile} because {@code AuthResponse} does not carry an email field —
+     * callers cache it from whichever request payload they already had it in (login,
+     * register, or an email-change request).
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param email the authenticated user's email address
+     */
+    public static void saveEmail(String email) {
+        preferences.edit().putString(KEY_EMAIL, email).apply();
+    }
+
+    /**
+     * Returns the cached authenticated user's email address.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return the email address, or {@code null} if unset
+     */
+    public static String getEmail() {
+        return preferences.getString(KEY_EMAIL, null);
+    }
+
+    /**
+     * Updates the cached first/last name after a successful profile edit, without touching
+     * the other cached fields.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param firstName the updated first name
+     * @param lastName the updated last name
+     */
+    public static void updateNames(String firstName, String lastName) {
+        preferences.edit()
+                .putString(KEY_FIRST_NAME, firstName)
+                .putString(KEY_LAST_NAME, lastName)
+                .apply();
+    }
+
+    /**
+     * Updates the cached avatar URL after a successful avatar edit, without touching the
+     * other cached fields.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param avatarUrl the updated avatar URL
+     */
+    public static void updateAvatarUrl(String avatarUrl) {
+        preferences.edit().putString(KEY_AVATAR_URL, avatarUrl).apply();
     }
 
     /**
