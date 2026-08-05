@@ -254,14 +254,11 @@
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_apply"
+        style="@style/CookSync.Button.Primary"
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="24dp"
-        android:text="Apply Filters"
-        android:textAllCaps="false"
-        android:textSize="16sp"
-        app:backgroundTint="@color/color_accent"
-        app:cornerRadius="16dp" />
+        android:text="Apply Filters" />
 
 </LinearLayout>

@@ -38,6 +38,19 @@ android {
             )
         }
     }
+
+    sourceSets {
+        getByName("main") {
+            res.srcDirs(
+                "src/main/res",
+                "src/main/res-auth",
+                "src/main/res-home",
+                "src/main/res-recipe",
+                "src/main/res-common"
+            )
+        }
+    }
+
     buildFeatures {
         buildConfig = true
     }

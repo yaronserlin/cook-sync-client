@@ -10,6 +10,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
     <TextView
@@ -63,24 +64,14 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_filters"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                style="@style/CookSync.Button.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
-                android:background="@drawable/bg_tag_neutral"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
                 android:paddingHorizontal="16dp"
                 android:text="Filters · 0"
-                android:textAllCaps="false"
-                android:textColor="@color/color_text"
-                android:textSize="14sp"
-                app:cornerRadius="999dp"
                 app:icon="@drawable/ic_filter"
                 app:iconPadding="8dp"
-                app:iconSize="18dp"
-                app:iconTint="@color/color_accent" />
+                app:iconSize="18dp" />
 
             <View
                 android:layout_width="10dp"

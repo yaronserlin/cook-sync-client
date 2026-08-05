@@ -205,7 +205,8 @@ public class HomeActivity extends AppCompatActivity {
 
         com.google.android.material.button.MaterialButton btn = findViewById(R.id.btn_filters);
         btn.setText(getString(R.string.filters_count_format, count));
-        btn.setBackgroundResource(active ? R.drawable.bg_filters_active : R.drawable.bg_tag_neutral);
+        btn.setBackgroundTintList(android.content.res.ColorStateList.valueOf(
+                active ? getColor(R.color.color_accent) : getColor(R.color.color_neutral_300)));
         btn.setTextColor(active ? getColor(R.color.color_bg) : getColor(R.color.color_text));
 
         android.content.res.ColorStateList tint = android.content.res.ColorStateList.valueOf(

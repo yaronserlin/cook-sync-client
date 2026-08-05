@@ -2,6 +2,8 @@ package com.cooksync.app.ui.recipe;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -9,19 +11,26 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.home.RecipeCardAdapter;
+import com.cooksync.app.ui.home.TagChipAdapter;
 import com.dtos.response.recipe.RecipePreviewResponse;
+import com.dtos.response.tags.TagResponse;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Dedicated recipe search screen, reached by tapping the search field on {@link
  * com.cooksync.app.ui.home.HomeActivity}. Runs a keyword search against the public recipe
- * catalog and displays results in the same card format as the Home feed.
+ * catalog, surfaces matching tag suggestions while typing, supports the same sort/difficulty/
+ * tags/rating/time filters as Home via the shared {@link FiltersBottomSheetDialogFragment},
+ * and displays results in the design's compact row format.
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -29,13 +38,26 @@ import java.util.List;
  */
 public class SearchActivity extends AppCompatActivity {
 
+    /** How long to wait after the last keystroke before running a live search. */
+    private static final long SEARCH_DEBOUNCE_MS = 350L;
+
     private SearchViewModel viewModel;
-    private RecipeCardAdapter recipeAdapter;
+    private SearchResultAdapter recipeAdapter;
+    private TagChipAdapter matchingTagsAdapter;
+    private List<String> loadedTagNames = new ArrayList<>();
+
+    private final Handler searchHandler = new Handler(Looper.getMainLooper());
+    private Runnable pendingSearch;
 
     private SearchView searchView;
     private RecyclerView rvResults;
+    private View matchingTagsSection;
     private TextView tvResultsSummary;
     private TextView tvEmptyState;
+    private View noResultsFilteredState;
+    private TextView tvNoResultsTitle;
+    private TextView tvNoResultsSubtitle;
+    private TextView tvFiltersBadge;
     private View progress;
     private boolean hasSearched = false;
 
@@ -47,10 +69,10 @@ public class SearchActivity extends AppCompatActivity {
         viewModel = new ViewModelProvider(this).get(SearchViewModel.class);
 
         initViews();
-        setupAdapter();
+        setupAdapters();
         setupObservers();
 
-        viewModel.loadFavorites();
+        viewModel.loadTags();
         searchView.setIconified(false);
         searchView.requestFocus();
     }
@@ -62,43 +84,123 @@ public class SearchActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                hasSearched = true;
-                viewModel.search(query);
+                cancelPendingSearch();
+                runSearch(query);
                 return true;
             }
 
             @Override
             public boolean onQueryTextChange(String newText) {
+                cancelPendingSearch();
                 if (newText.isEmpty()) {
-                    hasSearched = false;
-                    viewModel.search(null);
+                    matchingTagsSection.setVisibility(View.GONE);
+                    runSearch(null);
+                } else {
+                    updateMatchingTags(newText);
+                    // Live search-as-you-type, debounced so every keystroke doesn't fire a
+                    // network call — only the pause after the user stops typing does.
+                    pendingSearch = () -> runSearch(newText);
+                    searchHandler.postDelayed(pendingSearch, SEARCH_DEBOUNCE_MS);
                 }
                 return false;
             }
         });
 
+        findViewById(R.id.btn_filters).setOnClickListener(v -> {
+            FiltersBottomSheetDialogFragment dialog = new FiltersBottomSheetDialogFragment();
+            dialog.setAvailableTags(loadedTagNames);
+            dialog.setInitialState(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags(),
+                    viewModel.getCurrentMinRating(), viewModel.getCurrentMaxTotalTimeMinutes());
+            dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags, minRating, maxTotalTimeMinutes) -> {
+                viewModel.applyFilters(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
+                updateFiltersBadge();
+            });
+            dialog.show(getSupportFragmentManager(), "filters");
+        });
+
+        matchingTagsSection = findViewById(R.id.matching_tags_section);
         rvResults = findViewById(R.id.rv_results);
         tvResultsSummary = findViewById(R.id.tv_results_summary);
         tvEmptyState = findViewById(R.id.tv_empty_state);
+        noResultsFilteredState = findViewById(R.id.no_results_filtered_state);
+        tvNoResultsTitle = findViewById(R.id.tv_no_results_title);
+        tvNoResultsSubtitle = findViewById(R.id.tv_no_results_subtitle);
+        tvFiltersBadge = findViewById(R.id.tv_filters_badge);
         progress = findViewById(R.id.progress);
+
+        findViewById(R.id.btn_remove_filter).setOnClickListener(v -> {
+            viewModel.removeDroppableFilter();
+            updateFiltersBadge();
+        });
+        findViewById(R.id.btn_clear_all_filters).setOnClickListener(v -> {
+            viewModel.clearAllFilters();
+            updateFiltersBadge();
+        });
+        findViewById(R.id.btn_clear_search).setOnClickListener(v -> searchView.setQuery("", true));
     }
 
-    private void setupAdapter() {
-        recipeAdapter = new RecipeCardAdapter();
-        recipeAdapter.setOnRecipeClickListener(new RecipeCardAdapter.OnRecipeClickListener() {
-            @Override
-            public void onRecipeClick(String recipeId) {
-                Intent intent = new Intent(SearchActivity.this, com.cooksync.app.ui.detail.RecipeDetailActivity.class);
-                intent.putExtra(com.cooksync.app.ui.detail.RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
-                startActivity(intent);
-            }
+    /**
+     * Cancels a not-yet-fired debounced search, if one is pending.
+     */
+    private void cancelPendingSearch() {
+        if (pendingSearch != null) {
+            searchHandler.removeCallbacks(pendingSearch);
+            pendingSearch = null;
+        }
+    }
 
-            @Override
-            public void onFavoriteClick(String recipeId) {
-                viewModel.toggleFavorite(recipeId);
-            }
+    /**
+     * Runs (or clears) a search and updates {@link #hasSearched} plus the "Matching tags" row.
+     *
+     * @param query the query text, or {@code null}/blank to clear the search
+     */
+    private void runSearch(String query) {
+        hasSearched = query != null && !query.isBlank();
+        if (!hasSearched) {
+            matchingTagsSection.setVisibility(View.GONE);
+        }
+        viewModel.search(query);
+    }
+
+    /**
+     * Updates the small numeric badge on the filters icon to reflect how many filter
+     * dimensions (difficulty, tags, rating, time) are currently active.
+     */
+    private void updateFiltersBadge() {
+        int count = (viewModel.getCurrentDifficulty() != null ? 1 : 0)
+                + viewModel.getSelectedTags().size()
+                + (viewModel.getCurrentMinRating() != null ? 1 : 0)
+                + (viewModel.getCurrentMaxTotalTimeMinutes() != null ? 1 : 0);
+        if (count > 0) {
+            tvFiltersBadge.setText(String.valueOf(count));
+            tvFiltersBadge.setVisibility(View.VISIBLE);
+        } else {
+            tvFiltersBadge.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        cancelPendingSearch();
+    }
+
+    private void setupAdapters() {
+        recipeAdapter = new SearchResultAdapter();
+        recipeAdapter.setOnRecipeClickListener(recipeId -> {
+            Intent intent = new Intent(SearchActivity.this, com.cooksync.app.ui.detail.RecipeDetailActivity.class);
+            intent.putExtra(com.cooksync.app.ui.detail.RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
+            startActivity(intent);
         });
         rvResults.setAdapter(recipeAdapter);
+        rvResults.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+
+        RecyclerView rvMatchingTags = findViewById(R.id.rv_matching_tags);
+        matchingTagsAdapter = new TagChipAdapter(false);
+        matchingTagsAdapter.setOnTagClickListener(tagName -> {
+            searchView.setQuery(tagName, true);
+        });
+        rvMatchingTags.setAdapter(matchingTagsAdapter);
     }
 
     private void setupObservers() {
@@ -106,6 +208,7 @@ public class SearchActivity extends AppCompatActivity {
             if (result instanceof ApiResult.Loading) {
                 progress.setVisibility(View.VISIBLE);
                 tvEmptyState.setVisibility(View.GONE);
+                noResultsFilteredState.setVisibility(View.GONE);
             } else if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
                 progress.setVisibility(View.GONE);
                 List<RecipePreviewResponse> recipes = success.getData();
@@ -117,25 +220,36 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-        viewModel.getFavoritesResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
-                recipeAdapter.setFavorites(success.getData());
-            }
-        });
-
-        viewModel.getErrorEvent().observe(this, event -> {
-            String message = event.getContentIfNotHandled();
-            if (message != null) {
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        viewModel.getTagsResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<List<TagResponse>> success) {
+                loadedTagNames = success.getData().stream().map(TagResponse::name).collect(Collectors.toList());
             }
         });
     }
 
     /**
-     * Shows the "N recipes found" summary and toggles between the RecyclerView, the initial
-     * search prompt, and a "no results" message depending on whether a query has been run.
+     * Refreshes the "Matching tags" suggestion row for the in-progress query text.
      *
-     * @param recipes the current result set
+     * @param query the text currently typed into the search field
+     */
+    private void updateMatchingTags(String query) {
+        List<String> matches = viewModel.getMatchingTagSuggestions(query);
+        if (matches.isEmpty()) {
+            matchingTagsSection.setVisibility(View.GONE);
+            return;
+        }
+        matchingTagsAdapter.setTags(matches.stream()
+                .map(name -> new TagResponse(name, name, null, null))
+                .collect(Collectors.toList()));
+        matchingTagsSection.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Shows the results summary (query/filters/sort feedback) and toggles between the
+     * RecyclerView, the initial search prompt, and the no-results state — the latter always
+     * shown for a zero-result search, whether it's the query or the active filters causing it.
+     *
+     * @param recipes the current (filtered) result set
      */
     private void updateSummaryAndEmptyState(List<RecipePreviewResponse> recipes) {
         boolean hasResults = !recipes.isEmpty();
@@ -145,15 +259,73 @@ public class SearchActivity extends AppCompatActivity {
             tvResultsSummary.setVisibility(View.GONE);
             tvEmptyState.setVisibility(View.VISIBLE);
             tvEmptyState.setText(R.string.search_empty_prompt);
-        } else if (hasResults) {
-            tvResultsSummary.setVisibility(View.VISIBLE);
-            String summary = recipes.size() + (recipes.size() == 1 ? " recipe found" : " recipes found");
-            tvResultsSummary.setText(summary);
-            tvEmptyState.setVisibility(View.GONE);
-        } else {
-            tvResultsSummary.setVisibility(View.GONE);
-            tvEmptyState.setVisibility(View.VISIBLE);
-            tvEmptyState.setText(R.string.search_no_results);
+            noResultsFilteredState.setVisibility(View.GONE);
+            return;
         }
+
+        tvEmptyState.setVisibility(View.GONE);
+
+        if (hasResults) {
+            tvResultsSummary.setVisibility(View.VISIBLE);
+            tvResultsSummary.setText(buildResultsSummary(recipes.size()));
+            noResultsFilteredState.setVisibility(View.GONE);
+            return;
+        }
+
+        // Zero results: always show the dedicated no-results state (never a bare shrug),
+        // naming either the query or the active filter responsible, matching the design's
+        // "noresults" screen.
+        tvResultsSummary.setVisibility(View.GONE);
+        noResultsFilteredState.setVisibility(View.VISIBLE);
+
+        boolean hasFilters = viewModel.hasActiveFilters();
+        findViewById(R.id.btn_remove_filter).setVisibility(hasFilters ? View.VISIBLE : View.GONE);
+        findViewById(R.id.btn_clear_all_filters).setVisibility(hasFilters ? View.VISIBLE : View.GONE);
+        findViewById(R.id.btn_clear_search).setVisibility(hasFilters ? View.GONE : View.VISIBLE);
+
+        if (hasFilters) {
+            tvNoResultsTitle.setText(R.string.search_no_results_title);
+            tvNoResultsSubtitle.setText(R.string.search_no_results_subtitle);
+            String droppable = viewModel.getDroppableFilterLabel();
+            ((TextView) findViewById(R.id.btn_remove_filter))
+                    .setText(getString(R.string.search_action_remove_filter_format, droppable));
+        } else {
+            tvNoResultsTitle.setText(R.string.search_no_results_query_title);
+            tvNoResultsSubtitle.setText(getString(R.string.search_no_results_query_subtitle_format, viewModel.getCurrentQuery()));
+        }
+    }
+
+    /**
+     * Builds the "N recipes [for "query"] · sorted by X [· filters]" summary line, naming
+     * every dimension currently shaping the result set so the user always knows what's active.
+     *
+     * @param count how many recipes are currently displayed
+     * @return the summary text to show above the results
+     */
+    private String buildResultsSummary(int count) {
+        String countPhrase = count == 1 ? "1 recipe" : count + " recipes";
+        String query = viewModel.getCurrentQuery();
+
+        List<String> activeFilters = new ArrayList<>();
+        if (viewModel.getCurrentDifficulty() != null) {
+            activeFilters.add(viewModel.getCurrentDifficulty());
+        }
+        activeFilters.addAll(viewModel.getSelectedTags());
+        if (viewModel.getCurrentMaxTotalTimeMinutes() != null) {
+            activeFilters.add("Under " + viewModel.getCurrentMaxTotalTimeMinutes() + " min");
+        }
+        if (viewModel.getCurrentMinRating() != null) {
+            activeFilters.add(viewModel.getCurrentMinRating() + "+");
+        }
+
+        if (!activeFilters.isEmpty()) {
+            String base = query != null
+                    ? getString(R.string.search_results_summary_with_query_format, countPhrase, query, viewModel.getCurrentSort())
+                    : getString(R.string.search_results_summary_format, countPhrase, viewModel.getCurrentSort());
+            return base + " · " + String.join(", ", activeFilters);
+        }
+        return query != null
+                ? getString(R.string.search_results_summary_with_query_format, countPhrase, query, viewModel.getCurrentSort())
+                : getString(R.string.search_results_summary_format, countPhrase, viewModel.getCurrentSort());
     }
 }

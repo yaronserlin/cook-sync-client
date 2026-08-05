@@ -106,7 +106,7 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
                     viewModel.getCurrentMinRating(), viewModel.getCurrentMaxTotalTimeMinutes());
             dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags, minRating, maxTotalTimeMinutes) -> {
                 viewModel.applyFilters(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
-                updateFilterButton(difficulty, tags);
+                updateFilterButton();
             });
             dialog.show(getSupportFragmentManager(), "filters");
         });
@@ -150,14 +150,19 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
 
     /**
      * Updates the "Filters · N" button to reflect the currently active non-default filters
-     * (difficulty and/or however many tags are selected — sort isn't counted).
+     * (difficulty, tags, minimum rating, and/or total time — sort is ignored since one sort
+     * option is always selected). Reads the active filters directly from {@link #viewModel}.
      */
-    private void updateFilterButton(String difficulty, java.util.Collection<String> tags) {
-        int count = (difficulty != null ? 1 : 0) + (tags == null ? 0 : tags.size());
+    private void updateFilterButton() {
+        int count = (viewModel.getCurrentDifficulty() != null ? 1 : 0)
+                + viewModel.getSelectedTags().size()
+                + (viewModel.getCurrentMinRating() != null ? 1 : 0)
+                + (viewModel.getCurrentMaxTotalTimeMinutes() != null ? 1 : 0);
         boolean active = count > 0;
 
         btnFilters.setText(getString(R.string.filters_count_format, count));
-        btnFilters.setBackgroundResource(active ? R.drawable.bg_filters_active : R.drawable.bg_tag_neutral);
+        btnFilters.setBackgroundTintList(ColorStateList.valueOf(
+                active ? getColor(R.color.color_accent) : getColor(R.color.color_neutral_300)));
         btnFilters.setTextColor(active ? getColor(R.color.color_bg) : getColor(R.color.color_text));
 
         ColorStateList tint = ColorStateList.valueOf(active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
