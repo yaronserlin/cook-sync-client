@@ -119,6 +119,31 @@ public class SearchViewModel extends ViewModel {
     }
 
     /**
+     * Applies a "Matching tags" suggestion as a tag filter — browsing every recipe carrying
+     * that tag, the same way {@code HomeViewModel}'s single-tag chip does — rather than as a
+     * keyword search for the tag's name. Replaces any previous query/tag selection, since the
+     * suggestion is meant to replace what the user was typing, not add to it.
+     *
+     * @param tagName the tag to browse by
+     */
+    public void searchByTag(String tagName) {
+        currentQuery = null;
+        selectedTags.clear();
+        selectedTags.add(tagName);
+        searchResult.setValue(new ApiResult.Loading<>());
+        MutableLiveData<ApiResult<List<RecipePreviewResponse>>> result = new MutableLiveData<>();
+        observeOnce(result, apiResult -> {
+            if (apiResult instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
+                rawResults = success.getData();
+                searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
+            } else {
+                searchResult.setValue(apiResult);
+            }
+        });
+        recipeRepository.getRecipesByTag(tagName, result);
+    }
+
+    /**
      * Loads the full tag catalog, used to surface "Matching tags" suggestions as the user types.
      */
     public void loadTags() {
@@ -175,42 +200,39 @@ public class SearchViewModel extends ViewModel {
     }
 
     /**
-     * Identifies the single active filter to suggest dropping when a search comes back empty,
-     * matching the design's "Remove '&lt;filter&gt;'" no-results action. Priority favors the
-     * most specific/narrowing filter first: a selected tag, then total time, then rating, then
-     * difficulty.
-     *
-     * @return a human-readable label for the filter to drop, or {@code null} if none are active
+     * Drops the active difficulty filter alone and re-filters, leaving every other constraint
+     * (query, tags, rating, time) untouched — lets the no-results state offer per-constraint
+     * removal instead of only an all-or-nothing reset.
      */
-    public String getDroppableFilterLabel() {
-        if (!selectedTags.isEmpty()) {
-            return selectedTags.iterator().next();
-        }
-        if (currentMaxTotalTimeMinutes != null) {
-            return "under " + currentMaxTotalTimeMinutes + " min";
-        }
-        if (currentMinRating != null) {
-            return currentMinRating + "+ rating";
-        }
-        if (currentDifficulty != null) {
-            return currentDifficulty;
-        }
-        return null;
+    public void removeDifficulty() {
+        currentDifficulty = null;
+        searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
     }
 
     /**
-     * Drops whichever single filter {@link #getDroppableFilterLabel} identified and re-filters.
+     * Drops a single selected tag alone and re-filters.
+     *
+     * @param tagName the tag to remove from {@link #selectedTags}
      */
-    public void removeDroppableFilter() {
-        if (!selectedTags.isEmpty()) {
-            selectedTags.remove(selectedTags.iterator().next());
-        } else if (currentMaxTotalTimeMinutes != null) {
-            currentMaxTotalTimeMinutes = null;
-        } else if (currentMinRating != null) {
-            currentMinRating = null;
-        } else if (currentDifficulty != null) {
-            currentDifficulty = null;
+    public void removeTag(String tagName) {
+        if (selectedTags.remove(tagName)) {
+            searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
         }
+    }
+
+    /**
+     * Drops the active minimum-rating filter alone and re-filters.
+     */
+    public void removeMinRating() {
+        currentMinRating = null;
+        searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
+    }
+
+    /**
+     * Drops the active total-time filter alone and re-filters.
+     */
+    public void removeMaxTotalTime() {
+        currentMaxTotalTimeMinutes = null;
         searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
     }
 
@@ -223,15 +245,6 @@ public class SearchViewModel extends ViewModel {
         currentMaxTotalTimeMinutes = null;
         selectedTags.clear();
         searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
-    }
-
-    /**
-     * {@code true} if any filter dimension (difficulty, tags, rating, or time) is active.
-     * Sort is excluded since one sort option is always selected.
-     */
-    public boolean hasActiveFilters() {
-        return currentDifficulty != null || !selectedTags.isEmpty()
-                || currentMinRating != null || currentMaxTotalTimeMinutes != null;
     }
 
     /**

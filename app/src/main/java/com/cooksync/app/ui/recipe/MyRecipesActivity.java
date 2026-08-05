@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -115,6 +116,12 @@ public class MyRecipesActivity extends RecipeListActivity {
         chipAll = addChip("All", true, () -> selectVisibility("ALL"));
         chipPublic = addChip("Public", false, () -> selectVisibility("PUBLIC"));
         chipPrivate = addChip("Private", false, () -> selectVisibility("PRIVATE"));
+
+        setOnClearAllClickListener(() -> {
+            viewModel.applyFilters("Newest", null, new ArrayList<>(), null, null);
+            searchView.setQuery("", true);
+            updateFilterButton();
+        });
     }
 
     private void setupObservers() {
@@ -126,8 +133,19 @@ public class MyRecipesActivity extends RecipeListActivity {
 
                 tvTitle.setText(getString(R.string.my_recipes_title_format, viewModel.getPublishedCount()));
 
-                emptyState.setVisibility(recipes.isEmpty() ? View.VISIBLE : View.GONE);
-                rvList.setVisibility(recipes.isEmpty() ? View.GONE : View.VISIBLE);
+                if (!recipes.isEmpty()) {
+                    hideNoResultsState();
+                    emptyState.setVisibility(View.GONE);
+                    rvList.setVisibility(View.VISIBLE);
+                } else if (!viewModel.hasAnyRecipes()) {
+                    // Genuinely no recipes yet — the static "No recipes yet" empty state.
+                    emptyState.setVisibility(View.VISIBLE);
+                    rvList.setVisibility(View.GONE);
+                } else {
+                    // Recipes exist, but the active search/filters matched none of them.
+                    emptyState.setVisibility(View.GONE);
+                    showNoResultsState(buildRemovableConstraints());
+                }
             } else if (result instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
                 showSkeleton(false);
                 Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
@@ -186,6 +204,50 @@ public class MyRecipesActivity extends RecipeListActivity {
 
         ColorStateList tint = ColorStateList.valueOf(active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
         btnFilters.setIconTint(tint);
+    }
+
+    /**
+     * Builds the list of currently active search/filter constraints for the no-results state,
+     * mirroring {@code SearchActivity}'s equivalent.
+     */
+    private List<NoResultsStateHelper.Constraint> buildRemovableConstraints() {
+        List<NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
+
+        String query = viewModel.getCurrentQuery();
+        if (query != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    "\"" + query + "\"", () -> searchView.setQuery("", true)));
+        }
+        String difficulty = viewModel.getCurrentDifficulty();
+        if (difficulty != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(difficulty, () -> {
+                viewModel.removeDifficulty();
+                updateFilterButton();
+            }));
+        }
+        for (String tag : viewModel.getSelectedTags()) {
+            constraints.add(new NoResultsStateHelper.Constraint(tag, () -> {
+                viewModel.removeTag(tag);
+                updateFilterButton();
+            }));
+        }
+        Integer maxTotalTimeMinutes = viewModel.getCurrentMaxTotalTimeMinutes();
+        if (maxTotalTimeMinutes != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    getString(R.string.filters_applied_time_format, maxTotalTimeMinutes), () -> {
+                        viewModel.removeMaxTotalTime();
+                        updateFilterButton();
+                    }));
+        }
+        Double minRating = viewModel.getCurrentMinRating();
+        if (minRating != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    getString(R.string.filters_applied_rating_format, minRating), () -> {
+                        viewModel.removeMinRating();
+                        updateFilterButton();
+                    }));
+        }
+        return constraints;
     }
 
     private void showOptionsMenu(RecipePreviewResponse recipe, View anchor) {

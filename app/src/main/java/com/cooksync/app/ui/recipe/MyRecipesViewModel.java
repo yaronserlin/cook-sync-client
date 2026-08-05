@@ -109,6 +109,16 @@ public class MyRecipesViewModel extends ViewModel {
         return allRecipes.stream().filter(r -> "PUBLIC".equalsIgnoreCase(r.visibility())).count();
     }
 
+    /** {@code true} once the user's recipe library has loaded and contains at least one recipe. */
+    public boolean hasAnyRecipes() {
+        return !allRecipes.isEmpty();
+    }
+
+    /** The active search text, or {@code null} if none is set. */
+    public String getCurrentQuery() {
+        return currentQuery;
+    }
+
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
     }
@@ -171,6 +181,31 @@ public class MyRecipesViewModel extends ViewModel {
         if (tags != null) {
             this.selectedTags.addAll(tags);
         }
+        publishFiltered();
+    }
+
+    /** Drops the active difficulty filter alone, leaving query/tags/rating/time untouched. */
+    public void removeDifficulty() {
+        currentDifficulty = null;
+        publishFiltered();
+    }
+
+    /** Drops a single selected tag alone. */
+    public void removeTag(String tagName) {
+        if (selectedTags.remove(tagName)) {
+            publishFiltered();
+        }
+    }
+
+    /** Drops the active minimum-rating filter alone. */
+    public void removeMinRating() {
+        currentMinRating = null;
+        publishFiltered();
+    }
+
+    /** Drops the active total-time filter alone. */
+    public void removeMaxTotalTime() {
+        currentMaxTotalTimeMinutes = null;
         publishFiltered();
     }
 

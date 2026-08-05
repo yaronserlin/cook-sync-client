@@ -147,6 +147,11 @@
 
         </LinearLayout>
 
+        <!-- Shown instead of empty_state when the library has recipes but the active search/
+             filters matched none of them — lets the user drop exactly what's filtering them
+             out, matching Search/Home's no-results treatment. -->
+        <include layout="@layout/layout_no_results_state" />
+
     </FrameLayout>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView

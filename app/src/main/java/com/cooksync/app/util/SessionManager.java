@@ -83,6 +83,28 @@ public final class SessionManager {
     }
 
     /**
+     * Refreshes the cached user profile fields without touching the stored access/refresh
+     * tokens. Used by {@code /api/auth/validate-token}, whose response carries {@code null}
+     * token fields by design (it's a profile check, not a token-issuing call) — passing that
+     * response to {@link #startSession} would overwrite a good token pair with {@code null}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param authResponse the auth payload returned by token validation
+     */
+    public void refreshCachedProfile(AuthResponse authResponse) {
+        TokenStore.saveUserProfile(
+                authResponse.userId(),
+                authResponse.firstName(),
+                authResponse.lastName(),
+                authResponse.isAdmin(),
+                authResponse.avatarUrl()
+        );
+    }
+
+    /**
      * Clears the stored session as the result of an explicit, user-initiated logout.
      *
      * Complexity:

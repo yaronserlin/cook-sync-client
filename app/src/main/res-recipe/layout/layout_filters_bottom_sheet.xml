@@ -5,6 +5,7 @@
      content needs, up to that cap"; the NestedScrollView below absorbs whatever doesn't fit. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -46,6 +47,20 @@
             android:textSize="13sp" />
 
     </LinearLayout>
+
+    <!-- Live feedback on what's currently applied, updated as the user toggles chips below —
+         so the sheet itself always shows which filters are active, not just the button behind
+         it once closed. -->
+    <TextView
+        android:id="@+id/tv_current_selection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:alpha="0.65"
+        android:textColor="@color/color_text"
+        android:textSize="12.5sp"
+        android:textStyle="bold"
+        tools:text="Applied: Easy · Vegan · 4.0+ · Under 30 min" />
 
     <!-- Scrollable body: everything between the header and the pinned Apply button below.
          NestedScrollView is what makes BottomSheetBehavior treat this sheet as internally

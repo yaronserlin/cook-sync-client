@@ -195,8 +195,12 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
      * {@inheritDoc}
      *
      * <p>Calls {@code GET /api/auth/validate-token} with the currently stored access token.
-     * On success the cached session profile is refreshed; on any failure the local session
-     * is cleared so the login form is shown instead of leaving stale credentials on device.</p>
+     * On success the cached profile fields are refreshed; on any failure the local session
+     * is cleared so the login form is shown instead of leaving stale credentials on device.
+     * The response's token fields are {@code null} by design (this endpoint checks a
+     * session, it doesn't issue one), so the stored access/refresh tokens are left untouched
+     * here — they were already updated in place by {@link com.cooksync.app.data.remote.TokenAuthenticator}
+     * if a transparent refresh happened during this call.</p>
      */
     @Override
     public void validateToken(MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
@@ -204,7 +208,7 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
         EXECUTOR.execute(() -> {
             ApiResult<AuthResponse> result = executeCall(apiService.validateToken());
             if (result instanceof ApiResult.Success) {
-                SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
+                SessionManager.getInstance().refreshCachedProfile(((ApiResult.Success<AuthResponse>) result).getData());
             } else {
                 // Token invalid or expired: clear stale local session
                 SessionManager.getInstance().forceLogout();

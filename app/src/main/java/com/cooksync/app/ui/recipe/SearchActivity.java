@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.home.TagChipAdapter;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -54,9 +55,9 @@ public class SearchActivity extends AppCompatActivity {
     private View matchingTagsSection;
     private TextView tvResultsSummary;
     private TextView tvEmptyState;
-    private View noResultsFilteredState;
-    private TextView tvNoResultsTitle;
-    private TextView tvNoResultsSubtitle;
+    private View noResultsState;
+    private com.google.android.material.chip.ChipGroup cgRemovableConstraints;
+    private View btnClearAll;
     private TextView tvFiltersBadge;
     private View progress;
     private boolean hasSearched = false;
@@ -122,21 +123,17 @@ public class SearchActivity extends AppCompatActivity {
         rvResults = findViewById(R.id.rv_results);
         tvResultsSummary = findViewById(R.id.tv_results_summary);
         tvEmptyState = findViewById(R.id.tv_empty_state);
-        noResultsFilteredState = findViewById(R.id.no_results_filtered_state);
-        tvNoResultsTitle = findViewById(R.id.tv_no_results_title);
-        tvNoResultsSubtitle = findViewById(R.id.tv_no_results_subtitle);
+        noResultsState = findViewById(R.id.no_results_state);
+        cgRemovableConstraints = noResultsState.findViewById(R.id.cg_removable_constraints);
+        btnClearAll = noResultsState.findViewById(R.id.btn_clear_all);
         tvFiltersBadge = findViewById(R.id.tv_filters_badge);
         progress = findViewById(R.id.progress);
 
-        findViewById(R.id.btn_remove_filter).setOnClickListener(v -> {
-            viewModel.removeDroppableFilter();
-            updateFiltersBadge();
-        });
-        findViewById(R.id.btn_clear_all_filters).setOnClickListener(v -> {
+        btnClearAll.setOnClickListener(v -> {
             viewModel.clearAllFilters();
             updateFiltersBadge();
+            searchView.setQuery("", true);
         });
-        findViewById(R.id.btn_clear_search).setOnClickListener(v -> searchView.setQuery("", true));
     }
 
     /**
@@ -197,8 +194,16 @@ public class SearchActivity extends AppCompatActivity {
 
         RecyclerView rvMatchingTags = findViewById(R.id.rv_matching_tags);
         matchingTagsAdapter = new TagChipAdapter(false);
+        // Tapping a matching-tag suggestion applies it as a tag filter (like picking it in the
+        // Filters sheet), rather than dropping the tag name into the search box as if it were a
+        // keyword — the tag is a filter, not search text.
         matchingTagsAdapter.setOnTagClickListener(tagName -> {
-            searchView.setQuery(tagName, true);
+            cancelPendingSearch();
+            matchingTagsSection.setVisibility(View.GONE);
+            searchView.setQuery("", false);
+            hasSearched = true;
+            viewModel.searchByTag(tagName);
+            updateFiltersBadge();
         });
         rvMatchingTags.setAdapter(matchingTagsAdapter);
     }
@@ -208,7 +213,7 @@ public class SearchActivity extends AppCompatActivity {
             if (result instanceof ApiResult.Loading) {
                 progress.setVisibility(View.VISIBLE);
                 tvEmptyState.setVisibility(View.GONE);
-                noResultsFilteredState.setVisibility(View.GONE);
+                noResultsState.setVisibility(View.GONE);
             } else if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
                 progress.setVisibility(View.GONE);
                 List<RecipePreviewResponse> recipes = success.getData();
@@ -259,7 +264,7 @@ public class SearchActivity extends AppCompatActivity {
             tvResultsSummary.setVisibility(View.GONE);
             tvEmptyState.setVisibility(View.VISIBLE);
             tvEmptyState.setText(R.string.search_empty_prompt);
-            noResultsFilteredState.setVisibility(View.GONE);
+            noResultsState.setVisibility(View.GONE);
             return;
         }
 
@@ -268,31 +273,62 @@ public class SearchActivity extends AppCompatActivity {
         if (hasResults) {
             tvResultsSummary.setVisibility(View.VISIBLE);
             tvResultsSummary.setText(buildResultsSummary(recipes.size()));
-            noResultsFilteredState.setVisibility(View.GONE);
+            noResultsState.setVisibility(View.GONE);
             return;
         }
 
-        // Zero results: always show the dedicated no-results state (never a bare shrug),
-        // naming either the query or the active filter responsible, matching the design's
-        // "noresults" screen.
+        // Zero results: always show the same dedicated no-results state (never a bare shrug,
+        // and never a different layout for "query caused it" vs. "filters caused it") — every
+        // active constraint (query and/or filters) is offered as its own removable chip.
         tvResultsSummary.setVisibility(View.GONE);
-        noResultsFilteredState.setVisibility(View.VISIBLE);
+        noResultsState.setVisibility(View.VISIBLE);
+        populateRemovableConstraints();
+    }
 
-        boolean hasFilters = viewModel.hasActiveFilters();
-        findViewById(R.id.btn_remove_filter).setVisibility(hasFilters ? View.VISIBLE : View.GONE);
-        findViewById(R.id.btn_clear_all_filters).setVisibility(hasFilters ? View.VISIBLE : View.GONE);
-        findViewById(R.id.btn_clear_search).setVisibility(hasFilters ? View.GONE : View.VISIBLE);
+    /**
+     * Builds the list of currently active constraints (the search query, difficulty, each
+     * selected tag, minimum rating, total time) and hands it to {@link NoResultsStateHelper} to
+     * render as removable chips.
+     */
+    private void populateRemovableConstraints() {
+        List<NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
 
-        if (hasFilters) {
-            tvNoResultsTitle.setText(R.string.search_no_results_title);
-            tvNoResultsSubtitle.setText(R.string.search_no_results_subtitle);
-            String droppable = viewModel.getDroppableFilterLabel();
-            ((TextView) findViewById(R.id.btn_remove_filter))
-                    .setText(getString(R.string.search_action_remove_filter_format, droppable));
-        } else {
-            tvNoResultsTitle.setText(R.string.search_no_results_query_title);
-            tvNoResultsSubtitle.setText(getString(R.string.search_no_results_query_subtitle_format, viewModel.getCurrentQuery()));
+        String query = viewModel.getCurrentQuery();
+        if (query != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    "\"" + query + "\"", () -> searchView.setQuery("", true)));
         }
+        String difficulty = viewModel.getCurrentDifficulty();
+        if (difficulty != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(difficulty, () -> {
+                viewModel.removeDifficulty();
+                updateFiltersBadge();
+            }));
+        }
+        for (String tag : viewModel.getSelectedTags()) {
+            constraints.add(new NoResultsStateHelper.Constraint(tag, () -> {
+                viewModel.removeTag(tag);
+                updateFiltersBadge();
+            }));
+        }
+        Integer maxTotalTimeMinutes = viewModel.getCurrentMaxTotalTimeMinutes();
+        if (maxTotalTimeMinutes != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    getString(R.string.filters_applied_time_format, maxTotalTimeMinutes), () -> {
+                        viewModel.removeMaxTotalTime();
+                        updateFiltersBadge();
+                    }));
+        }
+        Double minRating = viewModel.getCurrentMinRating();
+        if (minRating != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    getString(R.string.filters_applied_rating_format, minRating), () -> {
+                        viewModel.removeMinRating();
+                        updateFiltersBadge();
+                    }));
+        }
+
+        NoResultsStateHelper.populate(getLayoutInflater(), cgRemovableConstraints, btnClearAll, constraints);
     }
 
     /**

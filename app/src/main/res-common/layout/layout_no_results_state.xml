@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reusable "no results" state: one dismissible chip per active constraint (search query,
+     difficulty, tags, rating, total time) so the user can pick exactly what to drop, plus a
+     "Clear all" button once there's more than one. Shared by Search, Home, My Recipes, and
+     Favorites so every screen gives the same feedback for a filtered-to-zero result set,
+     populated at runtime via NoResultsStateHelper. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/no_results_state"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:paddingHorizontal="32dp"
+    android:visibility="gone"
+    tools:visibility="visible">
+
+    <FrameLayout
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:background="@drawable/bg_accent2_circle_100">
+
+        <ImageView
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_search"
+            app:tint="@color/color_accent_2_700" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tv_no_results_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:fontFamily="@font/caprasimo"
+        android:text="@string/search_no_results_title"
+        android:textColor="@color/color_text"
+        android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/tv_no_results_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:alpha="0.72"
+        android:gravity="center"
+        android:text="@string/search_no_results_subtitle"
+        android:textColor="@color/color_text"
+        android:textSize="14sp" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/cg_removable_constraints"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        app:chipSpacingHorizontal="6dp"
+        app:singleLine="false" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_clear_all"
+        style="@style/CookSync.Button.Secondary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:minWidth="0dp"
+        android:paddingHorizontal="20dp"
+        android:text="@string/search_action_clear_all" />
+
+</LinearLayout>

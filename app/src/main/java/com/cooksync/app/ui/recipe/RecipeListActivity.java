@@ -16,10 +16,14 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.common.SkeletonHelper;
 import com.cooksync.app.ui.home.HomeActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.chip.ChipGroup;
+
+import java.util.List;
 
 /**
  * Shared base for the "My Recipes" and "Favorites" screens, which are visually identical in
@@ -45,6 +49,9 @@ public abstract class RecipeListActivity extends AppCompatActivity {
     protected ImageView ivEmptyIcon;
     protected TextView tvEmptyTitle;
     protected TextView tvEmptySubtitle;
+    protected View noResultsState;
+    private ChipGroup cgRemovableConstraints;
+    private View btnClearAll;
 
     private SkeletonHelper skeletonHelper;
 
@@ -68,6 +75,9 @@ public abstract class RecipeListActivity extends AppCompatActivity {
         ivEmptyIcon = findViewById(R.id.iv_empty_icon);
         tvEmptyTitle = findViewById(R.id.tv_empty_title);
         tvEmptySubtitle = findViewById(R.id.tv_empty_subtitle);
+        noResultsState = findViewById(R.id.no_results_state);
+        cgRemovableConstraints = noResultsState.findViewById(R.id.cg_removable_constraints);
+        btnClearAll = noResultsState.findViewById(R.id.btn_clear_all);
 
         skeletonHelper = new SkeletonHelper();
         skeletonHelper.attachAll((android.view.ViewGroup) skeletonView);
@@ -117,6 +127,37 @@ public abstract class RecipeListActivity extends AppCompatActivity {
         } else {
             skeletonHelper.stop();
         }
+    }
+
+    /**
+     * Registers the "Clear all" action for the shared no-results state (see
+     * {@link #showNoResultsState}). Must be called once, before the first
+     * {@link #showNoResultsState} call.
+     *
+     * @param onClearAll invoked when the no-results state's "Clear all" button is tapped
+     */
+    protected void setOnClearAllClickListener(Runnable onClearAll) {
+        btnClearAll.setOnClickListener(v -> onClearAll.run());
+    }
+
+    /**
+     * Shows the no-results state (hiding {@link #rvList} and the generic {@link #emptyState}),
+     * populated with one removable chip per active search/filter constraint — used when the
+     * library has recipes but the current search/filters matched none of them, as opposed to
+     * the library being genuinely empty.
+     *
+     * @param constraints every currently active constraint, in display order
+     */
+    protected void showNoResultsState(List<NoResultsStateHelper.Constraint> constraints) {
+        rvList.setVisibility(View.GONE);
+        emptyState.setVisibility(View.GONE);
+        noResultsState.setVisibility(View.VISIBLE);
+        NoResultsStateHelper.populate(getLayoutInflater(), cgRemovableConstraints, btnClearAll, constraints);
+    }
+
+    /** Hides the no-results state, e.g. once a search/filter change yields results again. */
+    protected void hideNoResultsState() {
+        noResultsState.setVisibility(View.GONE);
     }
 
     /**

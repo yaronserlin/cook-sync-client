@@ -8,19 +8,19 @@
     <string name="search_results_summary_format">%1$s · sorted by %2$s</string>
     <string name="search_results_summary_with_query_format">%1$s for \"%2$s\" · sorted by %3$s</string>
     <string name="search_matching_tags_label">Matching tags</string>
-    <string name="search_no_results_title">Nothing matches your filters</string>
-    <string name="search_no_results_subtitle">Try dropping one of the active filters.</string>
-    <string name="search_no_results_query_title">No recipes found</string>
-    <string name="search_no_results_query_subtitle_format">No results for \"%s\". Try a different search.</string>
-    <string name="search_action_remove_filter_format">Remove \"%s\"</string>
-    <string name="search_action_clear_all_filters">Clear all filters</string>
-    <string name="search_action_clear_search">Clear search</string>
+    <string name="search_no_results_title">No recipes found</string>
+    <string name="search_no_results_subtitle">Try removing one of these to see more results.</string>
+    <string name="search_action_clear_all">Clear all</string>
 
     <string name="nav_search">Search</string>
     <string name="nav_my_recipes">My Recipes</string>
     <string name="nav_favorites">Favorites</string>
 
     <string name="filters_count_format">Filters · %d</string>
+    <string name="filters_applied_summary_format">Applied: %s</string>
+    <string name="filters_none_applied">No filters applied</string>
+    <string name="filters_applied_rating_format">%s+ rating</string>
+    <string name="filters_applied_time_format">Under %d min</string>
 
     <string name="time_format">%d mins</string>
     <string name="review_count_format">· %d reviews</string>

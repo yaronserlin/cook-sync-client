@@ -152,87 +152,10 @@
             android:alpha="0.5"
             android:textSize="14sp" />
 
-        <!-- No-results-with-active-filters state, matching the design's dedicated "noresults"
-             screen: names the conflicting filter and offers to drop it, rather than a shrug. -->
-        <LinearLayout
-            android:id="@+id/no_results_filtered_state"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="vertical"
-            android:gravity="center"
-            android:paddingHorizontal="32dp"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <FrameLayout
-                android:layout_width="88dp"
-                android:layout_height="88dp"
-                android:background="@drawable/bg_accent2_circle_100">
-
-                <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_gravity="center"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_search"
-                    app:tint="@color/color_accent_2_700" />
-
-            </FrameLayout>
-
-            <TextView
-                android:id="@+id/tv_no_results_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
-                android:fontFamily="@font/caprasimo"
-                android:textColor="@color/color_text"
-                android:textSize="22sp"
-                tools:text="@string/search_no_results_title" />
-
-            <TextView
-                android:id="@+id/tv_no_results_subtitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:alpha="0.72"
-                android:gravity="center"
-                android:textColor="@color/color_text"
-                android:textSize="14sp"
-                tools:text="@string/search_no_results_subtitle" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_remove_filter"
-                style="@style/CookSync.Button.Primary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="20dp"
-                tools:text="Remove &quot;Vegan&quot;" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_clear_all_filters"
-                style="@style/CookSync.Button.Secondary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="20dp"
-                android:text="@string/search_action_clear_all_filters" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_clear_search"
-                style="@style/CookSync.Button.Primary"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:minWidth="0dp"
-                android:paddingHorizontal="20dp"
-                android:text="@string/search_action_clear_search"
-                android:visibility="gone" />
-
-        </LinearLayout>
+        <!-- No-results state, matching the design's dedicated "noresults" screen: names every
+             active constraint and offers to drop it, rather than a shrug. Shared with Home/My
+             Recipes/Favorites via NoResultsStateHelper. -->
+        <include layout="@layout/layout_no_results_state" />
 
         <ProgressBar
             android:id="@+id/progress"

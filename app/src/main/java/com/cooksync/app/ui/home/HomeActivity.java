@@ -13,13 +13,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
+import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.common.SkeletonHelper;
 import com.cooksync.app.ui.recipe.FiltersBottomSheetDialogFragment;
 import com.cooksync.app.ui.recipe.MyRecipesActivity;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.response.tags.TagResponse;
+import com.google.android.material.chip.ChipGroup;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,6 +44,9 @@ public class HomeActivity extends AppCompatActivity {
 
     private View skeletonView;
     private RecyclerView rvFeed;
+    private View noResultsState;
+    private ChipGroup cgRemovableConstraints;
+    private View btnClearAll;
     private List<String> loadedTagNames = new ArrayList<>();
 
     @Override
@@ -74,6 +80,13 @@ public class HomeActivity extends AppCompatActivity {
     private void initViews() {
         rvFeed = findViewById(R.id.rv_feed);
         skeletonView = findViewById(R.id.skeleton_view);
+        noResultsState = findViewById(R.id.no_results_state);
+        cgRemovableConstraints = noResultsState.findViewById(R.id.cg_removable_constraints);
+        btnClearAll = noResultsState.findViewById(R.id.btn_clear_all);
+        btnClearAll.setOnClickListener(v -> {
+            viewModel.applyFilters("Newest", null, Collections.emptyList(), null, null);
+            tagAdapter.setSelectedTags(viewModel.getSelectedTags());
+        });
 
         skeletonHelper = new SkeletonHelper();
         skeletonHelper.attachAll(findViewById(R.id.skeleton_view));
@@ -159,6 +172,7 @@ public class HomeActivity extends AppCompatActivity {
                 showSkeleton(false);
                 recipeAdapter.setRecipes(success.getRecipes());
                 updateFilterButton();
+                updateNoResultsState(success.getRecipes().isEmpty());
             } else if (state instanceof FeedState.Error error) {
                 showSkeleton(false);
                 Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
@@ -189,18 +203,22 @@ public class HomeActivity extends AppCompatActivity {
     /**
      * Updates the "Filters · N" button to reflect the currently active non-default filters
      * (difficulty, tags, minimum rating, and/or total time — sort is ignored since one sort
-     * option is always selected). Reads the active filters directly from {@link #viewModel}.
+     * option is always selected), and the summary line naming exactly which ones. Reads the
+     * active filters directly from {@link #viewModel}.
      *
-     * <p>Uses {@code setBackgroundResource} rather than {@code setBackgroundColor} so the
-     * button's rounded-pill shape (defined by the drawable, not by MaterialButton's own shape
-     * appearance once a raw background is set) is preserved instead of being replaced by a
-     * flat {@code ColorDrawable} rectangle.</p>
+     * <p>Uses {@code setBackgroundTintList} rather than swapping the button's background
+     * drawable, since a MaterialButton whose background was overwritten with a raw drawable
+     * stops going through Material's own shape/tint redraw pipeline and can fail to repaint
+     * on some devices.</p>
      */
     private void updateFilterButton() {
-        int count = (viewModel.getCurrentDifficulty() != null ? 1 : 0)
-                + viewModel.getSelectedTags().size()
-                + (viewModel.getCurrentMinRating() != null ? 1 : 0)
-                + (viewModel.getCurrentMaxTotalTimeMinutes() != null ? 1 : 0);
+        String difficulty = viewModel.getCurrentDifficulty();
+        java.util.Set<String> tags = viewModel.getSelectedTags();
+        Double minRating = viewModel.getCurrentMinRating();
+        Integer maxTotalTimeMinutes = viewModel.getCurrentMaxTotalTimeMinutes();
+
+        int count = (difficulty != null ? 1 : 0) + tags.size()
+                + (minRating != null ? 1 : 0) + (maxTotalTimeMinutes != null ? 1 : 0);
         boolean active = count > 0;
 
         com.google.android.material.button.MaterialButton btn = findViewById(R.id.btn_filters);
@@ -212,6 +230,84 @@ public class HomeActivity extends AppCompatActivity {
         android.content.res.ColorStateList tint = android.content.res.ColorStateList.valueOf(
                 active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
         btn.setIconTint(tint);
+
+        android.widget.TextView summary = findViewById(R.id.tv_active_filters_summary);
+        if (!active) {
+            summary.setVisibility(View.GONE);
+            return;
+        }
+        List<String> parts = new ArrayList<>();
+        if (difficulty != null) {
+            parts.add(difficulty);
+        }
+        parts.addAll(tags);
+        if (maxTotalTimeMinutes != null) {
+            parts.add(getString(R.string.filters_applied_time_format, maxTotalTimeMinutes));
+        }
+        if (minRating != null) {
+            parts.add(getString(R.string.filters_applied_rating_format, minRating));
+        }
+        summary.setText(getString(R.string.filters_applied_summary_format, String.join(" · ", parts)));
+        summary.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Shows the no-results state (with one removable chip per active filter) instead of the
+     * feed when the currently active filters match no recipes. A no-op when nothing is
+     * filtered, since a genuinely empty feed isn't this screen's concern.
+     *
+     * @param feedIsEmpty whether the just-published feed page is empty
+     */
+    private void updateNoResultsState(boolean feedIsEmpty) {
+        String difficulty = viewModel.getCurrentDifficulty();
+        java.util.Set<String> tags = viewModel.getSelectedTags();
+        Double minRating = viewModel.getCurrentMinRating();
+        Integer maxTotalTimeMinutes = viewModel.getCurrentMaxTotalTimeMinutes();
+        boolean hasActiveFilters = difficulty != null || !tags.isEmpty()
+                || minRating != null || maxTotalTimeMinutes != null;
+
+        if (!feedIsEmpty || !hasActiveFilters) {
+            noResultsState.setVisibility(View.GONE);
+            rvFeed.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        rvFeed.setVisibility(View.GONE);
+        List<NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
+        if (difficulty != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(difficulty, () -> {
+                viewModel.applyFilters(viewModel.getCurrentSort(), null, tags, minRating, maxTotalTimeMinutes);
+                afterConstraintRemoved();
+            }));
+        }
+        for (String tag : tags) {
+            constraints.add(new NoResultsStateHelper.Constraint(tag, () -> {
+                java.util.Set<String> remaining = new java.util.LinkedHashSet<>(tags);
+                remaining.remove(tag);
+                viewModel.applyFilters(viewModel.getCurrentSort(), difficulty, remaining, minRating, maxTotalTimeMinutes);
+                afterConstraintRemoved();
+            }));
+        }
+        if (maxTotalTimeMinutes != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    getString(R.string.filters_applied_time_format, maxTotalTimeMinutes), () -> {
+                        viewModel.applyFilters(viewModel.getCurrentSort(), difficulty, tags, minRating, null);
+                        afterConstraintRemoved();
+                    }));
+        }
+        if (minRating != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    getString(R.string.filters_applied_rating_format, minRating), () -> {
+                        viewModel.applyFilters(viewModel.getCurrentSort(), difficulty, tags, null, maxTotalTimeMinutes);
+                        afterConstraintRemoved();
+                    }));
+        }
+        NoResultsStateHelper.populate(getLayoutInflater(), cgRemovableConstraints, btnClearAll, constraints);
+        noResultsState.setVisibility(View.VISIBLE);
+    }
+
+    private void afterConstraintRemoved() {
+        tagAdapter.setSelectedTags(viewModel.getSelectedTags());
     }
 
     private void showSkeleton(boolean show) {

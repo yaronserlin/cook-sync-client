@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -113,6 +114,12 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
 
         chipAll = addChip("All", true, () -> selectNotesFilter(false));
         chipNotesOnly = addChip("With notes 0", false, () -> selectNotesFilter(true));
+
+        setOnClearAllClickListener(() -> {
+            viewModel.applyFilters("Newest", null, new ArrayList<>(), null, null);
+            searchView.setQuery("", true);
+            updateFilterButton();
+        });
     }
 
     private void setupObservers() {
@@ -126,9 +133,19 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
                         viewModel.getTotalCount(), viewModel.getWithNotesCount()));
                 chipNotesOnly.setText(getString(R.string.favorites_with_notes_chip_format, viewModel.getWithNotesCount()));
 
-                boolean hasAnyFavorites = viewModel.getTotalCount() > 0;
-                emptyState.setVisibility(!hasAnyFavorites ? View.VISIBLE : View.GONE);
-                rvList.setVisibility(recipes.isEmpty() ? View.GONE : View.VISIBLE);
+                if (!recipes.isEmpty()) {
+                    hideNoResultsState();
+                    emptyState.setVisibility(View.GONE);
+                    rvList.setVisibility(View.VISIBLE);
+                } else if (!viewModel.hasAnyFavorites()) {
+                    // Genuinely no favorites yet — the static "No favorites yet" empty state.
+                    emptyState.setVisibility(View.VISIBLE);
+                    rvList.setVisibility(View.GONE);
+                } else {
+                    // Favorites exist, but the active search/filters matched none of them.
+                    emptyState.setVisibility(View.GONE);
+                    showNoResultsState(buildRemovableConstraints());
+                }
             } else if (result instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
                 showSkeleton(false);
                 Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
@@ -167,5 +184,49 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
 
         ColorStateList tint = ColorStateList.valueOf(active ? getColor(R.color.color_bg) : getColor(R.color.color_accent));
         btnFilters.setIconTint(tint);
+    }
+
+    /**
+     * Builds the list of currently active search/filter constraints for the no-results state,
+     * mirroring {@code SearchActivity}'s equivalent.
+     */
+    private List<NoResultsStateHelper.Constraint> buildRemovableConstraints() {
+        List<NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
+
+        String query = viewModel.getCurrentQuery();
+        if (query != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    "\"" + query + "\"", () -> searchView.setQuery("", true)));
+        }
+        String difficulty = viewModel.getCurrentDifficulty();
+        if (difficulty != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(difficulty, () -> {
+                viewModel.removeDifficulty();
+                updateFilterButton();
+            }));
+        }
+        for (String tag : viewModel.getSelectedTags()) {
+            constraints.add(new NoResultsStateHelper.Constraint(tag, () -> {
+                viewModel.removeTag(tag);
+                updateFilterButton();
+            }));
+        }
+        Integer maxTotalTimeMinutes = viewModel.getCurrentMaxTotalTimeMinutes();
+        if (maxTotalTimeMinutes != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    getString(R.string.filters_applied_time_format, maxTotalTimeMinutes), () -> {
+                        viewModel.removeMaxTotalTime();
+                        updateFilterButton();
+                    }));
+        }
+        Double minRating = viewModel.getCurrentMinRating();
+        if (minRating != null) {
+            constraints.add(new NoResultsStateHelper.Constraint(
+                    getString(R.string.filters_applied_rating_format, minRating), () -> {
+                        viewModel.removeMinRating();
+                        updateFilterButton();
+                    }));
+        }
+        return constraints;
     }
 }

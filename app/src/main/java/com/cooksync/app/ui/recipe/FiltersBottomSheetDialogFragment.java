@@ -123,6 +123,7 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
         ChipGroup cgDiet = view.findViewById(R.id.cg_diet);
         ChipGroup cgTime = view.findViewById(R.id.cg_time);
         ChipGroup cgRating = view.findViewById(R.id.cg_rating);
+        android.widget.TextView tvCurrentSelection = view.findViewById(R.id.tv_current_selection);
 
         if (!availableTags.isEmpty()) {
             cgDiet.removeAllViews();
@@ -172,6 +173,14 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
                 cgRating.check(R.id.chip_rating_35);
             }
         }
+
+        Runnable refreshSelection = () -> updateCurrentSelectionSummary(
+                tvCurrentSelection, cgDifficulty, cgDiet, cgTime, cgRating);
+        cgDifficulty.setOnCheckedStateChangeListener((group, checkedIds) -> refreshSelection.run());
+        cgDiet.setOnCheckedStateChangeListener((group, checkedIds) -> refreshSelection.run());
+        cgTime.setOnCheckedStateChangeListener((group, checkedIds) -> refreshSelection.run());
+        cgRating.setOnCheckedStateChangeListener((group, checkedIds) -> refreshSelection.run());
+        refreshSelection.run();
 
         view.findViewById(R.id.btn_apply).setOnClickListener(v -> {
             if (listener != null) {
@@ -235,6 +244,48 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
             }
             dismiss();
         });
+    }
+
+    /**
+     * Recomputes and shows the "Applied: ..." summary from whichever chips are currently
+     * checked, so the sheet gives live feedback on what will be applied while the user is still
+     * adjusting it — not just after closing it. Sort is excluded since one sort option is
+     * always selected and isn't a "filter" being toggled on/off.
+     *
+     * @param summary the summary TextView to update
+     * @param cgDifficulty the difficulty ChipGroup
+     * @param cgDiet the tags ChipGroup
+     * @param cgTime the total-time ChipGroup
+     * @param cgRating the minimum-rating ChipGroup
+     */
+    private void updateCurrentSelectionSummary(android.widget.TextView summary, ChipGroup cgDifficulty,
+                                                ChipGroup cgDiet, ChipGroup cgTime, ChipGroup cgRating) {
+        List<String> parts = new ArrayList<>();
+
+        int diffId = cgDifficulty.getCheckedChipId();
+        if (diffId != View.NO_ID) {
+            parts.add(((Chip) cgDifficulty.findViewById(diffId)).getText().toString());
+        }
+        for (int i = 0; i < cgDiet.getChildCount(); i++) {
+            Chip chip = (Chip) cgDiet.getChildAt(i);
+            if (chip.isChecked()) {
+                parts.add(chip.getText().toString());
+            }
+        }
+        int timeId = cgTime.getCheckedChipId();
+        if (timeId != View.NO_ID && timeId != R.id.chip_time_any) {
+            parts.add(((Chip) cgTime.findViewById(timeId)).getText().toString());
+        }
+        int ratingId = cgRating.getCheckedChipId();
+        if (ratingId != View.NO_ID && ratingId != R.id.chip_rating_any) {
+            parts.add(((Chip) cgRating.findViewById(ratingId)).getText().toString());
+        }
+
+        if (parts.isEmpty()) {
+            summary.setText(R.string.filters_none_applied);
+        } else {
+            summary.setText(getString(R.string.filters_applied_summary_format, String.join(" · ", parts)));
+        }
     }
 
     /**
