@@ -2,6 +2,7 @@ package com.cooksync.app.data.repository;
 
 import androidx.lifecycle.MutableLiveData;
 
+import com.cooksync.app.data.local.TokenStore;
 import com.cooksync.app.data.remote.ApiService;
 import com.cooksync.app.data.remote.RetrofitClient;
 import com.cooksync.app.domain.ApiResult;
@@ -14,6 +15,7 @@ import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
+import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.auth.AuthResponse;
 
@@ -194,26 +196,58 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
     /**
      * {@inheritDoc}
      *
-     * <p>Calls {@code GET /api/auth/validate-token} with the currently stored access token.
-     * On success the cached profile fields are refreshed; on any failure the local session
-     * is cleared so the login form is shown instead of leaving stale credentials on device.
-     * The response's token fields are {@code null} by design (this endpoint checks a
-     * session, it doesn't issue one), so the stored access/refresh tokens are left untouched
-     * here — they were already updated in place by {@link com.cooksync.app.data.remote.TokenAuthenticator}
-     * if a transparent refresh happened during this call.</p>
+     * <p>Executes a silent validation/refresh flow intended for app startup:</p>
+     * <ol>
+     *   <li>Calls {@code GET /api/auth/validate-token} with the current access token.</li>
+     *   <li>If the access token is expired (HTTP 401), {@link com.cooksync.app.data.remote.TokenAuthenticator}
+     *       transparently attempts a refresh. If that succeeds, the call is retried and we
+     *       receive a {@link ApiResult.Success} here.</li>
+     *   <li>If for any reason (e.g. network failure or authenticator failure) validation
+     *       is still failing, this method manually attempts a refresh using the stored
+     *       refresh token via the bare (unauthenticated) API service to guarantee a clean
+     *       state.</li>
+     *   <li>On any ultimate success, the cached profile is updated and the user identity
+     *       is posted. On ultimate failure, the local session is cleared.</li>
+     * </ol>
      */
     @Override
     public void validateToken(MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            ApiResult<AuthResponse> result = executeCall(apiService.validateToken());
-            if (result instanceof ApiResult.Success) {
-                SessionManager.getInstance().refreshCachedProfile(((ApiResult.Success<AuthResponse>) result).getData());
-            } else {
-                // Token invalid or expired: clear stale local session
-                SessionManager.getInstance().forceLogout();
+            // ── Phase 1: Try validation (transparently leverages TokenAuthenticator) ──
+            ApiResult<AuthResponse> validateResult = executeCall(apiService.validateToken());
+
+            if (validateResult instanceof ApiResult.Success) {
+                SessionManager.getInstance().refreshCachedProfile(((ApiResult.Success<AuthResponse>) validateResult).getData());
+                resultTarget.postValue(validateResult);
+                return;
             }
-            resultTarget.postValue(result);
+
+            ApiResult<AuthResponse> terminalResult;
+
+            // ── Phase 2: Explicitly try refresh if validation failed ────────────────
+            String refreshToken = TokenStore.getRefreshToken();
+            if (refreshToken != null && !refreshToken.isEmpty()) {
+                // Use the BARE service to avoid recursive authenticator loops.
+                ApiResult<AuthResponse> refreshResult = executeCall(
+                        RetrofitClient.getBareService().refreshToken(new TokenRefreshRequestDTO(refreshToken))
+                );
+
+                if (refreshResult instanceof ApiResult.Success) {
+                    AuthResponse renewed = ((ApiResult.Success<AuthResponse>) refreshResult).getData();
+                    SessionManager.getInstance().startSession(renewed);
+                    // The refresh response carries the full user profile, so this is a valid terminal state.
+                    resultTarget.postValue(refreshResult);
+                    return;
+                }
+                terminalResult = refreshResult;
+            } else {
+                terminalResult = validateResult;
+            }
+
+            // ── Phase 3: Total failure (expired refresh token or no session) ────────
+            SessionManager.getInstance().forceLogout();
+            resultTarget.postValue(terminalResult);
         });
     }
 

@@ -89,7 +89,7 @@ public final class RetrofitClient {
      *
      * @return a bare API service without auth headers or authenticator
      */
-    static ApiService getBareService() {
+    public static ApiService getBareService() {
         if (bareApiService == null) {
             synchronized (RetrofitClient.class) {
                 if (bareApiService == null) {
