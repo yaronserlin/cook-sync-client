@@ -102,8 +102,40 @@
                 android:fontFamily="@font/caprasimo"
                 android:lineSpacingMultiplier="1.15"
                 android:textColor="@color/color_accent_100"
-                android:textSize="26sp"
+                android:textSize="29sp"
                 tools:text="Whisk the cornflour into a little cold milk until smooth." />
+
+            <!-- Optional step illustration; hidden when the step has no image, matching the
+                 recipe detail screen's inline step-image treatment (16:9, rounded). -->
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/step_image_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:layout_constraintDimensionRatio="16:9"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:strokeWidth="0dp">
+
+                    <ImageView
+                        android:id="@+id/step_image"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop"
+                        tools:src="@tools:sample/backgrounds/scenic" />
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <!-- "This step uses" ingredient tags. -->
             <LinearLayout
@@ -134,8 +166,8 @@
 
             </LinearLayout>
 
-            <!-- Private note callout for this step; hidden when the step has no note. Tapping
-                 it, or the button below, opens the note editor. -->
+            <!-- Private note callout for this step; hidden when the step has no note. Read-only
+                 here — editing happens exclusively on the recipe detail screen. -->
             <TextView
                 android:id="@+id/tv_step_note"
                 android:layout_width="match_parent"
@@ -148,21 +180,6 @@
                 android:textSize="13sp"
                 android:visibility="gone"
                 tools:text="My note — only 10 minutes on my stove." />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_step_note_edit"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:insetTop="0dp"
-                android:insetBottom="0dp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:text="Add a note"
-                android:textAllCaps="false"
-                android:textColor="@color/color_accent_300"
-                android:textSize="12sp" />
 
             <!-- Optional per-step countdown timer; hidden for steps with no timer. -->
             <LinearLayout
@@ -186,6 +203,7 @@
                         android:indeterminate="false"
                         android:max="1000"
                         app:indicatorColor="@color/color_accent_400"
+                        app:indicatorSize="112dp"
                         app:trackColor="@color/color_accent_800"
                         app:trackCornerRadius="4dp"
                         app:trackThickness="6dp" />

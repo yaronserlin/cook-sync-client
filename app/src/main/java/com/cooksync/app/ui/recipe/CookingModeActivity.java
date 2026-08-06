@@ -2,6 +2,7 @@ package com.cooksync.app.ui.recipe;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.drawable.Drawable;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -12,19 +13,25 @@ import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
-import com.cooksync.app.ui.common.NoteEditDialog;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.detail.RecipeDetailActivity;
@@ -73,10 +80,11 @@ public class CookingModeActivity extends AppCompatActivity {
     private LinearLayout llProgressBars;
     private TextView tvStepLabel;
     private TextView tvStepText;
+    private View stepImageContainer;
+    private ImageView stepImage;
     private View usesContainer;
     private com.google.android.material.chip.ChipGroup cgUses;
     private TextView tvStepNote;
-    private MaterialButton btnStepNoteEdit;
     private View timerContainer;
     private CircularProgressIndicator timerRing;
     private TextView tvTimerClock;
@@ -119,10 +127,11 @@ public class CookingModeActivity extends AppCompatActivity {
         llProgressBars = findViewById(R.id.ll_progress_bars);
         tvStepLabel = findViewById(R.id.tv_step_label);
         tvStepText = findViewById(R.id.tv_step_text);
+        stepImageContainer = findViewById(R.id.step_image_container);
+        stepImage = findViewById(R.id.step_image);
         usesContainer = findViewById(R.id.uses_container);
         cgUses = findViewById(R.id.cg_uses);
         tvStepNote = findViewById(R.id.tv_step_note);
-        btnStepNoteEdit = findViewById(R.id.btn_step_note_edit);
         timerContainer = findViewById(R.id.timer_container);
         timerRing = findViewById(R.id.timer_ring);
         tvTimerClock = findViewById(R.id.tv_timer_clock);
@@ -135,8 +144,6 @@ public class CookingModeActivity extends AppCompatActivity {
         findViewById(R.id.btn_timer_edit).setOnClickListener(v -> showSetTimerDialog());
         tvTimerClock.setOnClickListener(v -> showSetTimerDialog());
         btnTimerToggle.setOnClickListener(v -> viewModel.toggleTimer());
-        btnStepNoteEdit.setOnClickListener(v -> openStepNoteEditor());
-        tvStepNote.setOnClickListener(v -> openStepNoteEditor());
         btnPrev.setOnClickListener(v -> viewModel.prevStep(steps));
         btnPrimaryAction.setOnClickListener(v -> {
             int index = currentIndex();
@@ -178,14 +185,6 @@ public class CookingModeActivity extends AppCompatActivity {
                     }
                 }
                 renderCurrentStep();
-            }
-        });
-
-        viewModel.getNoteSaveResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success<Void>) {
-                viewModel.loadNotes(recipeId);
-            } else if (result instanceof ApiResult.Error<Void> error) {
-                OrganicToast.show(this, null, error.getMessage());
             }
         });
 
@@ -255,6 +254,7 @@ public class CookingModeActivity extends AppCompatActivity {
         tvStepLabel.setText(getString(R.string.cook_step_label_format, index + 1, steps.size()));
         tvStepText.setText(step.description());
 
+        bindStepImage(step);
         bindUsesIngredients(step);
 
         NoteResponse note = notesByInstructionId.get(step.id());
@@ -265,7 +265,6 @@ public class CookingModeActivity extends AppCompatActivity {
         } else {
             tvStepNote.setVisibility(View.GONE);
         }
-        btnStepNoteEdit.setText(hasNote ? "Edit note" : "Add a note");
 
         boolean hasTimer = Boolean.TRUE.equals(step.hasTimer()) && step.timeSeconds() != null && step.timeSeconds() > 0;
         timerContainer.setVisibility(hasTimer ? View.VISIBLE : View.GONE);
@@ -280,6 +279,40 @@ public class CookingModeActivity extends AppCompatActivity {
         btnPrimaryAction.setText(isLastStep ? "Done — rate it" : "Next step");
         btnPrimaryAction.setIconResource(isLastStep ? R.drawable.ic_check : R.drawable.ic_arrow_forward);
         btnPrimaryAction.setIconGravity(isLastStep ? MaterialButton.ICON_GRAVITY_START : MaterialButton.ICON_GRAVITY_END);
+    }
+
+    /**
+     * Loads the current step's illustration image, if it has one, matching the recipe detail
+     * screen's treatment: the container stays hidden until the load actually succeeds, so a
+     * slow or failed fetch never leaves a blank tile sitting mid-step.
+     *
+     * @param step the instruction step currently shown
+     */
+    private void bindStepImage(@NonNull InstructionResponse step) {
+        String imageUrl = step.imageUrl();
+        boolean hasImage = imageUrl != null && !imageUrl.isBlank();
+        stepImageContainer.setVisibility(View.GONE);
+        if (!hasImage) {
+            return;
+        }
+        Glide.with(stepImage.getContext())
+                .load(imageUrl)
+                .centerCrop()
+                .listener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model,
+                                                 Target<Drawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
+                                                    DataSource dataSource, boolean isFirstResource) {
+                        stepImageContainer.setVisibility(View.VISIBLE);
+                        return false;
+                    }
+                })
+                .into(stepImage);
     }
 
     /**
@@ -313,9 +346,16 @@ public class CookingModeActivity extends AppCompatActivity {
         if (remainingSeconds == null) {
             return;
         }
-        int minutes = remainingSeconds / 60;
+        int hours = remainingSeconds / 3600;
+        int minutes = (remainingSeconds % 3600) / 60;
         int seconds = remainingSeconds % 60;
-        tvTimerClock.setText(getString(R.string.cook_timer_clock_format, minutes, seconds));
+        if (hours > 0) {
+            tvTimerClock.setText(getString(R.string.cook_timer_clock_format_hours, hours, minutes, seconds));
+        } else if (minutes > 0) {
+            tvTimerClock.setText(getString(R.string.cook_timer_clock_format_minutes, minutes, seconds));
+        } else {
+            tvTimerClock.setText(getString(R.string.cook_timer_clock_format_seconds, seconds));
+        }
 
         int max = timerRing.getMax();
         int elapsedFraction = currentStepTimerTotalSeconds <= 0
@@ -325,53 +365,32 @@ public class CookingModeActivity extends AppCompatActivity {
     }
 
     /**
-     * Opens the shared note editor for the currently displayed step, saving or deleting
-     * through {@link CookingModeViewModel} and refreshing once the server confirms the change.
-     */
-    private void openStepNoteEditor() {
-        if (steps.isEmpty()) {
-            return;
-        }
-        InstructionResponse step = steps.get(Math.min(currentIndex(), steps.size() - 1));
-        NoteResponse existing = notesByInstructionId.get(step.id());
-        NoteEditDialog.show(this, "Note for step " + step.stepNumber(), existing != null ? existing.note() : null, new NoteEditDialog.Callback() {
-            @Override
-            public void onSave(@NonNull String noteText) {
-                viewModel.saveNote(recipeId, step.id(), noteText);
-            }
-
-            @Override
-            public void onDelete() {
-                if (existing != null) {
-                    viewModel.deleteNote(existing.id());
-                }
-            }
-        });
-    }
-
-    /**
-     * Opens a minutes/seconds picker to overwrite the current step's timer duration, seeded
+     * Opens a hours/minutes/seconds picker to overwrite the current step's timer duration, seeded
      * with whatever time is currently showing on the clock.
      */
     private void showSetTimerDialog() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_set_timer, null);
+        NumberPicker npHours = dialogView.findViewById(R.id.np_hours);
         NumberPicker npMinutes = dialogView.findViewById(R.id.np_minutes);
         NumberPicker npSeconds = dialogView.findViewById(R.id.np_seconds);
+        npHours.setMinValue(0);
+        npHours.setMaxValue(23);
         npMinutes.setMinValue(0);
-        npMinutes.setMaxValue(180);
+        npMinutes.setMaxValue(59);
         npSeconds.setMinValue(0);
         npSeconds.setMaxValue(59);
 
         Integer remaining = viewModel.getTimerRemainingSeconds().getValue();
         int current = remaining == null ? 0 : remaining;
-        npMinutes.setValue(current / 60);
+        npHours.setValue(current / 3600);
+        npMinutes.setValue((current % 3600) / 60);
         npSeconds.setValue(current % 60);
 
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle("Set timer")
                 .setView(dialogView)
                 .setPositiveButton("Set", (dialog, which) -> {
-                    int totalSeconds = npMinutes.getValue() * 60 + npSeconds.getValue();
+                    int totalSeconds = npHours.getValue() * 3600 + npMinutes.getValue() * 60 + npSeconds.getValue();
                     currentStepTimerTotalSeconds = Math.max(totalSeconds, 1);
                     viewModel.setTimerSeconds(currentStepTimerTotalSeconds);
                 })

@@ -172,4 +172,14 @@
     <style name="ThemeOverlay.CookSync.Dialog.Danger" parent="ThemeOverlay.CookSync.Dialog">
         <item name="buttonBarPositiveButtonStyle">@style/CookSync.Dialog.Button.Positive.Danger</item>
     </style>
+
+    <!-- Re-themes a bare android.widget.NumberPicker to match the Organic palette: the
+         picker has no public Material styling surface, so this overrides the theme attrs its
+         internal views actually read — colorControlNormal for the up/down arrows and
+         selection dividers, android:textColorPrimary for the digit text — instead of reaching
+         into its private fields via reflection. Used by the cooking-mode timer-set dialog. -->
+    <style name="ThemeOverlay.CookSync.NumberPicker" parent="">
+        <item name="colorControlNormal">@color/color_accent</item>
+        <item name="android:textColorPrimary">@color/color_text</item>
+    </style>
 </resources>

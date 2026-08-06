@@ -37,7 +37,6 @@ public class CookingModeViewModel extends ViewModel {
     private final MutableLiveData<Integer> timerRemainingSeconds = new MutableLiveData<>();
     private final MutableLiveData<Boolean> timerRunning = new MutableLiveData<>(false);
     private final MutableLiveData<Event<Boolean>> timerFinishedEvent = new MutableLiveData<>();
-    private final MutableLiveData<ApiResult<Void>> noteSaveResult = new MutableLiveData<>();
 
     private CountDownTimer countDownTimer;
 
@@ -69,10 +68,6 @@ public class CookingModeViewModel extends ViewModel {
         return timerFinishedEvent;
     }
 
-    public LiveData<ApiResult<Void>> getNoteSaveResult() {
-        return noteSaveResult;
-    }
-
     /**
      * Loads the recipe being cooked.
      *
@@ -90,27 +85,6 @@ public class CookingModeViewModel extends ViewModel {
      */
     public void loadNotes(String recipeId) {
         repository.getAllPersonalNotes(recipeId, notesResult);
-    }
-
-    /**
-     * Creates or updates a private note on the current step (or the recipe as a whole, if
-     * {@code instructionId} is {@code null}).
-     *
-     * @param recipeId the recipe being cooked
-     * @param instructionId the step the note is attached to, or {@code null} for a recipe-wide note
-     * @param note the note text
-     */
-    public void saveNote(String recipeId, String instructionId, String note) {
-        repository.saveNote(recipeId, instructionId, note, noteSaveResult);
-    }
-
-    /**
-     * Deletes a private note.
-     *
-     * @param noteId the ID of the note to delete
-     */
-    public void deleteNote(String noteId) {
-        repository.deleteNote(noteId, noteSaveResult);
     }
 
     /**
