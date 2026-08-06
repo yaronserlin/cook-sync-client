@@ -2,6 +2,7 @@ package com.cooksync.app.ui.detail;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -17,14 +18,16 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.common.NoteEditDialog;
+import com.cooksync.app.ui.common.ReportReviewDialog;
 import com.cooksync.app.ui.common.SkeletonHelper;
 import com.cooksync.app.ui.home.TagChipAdapter;
+import com.cooksync.app.util.SessionManager;
 import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.review.ReviewResponse;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -87,8 +90,17 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private View reviewsHeader;
     private View ratingRow;
     private ImageButton btnFavorite;
-    private View noteCard;
+    private View groupNoteView;
     private TextView tvNote;
+    private View groupNoteEdit;
+    private EditText etNote;
+    private ImageButton btnNoteSave;
+    private ImageButton btnNoteDelete;
+
+    /** Guards against a duplicate commit when both the save/delete icon tap and the resulting
+     *  focus-loss on {@link #etNote} fire for the same user gesture. Reset each time the note
+     *  editor opens. */
+    private boolean noteEditCommitted = false;
 
     private boolean isFavorite = false;
     private final List<ReviewResponse> allReviews = new ArrayList<>();
@@ -169,9 +181,20 @@ public class RecipeDetailActivity extends AppCompatActivity {
         reviewsHeader = findViewById(R.id.detail_reviews_header);
         ratingRow = findViewById(R.id.detail_rating_row);
         btnFavorite = findViewById(R.id.btn_favorite);
-        noteCard = findViewById(R.id.detail_note_card);
+        groupNoteView = findViewById(R.id.group_detail_note_view);
         tvNote = findViewById(R.id.tv_detail_note);
-        noteCard.setOnClickListener(v -> openRecipeNoteEditor());
+        groupNoteEdit = findViewById(R.id.group_detail_note_edit);
+        etNote = findViewById(R.id.et_detail_note);
+        btnNoteSave = findViewById(R.id.btn_detail_note_save);
+        btnNoteDelete = findViewById(R.id.btn_detail_note_delete);
+        groupNoteView.setOnClickListener(v -> openRecipeNoteEditor());
+        btnNoteSave.setOnClickListener(v -> commitRecipeNoteInline());
+        btnNoteDelete.setOnClickListener(v -> deleteRecipeNoteInline());
+        etNote.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                commitRecipeNoteInline();
+            }
+        });
 
         starChips.put(5, findViewById(R.id.chip_star_5));
         starChips.put(4, findViewById(R.id.chip_star_4));
@@ -224,11 +247,37 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
         RecyclerView rvInstructions = findViewById(R.id.rv_instructions);
         instructionAdapter = new InstructionAdapter();
-        instructionAdapter.setOnNoteEditListener(this::openStepNoteEditor);
+        instructionAdapter.setOnNoteChangeListener(new InstructionAdapter.OnNoteChangeListener() {
+            @Override
+            public void onSaveNote(InstructionResponse step, String noteText) {
+                viewModel.saveNote(getIntent().getStringExtra(EXTRA_RECIPE_ID), step.id(), noteText);
+            }
+
+            @Override
+            public void onDeleteNote(InstructionResponse step) {
+                NoteResponse existing = findStepNote(step.id());
+                if (existing != null) {
+                    viewModel.deleteNote(existing.id());
+                }
+            }
+        });
         rvInstructions.setAdapter(instructionAdapter);
 
         RecyclerView rvReviews = findViewById(R.id.rv_reviews);
         reviewAdapter = new ReviewAdapter();
+        reviewAdapter.setCurrentUserId(SessionManager.getInstance().getUserId());
+        reviewAdapter.setOnReviewActionListener(new ReviewAdapter.OnReviewActionListener() {
+            @Override
+            public void onDeleteReview(ReviewResponse review) {
+                confirmDeleteReview(review);
+            }
+
+            @Override
+            public void onReportReview(ReviewResponse review) {
+                ReportReviewDialog.show(RecipeDetailActivity.this, (reason, comment) ->
+                        viewModel.reportReview(review.id(), reason, comment));
+            }
+        });
         rvReviews.setAdapter(reviewAdapter);
 
         RecyclerView rvDescriptionBlocks = findViewById(R.id.rv_description_blocks);
@@ -284,6 +333,29 @@ public class RecipeDetailActivity extends AppCompatActivity {
                 Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+
+        viewModel.getReviewActionResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<Void>) {
+                viewModel.loadRecipe(getIntent().getStringExtra(EXTRA_RECIPE_ID));
+            } else if (result instanceof ApiResult.Error<Void> error) {
+                Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * Shows a confirm dialog before deleting a review the current user authored, matching the
+     * style of {@link com.cooksync.app.ui.recipe.MyRecipesActivity}'s recipe delete confirm.
+     *
+     * @param review the review to delete
+     */
+    private void confirmDeleteReview(ReviewResponse review) {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("Delete this review?")
+                .setMessage("This can't be undone.")
+                .setPositiveButton("Delete", (dialog, which) -> viewModel.deleteReview(review.id()))
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private NoteResponse findRecipeNote() {
@@ -311,6 +383,64 @@ public class RecipeDetailActivity extends AppCompatActivity {
         tvNote.setAlpha(hasNote ? 1f : 0.7f);
     }
 
+    /**
+     * Switches the recipe-wide note card from its display state into inline edit mode,
+     * pre-filling the {@link EditText} with the existing note text, if any.
+     */
+    private void openRecipeNoteEditor() {
+        NoteResponse existing = findRecipeNote();
+        String text = existing != null ? existing.note() : "";
+        etNote.setText(text);
+        etNote.setSelection(text.length());
+        groupNoteView.setVisibility(View.GONE);
+        groupNoteEdit.setVisibility(View.VISIBLE);
+        btnNoteDelete.setVisibility(existing != null ? View.VISIBLE : View.GONE);
+        noteEditCommitted = false;
+    }
+
+    /**
+     * Closes the recipe-wide note card's inline editor without saving, restoring the display
+     * state.
+     */
+    private void closeRecipeNoteEditor() {
+        groupNoteEdit.setVisibility(View.GONE);
+        groupNoteView.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * Commits the recipe-wide note editor's current text. Called both from the explicit save
+     * icon and from the {@link EditText} losing focus (i.e. the user taps outside it) — the
+     * {@link #noteEditCommitted} guard makes whichever fires second a no-op, since tapping the
+     * save/delete icon itself blurs the field first. Only saves if the text is non-blank and
+     * actually changed.
+     */
+    private void commitRecipeNoteInline() {
+        if (noteEditCommitted) {
+            return;
+        }
+        noteEditCommitted = true;
+        String text = etNote.getText() == null ? "" : etNote.getText().toString().trim();
+        NoteResponse existing = findRecipeNote();
+        String currentText = existing != null ? existing.note() : "";
+        if (!text.isEmpty() && !text.equals(currentText)) {
+            String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+            viewModel.saveNote(recipeId, null, text);
+        }
+        closeRecipeNoteEditor();
+    }
+
+    private void deleteRecipeNoteInline() {
+        if (noteEditCommitted) {
+            return;
+        }
+        noteEditCommitted = true;
+        NoteResponse existing = findRecipeNote();
+        if (existing != null) {
+            viewModel.deleteNote(existing.id());
+        }
+        closeRecipeNoteEditor();
+    }
+
     private void renderStepNotes() {
         Map<String, String> stepNotes = new HashMap<>();
         for (NoteResponse note : currentNotes) {
@@ -321,41 +451,6 @@ public class RecipeDetailActivity extends AppCompatActivity {
         instructionAdapter.setNotes(stepNotes);
     }
 
-    private void openRecipeNoteEditor() {
-        String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
-        NoteResponse existing = findRecipeNote();
-        NoteEditDialog.show(this, "Recipe note", existing != null ? existing.note() : null, new NoteEditDialog.Callback() {
-            @Override
-            public void onSave(@NonNull String noteText) {
-                viewModel.saveNote(recipeId, null, noteText);
-            }
-
-            @Override
-            public void onDelete() {
-                if (existing != null) {
-                    viewModel.deleteNote(existing.id());
-                }
-            }
-        });
-    }
-
-    private void openStepNoteEditor(InstructionResponse step, String existingNote) {
-        String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
-        NoteResponse existing = findStepNote(step.id());
-        NoteEditDialog.show(this, "Note for step " + step.stepNumber(), existingNote, new NoteEditDialog.Callback() {
-            @Override
-            public void onSave(@NonNull String noteText) {
-                viewModel.saveNote(recipeId, step.id(), noteText);
-            }
-
-            @Override
-            public void onDelete() {
-                if (existing != null) {
-                    viewModel.deleteNote(existing.id());
-                }
-            }
-        });
-    }
 
     /**
      * Shows or hides the skeleton loading placeholder, toggling it against the real content
@@ -400,7 +495,9 @@ public class RecipeDetailActivity extends AppCompatActivity {
         descriptionBlockAdapter.setBlocks(recipe.descriptionBlocks());
 
         ingredientAdapter.setIngredients(new ArrayList<>(recipe.ingredients()));
-        instructionAdapter.setInstructions(recipe.instructions());
+        List<InstructionResponse> sortedInstructions = new ArrayList<>(recipe.instructions());
+        sortedInstructions.sort(Comparator.comparingInt(InstructionResponse::stepNumber));
+        instructionAdapter.setInstructions(sortedInstructions);
         tagAdapter.setTags(recipe.tags());
 
         allReviews.clear();
@@ -449,6 +546,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
         View row = findViewById(rowId);
         TextView starLabel = row.findViewById(R.id.star_label);
         View barFill = row.findViewById(R.id.bar_fill);
+        View barSpacer = row.findViewById(R.id.bar_spacer);
         TextView pctLabel = row.findViewById(R.id.pct_label);
 
         int count = starCounts[star];
@@ -456,10 +554,15 @@ public class RecipeDetailActivity extends AppCompatActivity {
         starLabel.setText(String.valueOf(star));
         pctLabel.setText(String.valueOf(count));
 
-        android.widget.LinearLayout.LayoutParams params =
+        android.widget.LinearLayout.LayoutParams fillParams =
                 (android.widget.LinearLayout.LayoutParams) barFill.getLayoutParams();
-        params.weight = percent;
-        barFill.setLayoutParams(params);
+        fillParams.weight = percent;
+        barFill.setLayoutParams(fillParams);
+
+        android.widget.LinearLayout.LayoutParams spacerParams =
+                (android.widget.LinearLayout.LayoutParams) barSpacer.getLayoutParams();
+        spacerParams.weight = 100 - percent;
+        barSpacer.setLayoutParams(spacerParams);
     }
 
     /**

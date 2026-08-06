@@ -37,6 +37,7 @@
             android:background="@color/color_accent_400" />
 
         <View
+            android:id="@+id/bar_spacer"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"

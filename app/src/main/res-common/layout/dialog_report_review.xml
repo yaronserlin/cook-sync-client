@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Body for the shared "report review" dialog (ReportReviewDialog): a reason radio group
+     plus an optional free-text comment. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <RadioGroup
+        android:id="@+id/rg_report_reason"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <RadioButton
+            android:id="@+id/rb_reason_spam"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Spam" />
+
+        <RadioButton
+            android:id="@+id/rb_reason_abuse"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Abusive or harmful" />
+
+        <RadioButton
+            android:id="@+id/rb_reason_off_topic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Off-topic" />
+
+    </RadioGroup>
+
+    <EditText
+        android:id="@+id/et_report_comment"
+        style="@style/CookSync.Input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="top|start"
+        android:hint="Additional details (optional)"
+        android:inputType="textMultiLine|textCapSentences"
+        android:minLines="2"
+        android:paddingVertical="12dp" />
+
+</LinearLayout>

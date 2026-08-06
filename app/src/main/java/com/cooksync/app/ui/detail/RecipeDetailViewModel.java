@@ -28,6 +28,7 @@ public class RecipeDetailViewModel extends ViewModel {
     private final MutableLiveData<ApiResult<List<NoteResponse>>> notesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> favoritesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> noteSaveResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<Void>> reviewActionResult = new MutableLiveData<>();
 
     public RecipeDetailViewModel() {
         this.repository = new RecipeRepositoryImpl();
@@ -51,6 +52,11 @@ public class RecipeDetailViewModel extends ViewModel {
 
     public LiveData<ApiResult<Void>> getNoteSaveResult() {
         return noteSaveResult;
+    }
+
+    /** Outcome of the most recent review delete or report action. */
+    public LiveData<ApiResult<Void>> getReviewActionResult() {
+        return reviewActionResult;
     }
 
     public void loadRecipe(String recipeId) {
@@ -92,5 +98,25 @@ public class RecipeDetailViewModel extends ViewModel {
      */
     public void deleteNote(String noteId) {
         repository.deleteNote(noteId, noteSaveResult);
+    }
+
+    /**
+     * Deletes a review the current user authored.
+     *
+     * @param reviewId the ID of the review to delete
+     */
+    public void deleteReview(String reviewId) {
+        repository.deleteReview(reviewId, reviewActionResult);
+    }
+
+    /**
+     * Reports a review authored by another user.
+     *
+     * @param reviewId the ID of the review being reported
+     * @param reason the report reason ("SPAM", "ABUSE", or "OFF_TOPIC")
+     * @param comment optional supplementary notes
+     */
+    public void reportReview(String reviewId, String reason, String comment) {
+        repository.reportReview(reviewId, reason, comment, reviewActionResult);
     }
 }

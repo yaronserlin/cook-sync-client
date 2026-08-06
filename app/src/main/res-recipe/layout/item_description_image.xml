@@ -2,20 +2,25 @@
 <!-- A single supplementary photo (+ optional caption) shown inline within the recipe
      description, matching the design's descBlocks "figure" concept: a full-width rounded
      image with an optional figcaption below it, interspersed with text blocks rather than
-     shown in a horizontal-scroll gallery. -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+     shown in a horizontal-scroll gallery. The image container is ratio-locked (16:9) instead
+     of a fixed height so crop behavior is consistent regardless of source photo dimensions. -->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="10dp"
-    android:orientation="vertical">
+    android:layout_marginTop="10dp">
 
     <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:id="@+id/description_image_card"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
+        app:layout_constraintDimensionRatio="16:9"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
         app:strokeWidth="0dp">
 
         <ImageView
@@ -29,13 +34,16 @@
 
     <TextView
         android:id="@+id/description_image_caption"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="7dp"
         android:alpha="0.6"
         android:lineSpacingMultiplier="1.4"
         android:textColor="@color/color_text"
         android:textSize="12sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/description_image_card"
         tools:text="The syrup should coat the back of a spoon." />
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

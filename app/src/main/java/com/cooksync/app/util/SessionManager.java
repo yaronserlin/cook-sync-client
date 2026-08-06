@@ -214,6 +214,20 @@ public final class SessionManager {
     }
 
     /**
+     * Returns the cached user ID of the currently authenticated user.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return the user ID, or {@code null} if no session is active
+     */
+    @Nullable
+    public String getUserId() {
+        return TokenStore.getUserId();
+    }
+
+    /**
      * Returns the cached email of the currently authenticated user.
      *
      * Complexity:

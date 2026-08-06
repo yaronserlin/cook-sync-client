@@ -20,15 +20,21 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <FrameLayout
+            <!-- Hero image container is ratio-locked (4:3) instead of a fixed height so crop
+                 behavior is consistent regardless of source photo dimensions. -->
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="280dp">
+                android:layout_height="wrap_content">
 
                 <ImageView
                     android:id="@+id/detail_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
                     android:scaleType="centerCrop"
+                    app:layout_constraintDimensionRatio="4:3"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     tools:src="@tools:sample/backgrounds/scenic" />
 
                 <ImageButton
@@ -40,21 +46,24 @@
                     android:contentDescription="Back"
                     android:elevation="4dp"
                     android:src="@drawable/ic_arrow_back"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:tint="@color/color_text" />
 
                 <ImageButton
                     android:id="@+id/btn_favorite"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:layout_gravity="top|end"
                     android:layout_margin="16dp"
                     android:background="@drawable/bg_white_circle"
                     android:contentDescription="Favorite"
                     android:elevation="4dp"
                     android:src="@drawable/ic_heart_outline"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:tint="@color/color_accent" />
 
-            </FrameLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -94,6 +103,109 @@
                     android:nestedScrollingEnabled="false"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_description_text" />
+
+                <!-- Recipe-wide private note: inline edit-in-place, visible only to the
+                     signed-in user. Shows a neutral placeholder until a note exists. -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/detail_note_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    app:cardBackgroundColor="@color/color_accent_2_100"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <LinearLayout
+                            android:id="@+id/group_detail_note_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:id="@+id/iv_detail_note_icon"
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:src="@drawable/ic_edit"
+                                app:tint="@color/color_accent_2_800" />
+
+                            <TextView
+                                android:id="@+id/tv_detail_note"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:lineSpacingMultiplier="1.3"
+                                android:textColor="@color/color_accent_2_800"
+                                android:textSize="13sp"
+                                tools:text="Add a private note" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/group_detail_note_edit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            tools:visibility="visible">
+
+                            <EditText
+                                android:id="@+id/et_detail_note"
+                                style="@style/CookSync.Input"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_note_edit"
+                                android:gravity="top|start"
+                                android:hint="Add a private note…"
+                                android:inputType="textMultiLine|textCapSentences"
+                                android:minLines="2"
+                                android:paddingVertical="10dp"
+                                tools:text="My note" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:gravity="end|center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageButton
+                                    android:id="@+id/btn_detail_note_delete"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="Delete note"
+                                    android:padding="6dp"
+                                    android:src="@drawable/ic_delete"
+                                    android:visibility="gone"
+                                    app:tint="@color/color_accent_2_800" />
+
+                                <ImageButton
+                                    android:id="@+id/btn_detail_note_save"
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_marginStart="4dp"
+                                    android:background="?attr/selectableItemBackgroundBorderless"
+                                    android:contentDescription="Save note"
+                                    android:padding="6dp"
+                                    android:src="@drawable/ic_check"
+                                    app:tint="@color/color_accent_2_800" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Rating row: tappable, jumps to the Reviews section, matching the design's
                      tap target linking to reviews. -->
@@ -236,48 +348,6 @@
                     android:orientation="horizontal"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_tag_chip" />
-
-                <!-- Recipe-wide private note: tappable to add/edit/delete, visible only to the
-                     signed-in user. Shows a neutral placeholder until a note exists. -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/detail_note_card"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    app:cardBackgroundColor="@color/color_surface"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:padding="14dp">
-
-                        <ImageView
-                            android:id="@+id/iv_detail_note_icon"
-                            android:layout_width="18dp"
-                            android:layout_height="18dp"
-                            android:src="@drawable/ic_edit"
-                            app:tint="@color/color_text" />
-
-                        <TextView
-                            android:id="@+id/tv_detail_note"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="10dp"
-                            android:layout_weight="1"
-                            android:alpha="0.7"
-                            android:lineSpacingMultiplier="1.3"
-                            android:textColor="@color/color_text"
-                            android:textSize="13sp"
-                            tools:text="Add a private note" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
 
                 <TextView
                     android:id="@+id/detail_ingredients_header"

@@ -1,5 +1,6 @@
 package com.cooksync.app.ui.detail;
 
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,9 +8,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.cooksync.app.R;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 
@@ -72,10 +78,26 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         DescriptionBlockDTO block = blocks.get(position);
         if (holder instanceof ImageViewHolder imageHolder) {
+            // Stays hidden until the load actually succeeds, rather than showing a placeholder
+            // tile, so a slow or failed fetch never renders as a gray box or broken image.
+            imageHolder.image.setVisibility(View.INVISIBLE);
             Glide.with(imageHolder.image.getContext())
                     .load(block.imageUrl())
-                    .placeholder(R.color.color_neutral_300)
                     .centerCrop()
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model,
+                                                     Target<Drawable> target, boolean isFirstResource) {
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
+                                                        DataSource dataSource, boolean isFirstResource) {
+                            imageHolder.image.setVisibility(View.VISIBLE);
+                            return false;
+                        }
+                    })
                     .into(imageHolder.image);
 
             if (block.caption() == null || block.caption().isBlank()) {

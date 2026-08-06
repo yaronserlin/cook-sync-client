@@ -3,12 +3,15 @@ package com.cooksync.app.ui.detail;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.common.AvatarView;
 import com.dtos.response.review.ReviewResponse;
 
 import java.time.LocalDate;
@@ -21,17 +24,46 @@ import java.util.List;
  * Adapter for the recipe reviews list.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder> {
 
+    /** Notified when the viewer chooses an action from a review's overflow menu. */
+    public interface OnReviewActionListener {
+        /**
+         * @param review the review the viewer, who is its author, chose to delete
+         */
+        void onDeleteReview(ReviewResponse review);
+
+        /**
+         * @param review the review the viewer, who is not its author, chose to report
+         */
+        void onReportReview(ReviewResponse review);
+    }
+
     private final List<ReviewResponse> reviews = new ArrayList<>();
+    private String currentUserId;
+    private OnReviewActionListener actionListener;
 
     public void setReviews(List<ReviewResponse> newReviews) {
         reviews.clear();
         reviews.addAll(newReviews);
         notifyDataSetChanged();
+    }
+
+    /**
+     * Sets the signed-in viewer's user ID, used to decide whether each review's overflow menu
+     * offers "Delete" (viewer is the author) or "Report" (viewer is not).
+     *
+     * @param currentUserId the signed-in user's ID, or {@code null} if signed out
+     */
+    public void setCurrentUserId(String currentUserId) {
+        this.currentUserId = currentUserId;
+    }
+
+    public void setOnReviewActionListener(OnReviewActionListener listener) {
+        this.actionListener = listener;
     }
 
     @NonNull
@@ -44,14 +76,34 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ReviewResponse review = reviews.get(position);
-        
+
         String author = review.authorName();
         holder.authorName.setText(author);
-        holder.initial.setText(author != null && !author.isEmpty() ? author.substring(0, 1).toUpperCase() : "?");
-        
+        holder.avatar.setAvatar(review.authorAvatarUrl(), author);
+
         holder.rating.setText(review.rating() != null ? review.rating().toString() : "0.0");
         holder.content.setText(review.comment());
         holder.date.setText(formatRelativeDate(review.createdAt()));
+
+        boolean isAuthor = currentUserId != null && currentUserId.equals(review.userId());
+        holder.overflow.setOnClickListener(v -> showOverflowMenu(v, review, isAuthor));
+    }
+
+    private void showOverflowMenu(View anchor, ReviewResponse review, boolean isAuthor) {
+        PopupMenu popup = new PopupMenu(anchor.getContext(), anchor);
+        popup.getMenu().add(isAuthor ? "Delete" : "Report");
+        popup.setOnMenuItemClickListener(item -> {
+            if (actionListener == null) {
+                return true;
+            }
+            if (isAuthor) {
+                actionListener.onDeleteReview(review);
+            } else {
+                actionListener.onReportReview(review);
+            }
+            return true;
+        });
+        popup.show();
     }
 
     /**
@@ -92,19 +144,21 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView initial;
+        AvatarView avatar;
         TextView authorName;
         TextView date;
         TextView rating;
         TextView content;
+        ImageButton overflow;
 
         ViewHolder(View view) {
             super(view);
-            initial = view.findViewById(R.id.review_author_initial);
+            avatar = view.findViewById(R.id.review_author_avatar);
             authorName = view.findViewById(R.id.review_author_name);
             date = view.findViewById(R.id.review_date);
             rating = view.findViewById(R.id.review_rating);
             content = view.findViewById(R.id.review_content);
+            overflow = view.findViewById(R.id.btn_review_overflow);
         }
     }
 }
