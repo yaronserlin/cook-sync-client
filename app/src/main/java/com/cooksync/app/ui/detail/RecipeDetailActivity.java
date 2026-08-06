@@ -239,8 +239,6 @@ public class RecipeDetailActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
-        findViewById(R.id.btn_offline_download).setOnClickListener(v ->
-                OrganicToast.show(this, null, "Offline download coming soon!"));
 
         btnSortReviews.setOnClickListener(v -> {
             sortIndex = (sortIndex + 1) % SORT_OPTIONS.length;
