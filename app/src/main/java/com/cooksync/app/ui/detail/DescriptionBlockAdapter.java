@@ -35,12 +35,21 @@ import java.util.List;
  */
 public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
+    /** Notified when the viewer taps a description image block to view it full-screen. */
+    public interface OnImageClickListener {
+        /**
+         * @param imageUrl the tapped block's image URL
+         */
+        void onImageClick(String imageUrl);
+    }
+
     private static final String TYPE_IMAGE = "IMAGE";
 
     private static final int VIEW_TYPE_TEXT = 0;
     private static final int VIEW_TYPE_IMAGE = 1;
 
     private final List<DescriptionBlockDTO> blocks = new ArrayList<>();
+    private OnImageClickListener imageClickListener;
 
     /**
      * Replaces the displayed blocks, preserving the author-authored order returned by the
@@ -54,6 +63,10 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
             blocks.addAll(descriptionBlocks);
         }
         notifyDataSetChanged();
+    }
+
+    public void setOnImageClickListener(OnImageClickListener listener) {
+        this.imageClickListener = listener;
     }
 
     @Override
@@ -99,6 +112,11 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
                         }
                     })
                     .into(imageHolder.image);
+            imageHolder.image.setOnClickListener(v -> {
+                if (imageClickListener != null) {
+                    imageClickListener.onImageClick(block.imageUrl());
+                }
+            });
 
             if (block.caption() == null || block.caption().isBlank()) {
                 imageHolder.caption.setVisibility(View.GONE);

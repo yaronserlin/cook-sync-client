@@ -50,6 +50,8 @@ public abstract class RecipeListActivity extends AppCompatActivity {
     protected TextView tvEmptyTitle;
     protected TextView tvEmptySubtitle;
     protected View noResultsState;
+    /** Exposed so subclasses can anchor an {@link com.cooksync.app.ui.common.OrganicToast} above it. */
+    protected BottomNavigationView bottomNav;
     private ChipGroup cgRemovableConstraints;
     private View btnClearAll;
 
@@ -86,7 +88,7 @@ public abstract class RecipeListActivity extends AppCompatActivity {
     }
 
     private void setupBottomNav() {
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(getSelectedNavItemId());
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();

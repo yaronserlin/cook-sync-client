@@ -6,7 +6,6 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
@@ -18,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
+import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.home.TagChipAdapter;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -221,7 +221,7 @@ public class SearchActivity extends AppCompatActivity {
                 updateSummaryAndEmptyState(recipes);
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, null, error.getMessage());
             }
         });
 

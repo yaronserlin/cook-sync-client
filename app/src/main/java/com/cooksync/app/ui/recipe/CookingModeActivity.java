@@ -15,7 +15,6 @@ import android.view.WindowManager;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -26,6 +25,8 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.common.NoteEditDialog;
+import com.cooksync.app.ui.common.OrganicConfirmDialog;
+import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.detail.RecipeDetailActivity;
 import com.dtos.response.ingredient.IngredientResponse;
 import com.dtos.response.instruction.InstructionResponse;
@@ -163,7 +164,7 @@ public class CookingModeActivity extends AppCompatActivity {
                 buildProgressBars(steps.size());
                 renderCurrentStep();
             } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, null, error.getMessage());
                 finish();
             }
         });
@@ -184,7 +185,7 @@ public class CookingModeActivity extends AppCompatActivity {
             if (result instanceof ApiResult.Success<Void>) {
                 viewModel.loadNotes(recipeId);
             } else if (result instanceof ApiResult.Error<Void> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, null, error.getMessage());
             }
         });
 
@@ -366,7 +367,7 @@ public class CookingModeActivity extends AppCompatActivity {
         npMinutes.setValue(current / 60);
         npSeconds.setValue(current % 60);
 
-        new MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle("Set timer")
                 .setView(dialogView)
                 .setPositiveButton("Set", (dialog, which) -> {
@@ -389,7 +390,7 @@ public class CookingModeActivity extends AppCompatActivity {
         playTimerFinishedSound();
         vibrate();
 
-        new MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle("Time's up!")
                 .setMessage("The timer for this step has finished.")
                 .setPositiveButton("Got it", null)
@@ -434,12 +435,9 @@ public class CookingModeActivity extends AppCompatActivity {
     }
 
     private void confirmExit() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Exit cooking mode?")
-                .setMessage("Your progress in this recipe won't be saved.")
-                .setPositiveButton("Exit", (dialog, which) -> finish())
-                .setNegativeButton("Cancel", null)
-                .show();
+        OrganicConfirmDialog.show(this, "Stop cooking?",
+                "You'll pick up right where you left off — your progress is saved.",
+                "Stop", "Keep cooking", false, this::finish);
     }
 
     private int dpToPx(int dp) {

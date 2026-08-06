@@ -48,7 +48,7 @@ public final class ReportReviewDialog {
         RadioButton reasonAbuse = dialogView.findViewById(R.id.rb_reason_abuse);
         EditText comment = dialogView.findViewById(R.id.et_report_comment);
 
-        new MaterialAlertDialogBuilder(context)
+        new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle("Report review")
                 .setView(dialogView)
                 .setPositiveButton("Submit", (dialog, which) -> {

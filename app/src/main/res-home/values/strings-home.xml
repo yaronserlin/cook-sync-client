@@ -18,6 +18,7 @@
     <string name="profile_dialog_deactivate_title">Deactivate account?</string>
     <string name="profile_dialog_deactivate_message">You\'ll be signed out and your account will be deactivated. You can contact support to reactivate it later.</string>
     <string name="profile_dialog_logout_title">Log out?</string>
+    <string name="profile_dialog_logout_message">Your favorites and private notes stay on this account. You will need your password to get back in.</string>
     <string name="profile_updated">Profile updated</string>
     <string name="profile_avatar_updated">Avatar updated</string>
     <string name="profile_password_updated">Password updated</string>

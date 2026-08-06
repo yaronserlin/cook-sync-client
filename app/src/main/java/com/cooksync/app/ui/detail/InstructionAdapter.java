@@ -51,9 +51,18 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
         void onDeleteNote(InstructionResponse step);
     }
 
+    /** Notified when the viewer taps a step's illustration image to view it full-screen. */
+    public interface OnImageClickListener {
+        /**
+         * @param imageUrl the tapped step's image URL
+         */
+        void onImageClick(String imageUrl);
+    }
+
     private final List<InstructionResponse> instructions = new ArrayList<>();
     private final Map<String, String> notesByInstructionId = new HashMap<>();
     private OnNoteChangeListener noteChangeListener;
+    private OnImageClickListener imageClickListener;
 
     /** ID of the instruction step currently in inline note-edit mode, or {@code null} if none. */
     private String editingInstructionId;
@@ -77,6 +86,10 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
 
     public void setOnNoteChangeListener(OnNoteChangeListener listener) {
         this.noteChangeListener = listener;
+    }
+
+    public void setOnImageClickListener(OnImageClickListener listener) {
+        this.imageClickListener = listener;
     }
 
     @NonNull
@@ -116,6 +129,11 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
                         }
                     })
                     .into(holder.stepImage);
+            holder.stepImage.setOnClickListener(v -> {
+                if (imageClickListener != null) {
+                    imageClickListener.onImageClick(imageUrl);
+                }
+            });
         }
 
         String note = notesByInstructionId.get(step.id());

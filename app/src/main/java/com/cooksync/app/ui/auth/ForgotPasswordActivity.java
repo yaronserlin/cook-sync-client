@@ -5,13 +5,13 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.OrganicToast;
 
 /**
  * Activity presenting the forgot-password flow: request a reset token by email, then use
@@ -85,7 +85,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 resetStage.setVisibility(View.VISIBLE);
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, null, error.getMessage());
             }
         });
 
@@ -94,11 +94,11 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 progress.setVisibility(View.VISIBLE);
             } else if (result instanceof ApiResult.Success) {
                 progress.setVisibility(View.GONE);
-                Toast.makeText(this, R.string.reset_password_success, Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, null, getString(R.string.reset_password_success));
                 finish();
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, null, error.getMessage());
             }
         });
     }

@@ -3,7 +3,6 @@ package com.cooksync.app.ui.home;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -14,6 +13,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
+import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.SkeletonHelper;
 import com.cooksync.app.ui.recipe.FiltersBottomSheetDialogFragment;
 import com.cooksync.app.ui.recipe.MyRecipesActivity;
@@ -48,6 +48,7 @@ public class HomeActivity extends AppCompatActivity {
     private ChipGroup cgRemovableConstraints;
     private View btnClearAll;
     private List<String> loadedTagNames = new ArrayList<>();
+    private com.google.android.material.bottomnavigation.BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +100,7 @@ public class HomeActivity extends AppCompatActivity {
         findViewById(R.id.search_bar_tap_target).setOnClickListener(v ->
                 startActivity(new Intent(this, com.cooksync.app.ui.recipe.SearchActivity.class)));
 
-        com.google.android.material.bottomnavigation.BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_home);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -175,7 +176,7 @@ public class HomeActivity extends AppCompatActivity {
                 updateNoResultsState(success.getRecipes().isEmpty());
             } else if (state instanceof FeedState.Error error) {
                 showSkeleton(false);
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
@@ -195,7 +196,7 @@ public class HomeActivity extends AppCompatActivity {
         viewModel.getErrorEvent().observe(this, event -> {
             String message = event.getContentIfNotHandled();
             if (message != null) {
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, message);
             }
         });
     }

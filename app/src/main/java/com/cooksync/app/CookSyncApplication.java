@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,6 +11,7 @@ import androidx.annotation.Nullable;
 import com.cooksync.app.data.local.TokenStore;
 import com.cooksync.app.ui.auth.LoginActivity;
 import com.cooksync.app.ui.auth.RegisterActivity;
+import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.util.SessionManager;
 
 import java.lang.ref.WeakReference;
@@ -99,7 +99,7 @@ public class CookSyncApplication extends Application {
             return;
         }
         if (top != null && wasForced) {
-            Toast.makeText(top, "Your session expired — please sign in again.", Toast.LENGTH_LONG).show();
+            OrganicToast.show(top, null, "Your session expired — please sign in again.");
         }
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

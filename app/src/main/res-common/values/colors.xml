@@ -25,6 +25,8 @@
     <color name="color_accent_2_700">#56633F</color>
     <color name="color_accent_2_800">#3D472B</color>
 
+    <color name="color_neutral_100">#F9F4ED</color>
     <color name="color_neutral_300">#DCD3C4</color>
     <color name="color_neutral_400">#C0B6A5</color>
+    <color name="color_neutral_900">#2E2B25</color>
 </resources>

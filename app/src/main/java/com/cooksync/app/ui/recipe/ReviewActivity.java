@@ -7,7 +7,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.ImageViewCompat;
@@ -15,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.OrganicToast;
 
 import java.util.Arrays;
 import java.util.List;
@@ -107,7 +107,7 @@ public class ReviewActivity extends AppCompatActivity {
         viewModel.getValidationError().observe(this, event -> {
             String message = event.getContentIfNotHandled();
             if (message != null) {
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, null, message);
             }
         });
 
@@ -116,11 +116,11 @@ public class ReviewActivity extends AppCompatActivity {
                 setSubmitting(true);
             } else if (result instanceof ApiResult.Success) {
                 setSubmitting(false);
-                Toast.makeText(this, R.string.review_submitted, Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, null, getString(R.string.review_submitted));
                 finish();
             } else if (result instanceof ApiResult.Error<?> error) {
                 setSubmitting(false);
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, null, error.getMessage());
             }
         });
     }

@@ -17,6 +17,7 @@ lifecycle = "2.8.0"
 glide = "4.16.0"
 cloudinary = "3.1.2"
 fresco = "3.7.0"
+photoview = "2.3.0"
 cooksyncDtos = "1.0.0-SNAPSHOT"
 
 [libraries]
@@ -50,6 +51,8 @@ lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 cloudinary-android = { group = "com.cloudinary", name = "cloudinary-android", version.ref = "cloudinary" }
 fresco = { group = "com.facebook.fresco", name = "fresco", version.ref = "fresco" }
+# Zoomable ImageView (pinch-to-zoom, double-tap-zoom) for the full-screen image viewer.
+photoview = { group = "com.github.chrisbanes", name = "PhotoView", version.ref = "photoview" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

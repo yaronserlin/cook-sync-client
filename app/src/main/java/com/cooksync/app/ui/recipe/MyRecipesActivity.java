@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.IdRes;
 import androidx.appcompat.widget.SearchView;
@@ -15,11 +14,12 @@ import androidx.lifecycle.ViewModelProvider;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
+import com.cooksync.app.ui.common.OrganicConfirmDialog;
+import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -148,7 +148,7 @@ public class MyRecipesActivity extends RecipeListActivity {
                 }
             } else if (result instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
                 showSkeleton(false);
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
@@ -160,20 +160,20 @@ public class MyRecipesActivity extends RecipeListActivity {
 
         viewModel.getDeleteResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<Void>) {
-                Toast.makeText(this, "Recipe deleted", Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, R.drawable.ic_delete, "Recipe deleted");
                 viewModel.loadMyRecipes();
             } else if (result instanceof ApiResult.Error<Void> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
         viewModel.getVisibilityResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<RecipeResponse> success) {
                 boolean isPublic = "PUBLIC".equalsIgnoreCase(success.getData().visibility());
-                Toast.makeText(this, isPublic ? "Recipe is now public" : "Recipe is now private", Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, isPublic ? "Recipe is now public" : "Recipe is now private");
                 viewModel.loadMyRecipes();
             } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
     }
@@ -274,11 +274,8 @@ public class MyRecipesActivity extends RecipeListActivity {
     }
 
     private void confirmDelete(RecipePreviewResponse recipe) {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Delete this recipe?")
-                .setMessage("\"" + recipe.title() + "\" will be permanently deleted. This can't be undone.")
-                .setPositiveButton("Delete", (dialog, which) -> viewModel.deleteRecipe(recipe.id()))
-                .setNegativeButton("Cancel", null)
-                .show();
+        OrganicConfirmDialog.show(this, "Delete this recipe?",
+                "\"" + recipe.title() + "\" will be permanently deleted. This can't be undone.",
+                "Delete", "Cancel", true, () -> viewModel.deleteRecipe(recipe.id()));
     }
 }

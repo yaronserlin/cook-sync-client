@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Content view for OrganicToast, inflated into a Snackbar's SnackbarLayout once its default
+  background/padding have been stripped. Matches the design system's ".toast" component: a
+  dark pill with a leading icon, message and an optional uppercase trailing action.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/toast_organic_root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_pill_solid"
+    android:backgroundTint="@color/color_neutral_900"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingTop="14dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="14dp">
+
+    <ImageView
+        android:id="@+id/iv_toast_icon"
+        android:layout_width="17dp"
+        android:layout_height="17dp"
+        android:layout_marginEnd="10dp"
+        android:contentDescription="@null"
+        android:visibility="gone"
+        app:tint="@color/color_accent_300" />
+
+    <TextView
+        android:id="@+id/tv_toast_message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/color_neutral_100"
+        android:textSize="13sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tv_toast_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:letterSpacing="0.02"
+        android:padding="4dp"
+        android:textAllCaps="true"
+        android:textColor="@color/color_accent_300"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+</LinearLayout>

@@ -5,7 +5,6 @@ import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.IdRes;
 import androidx.appcompat.widget.SearchView;
@@ -14,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
+import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -24,11 +24,12 @@ import java.util.List;
 /**
  * Lists every recipe the current user has favorited, with search, sort/difficulty/tag
  * filtering, and a filter for favorites that carry a private note. Tapping the (always-filled)
- * heart on a card removes that recipe from favorites. Uses the same shared list layout and row
+ * heart on a card removes that recipe from favorites and offers an "Undo" toast to reverse it
+ * (see {@link FavoritesViewModel#removeFavorite}). Uses the same shared list layout and row
  * card as {@link MyRecipesActivity}, differing only in data source, chips, and trailing action.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 04/08/2026
  */
 public class FavoriteRecipesActivity extends RecipeListActivity {
@@ -82,6 +83,8 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
             @Override
             public void onTrailingActionClick(RecipePreviewResponse recipe, View anchor) {
                 viewModel.removeFavorite(recipe.id());
+                OrganicToast.showWithAction(FavoriteRecipesActivity.this, bottomNav, R.drawable.ic_heart_outline,
+                        "Removed from favorites", "Undo", () -> viewModel.undoRemoveFavorite(recipe));
             }
         });
         rvList.setAdapter(adapter);
@@ -148,7 +151,7 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
                 }
             } else if (result instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
                 showSkeleton(false);
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 

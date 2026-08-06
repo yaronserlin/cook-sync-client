@@ -42,9 +42,18 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         void onReportReview(ReviewResponse review);
     }
 
+    /** Notified when the viewer taps a review author's avatar to view it full-screen. */
+    public interface OnAvatarClickListener {
+        /**
+         * @param avatarUrl the tapped author's avatar URL
+         */
+        void onAvatarClick(String avatarUrl);
+    }
+
     private final List<ReviewResponse> reviews = new ArrayList<>();
     private String currentUserId;
     private OnReviewActionListener actionListener;
+    private OnAvatarClickListener avatarClickListener;
 
     public void setReviews(List<ReviewResponse> newReviews) {
         reviews.clear();
@@ -66,6 +75,10 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         this.actionListener = listener;
     }
 
+    public void setOnAvatarClickListener(OnAvatarClickListener listener) {
+        this.avatarClickListener = listener;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -80,6 +93,11 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         String author = review.authorName();
         holder.authorName.setText(author);
         holder.avatar.setAvatar(review.authorAvatarUrl(), author);
+        holder.avatar.setOnClickListener(v -> {
+            if (avatarClickListener != null) {
+                avatarClickListener.onAvatarClick(review.authorAvatarUrl());
+            }
+        });
 
         holder.rating.setText(review.rating() != null ? review.rating().toString() : "0.0");
         holder.content.setText(review.comment());

@@ -59,7 +59,7 @@ public final class NoteEditDialog {
             input.setSelection(existingText.length());
         }
 
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context)
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle(title)
                 .setView(dialogView)
                 .setPositiveButton("Save", (dialog, which) -> {

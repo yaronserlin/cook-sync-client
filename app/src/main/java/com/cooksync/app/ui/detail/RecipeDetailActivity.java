@@ -6,7 +6,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,6 +17,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.OrganicConfirmDialog;
+import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ReportReviewDialog;
 import com.cooksync.app.ui.common.SkeletonHelper;
 import com.cooksync.app.ui.home.TagChipAdapter;
@@ -27,7 +28,6 @@ import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.review.ReviewResponse;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -226,7 +226,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
         });
 
         findViewById(R.id.btn_offline_download).setOnClickListener(v ->
-                Toast.makeText(this, "Offline download coming soon!", Toast.LENGTH_SHORT).show());
+                OrganicToast.show(this, null, "Offline download coming soon!"));
 
         btnSortReviews.setOnClickListener(v -> {
             sortIndex = (sortIndex + 1) % SORT_OPTIONS.length;
@@ -261,6 +261,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
                 }
             }
         });
+        instructionAdapter.setOnImageClickListener(this::openFullscreenImage);
         rvInstructions.setAdapter(instructionAdapter);
 
         RecyclerView rvReviews = findViewById(R.id.rv_reviews);
@@ -278,10 +279,12 @@ public class RecipeDetailActivity extends AppCompatActivity {
                         viewModel.reportReview(review.id(), reason, comment));
             }
         });
+        reviewAdapter.setOnAvatarClickListener(this::openFullscreenImage);
         rvReviews.setAdapter(reviewAdapter);
 
         RecyclerView rvDescriptionBlocks = findViewById(R.id.rv_description_blocks);
         descriptionBlockAdapter = new DescriptionBlockAdapter();
+        descriptionBlockAdapter.setOnImageClickListener(this::openFullscreenImage);
         rvDescriptionBlocks.setLayoutManager(new LinearLayoutManager(this));
         rvDescriptionBlocks.setAdapter(descriptionBlockAdapter);
 
@@ -299,7 +302,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
                 showSkeleton(false);
             } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
                 showSkeleton(false);
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, null, error.getMessage());
             }
         });
 
@@ -330,7 +333,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
             if (result instanceof ApiResult.Success<Void>) {
                 viewModel.loadNotes(getIntent().getStringExtra(EXTRA_RECIPE_ID));
             } else if (result instanceof ApiResult.Error<Void> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, null, error.getMessage());
             }
         });
 
@@ -338,7 +341,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
             if (result instanceof ApiResult.Success<Void>) {
                 viewModel.loadRecipe(getIntent().getStringExtra(EXTRA_RECIPE_ID));
             } else if (result instanceof ApiResult.Error<Void> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, null, error.getMessage());
             }
         });
     }
@@ -349,13 +352,25 @@ public class RecipeDetailActivity extends AppCompatActivity {
      *
      * @param review the review to delete
      */
+    /**
+     * Opens {@link com.cooksync.app.ui.common.FullscreenImageActivity} for a tapped photo
+     * (hero image, description block, instruction step, or review avatar). A no-op if the
+     * photo has no URL, e.g. an avatar still showing its initials fallback.
+     *
+     * @param imageUrl the photo's URL, or {@code null}/blank if there is none to show
+     */
+    private void openFullscreenImage(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return;
+        }
+        android.content.Intent intent = new android.content.Intent(this, com.cooksync.app.ui.common.FullscreenImageActivity.class);
+        intent.putExtra(com.cooksync.app.ui.common.FullscreenImageActivity.EXTRA_IMAGE_URL, imageUrl);
+        startActivity(intent);
+    }
+
     private void confirmDeleteReview(ReviewResponse review) {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle("Delete this review?")
-                .setMessage("This can't be undone.")
-                .setPositiveButton("Delete", (dialog, which) -> viewModel.deleteReview(review.id()))
-                .setNegativeButton("Cancel", null)
-                .show();
+        OrganicConfirmDialog.show(this, "Delete this review?", "This can't be undone.",
+                "Delete", "Cancel", true, () -> viewModel.deleteReview(review.id()));
     }
 
     private NoteResponse findRecipeNote() {
@@ -491,6 +506,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
                 .placeholder(R.color.color_neutral_300)
                 .centerCrop()
                 .into(heroImage);
+        heroImage.setOnClickListener(v -> openFullscreenImage(recipe.primaryImageUrl()));
 
         descriptionBlockAdapter.setBlocks(recipe.descriptionBlocks());
 

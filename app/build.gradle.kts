@@ -26,7 +26,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Pointing to the specific backend server address provided.
-        buildConfigField("String", "BASE_URL", "\"http://192.168.0.223:8080/\"")
+        buildConfigField("String", "BASE_URL", "\"http://172.20.10.3:8080/\"")
     }
 
     buildTypes {
@@ -97,6 +97,7 @@ dependencies {
     implementation(libs.glide)
     implementation(libs.cloudinary.android)
     implementation(libs.fresco)
+    implementation(libs.photoview)
 
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
 }

@@ -9,7 +9,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -21,6 +20,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.FullscreenImageActivity;
+import com.cooksync.app.ui.common.OrganicConfirmDialog;
+import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.home.HomeActivity;
 import com.cooksync.app.ui.recipe.FavoriteRecipesActivity;
 import com.cooksync.app.ui.recipe.MyRecipesActivity;
@@ -58,6 +60,7 @@ public class ProfileActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<String> pickAvatarLauncher;
     private Uri pendingAvatarUri;
+    private BottomNavigationView bottomNav;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,16 +111,29 @@ public class ProfileActivity extends AppCompatActivity {
     private void renderAvatar(String avatarUrl) {
         if (avatarUrl == null || avatarUrl.isEmpty()) {
             ivAvatar.setImageDrawable(null);
+            ivAvatar.setOnClickListener(null);
             tvAvatarInitials.setText(SessionManager.getInstance().getInitials());
             tvAvatarInitials.setVisibility(View.VISIBLE);
         } else {
             tvAvatarInitials.setVisibility(View.GONE);
             Glide.with(this).load(avatarUrl).transform(new CircleCrop()).into(ivAvatar);
+            ivAvatar.setOnClickListener(v -> openFullscreenImage(avatarUrl));
         }
     }
 
+    /**
+     * Opens {@link FullscreenImageActivity} to view the current avatar photo full-screen.
+     *
+     * @param imageUrl the avatar's image URL
+     */
+    private void openFullscreenImage(String imageUrl) {
+        Intent intent = new Intent(this, FullscreenImageActivity.class);
+        intent.putExtra(FullscreenImageActivity.EXTRA_IMAGE_URL, imageUrl);
+        startActivity(intent);
+    }
+
     private void setupBottomNav() {
-        BottomNavigationView bottomNav = findViewById(R.id.bottom_nav);
+        bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_profile);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -157,16 +173,16 @@ public class ProfileActivity extends AppCompatActivity {
         viewModel.getValidationError().observe(this, event -> {
             String message = event.getContentIfNotHandled();
             if (message != null) {
-                Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, message);
             }
         });
 
         viewModel.getProfileResult().observe(this, result -> {
             if (result instanceof ApiResult.Success) {
                 renderCachedProfile();
-                Toast.makeText(this, R.string.profile_updated, Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, getString(R.string.profile_updated));
             } else if (result instanceof ApiResult.Error<?> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
@@ -182,13 +198,13 @@ public class ProfileActivity extends AppCompatActivity {
                     public void onError(@NonNull String message) {
                         setAvatarUploading(false);
                         pendingAvatarUri = null;
-                        Toast.makeText(ProfileActivity.this, message, Toast.LENGTH_LONG).show();
+                        OrganicToast.show(ProfileActivity.this, bottomNav, message);
                     }
                 });
             } else if (result instanceof ApiResult.Error<?> error) {
                 setAvatarUploading(false);
                 pendingAvatarUri = null;
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
@@ -197,36 +213,36 @@ public class ProfileActivity extends AppCompatActivity {
                 setAvatarUploading(false);
                 pendingAvatarUri = null;
                 renderAvatar(SessionManager.getInstance().getAvatarUrl());
-                Toast.makeText(this, R.string.profile_avatar_updated, Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, getString(R.string.profile_avatar_updated));
             } else if (result instanceof ApiResult.Error<?> error) {
                 setAvatarUploading(false);
                 pendingAvatarUri = null;
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
         viewModel.getPasswordResult().observe(this, result -> {
             if (result instanceof ApiResult.Success) {
-                Toast.makeText(this, R.string.profile_password_updated, Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, getString(R.string.profile_password_updated));
             } else if (result instanceof ApiResult.Error<?> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
         viewModel.getEmailResult().observe(this, result -> {
             if (result instanceof ApiResult.Success) {
                 renderCachedProfile();
-                Toast.makeText(this, R.string.profile_email_updated, Toast.LENGTH_SHORT).show();
+                OrganicToast.show(this, bottomNav, getString(R.string.profile_email_updated));
             } else if (result instanceof ApiResult.Error<?> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
         viewModel.getDeactivateResult().observe(this, result -> {
             if (result instanceof ApiResult.Success) {
-                Toast.makeText(this, R.string.profile_account_deactivated, Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, getString(R.string.profile_account_deactivated));
             } else if (result instanceof ApiResult.Error<?> error) {
-                Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
     }
@@ -243,7 +259,7 @@ public class ProfileActivity extends AppCompatActivity {
         etFirst.setText(SessionManager.getInstance().getFirstName());
         etLast.setText(SessionManager.getInstance().getLastName());
 
-        new MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle(R.string.profile_dialog_edit_name_title)
                 .setView(view)
                 .setPositiveButton(R.string.action_save, (dialog, which) ->
@@ -257,7 +273,7 @@ public class ProfileActivity extends AppCompatActivity {
         EditText etCurrent = view.findViewById(R.id.et_current_password);
         EditText etNew = view.findViewById(R.id.et_new_password);
 
-        new MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle(R.string.profile_dialog_change_password_title)
                 .setView(view)
                 .setPositiveButton(R.string.action_save, (dialog, which) ->
@@ -271,7 +287,7 @@ public class ProfileActivity extends AppCompatActivity {
         EditText etEmail = view.findViewById(R.id.et_new_email);
         EditText etPassword = view.findViewById(R.id.et_current_password);
 
-        new MaterialAlertDialogBuilder(this)
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle(R.string.profile_dialog_change_email_title)
                 .setView(view)
                 .setPositiveButton(R.string.action_save, (dialog, which) ->
@@ -281,20 +297,15 @@ public class ProfileActivity extends AppCompatActivity {
     }
 
     private void confirmLogout() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.profile_dialog_logout_title)
-                .setPositiveButton(R.string.profile_action_logout, (dialog, which) -> viewModel.logout())
-                .setNegativeButton(R.string.action_cancel, null)
-                .show();
+        OrganicConfirmDialog.show(this, getString(R.string.profile_dialog_logout_title),
+                getString(R.string.profile_dialog_logout_message), getString(R.string.profile_action_logout),
+                getString(R.string.action_cancel), false, viewModel::logout);
     }
 
     private void confirmDeactivate() {
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.profile_dialog_deactivate_title)
-                .setMessage(R.string.profile_dialog_deactivate_message)
-                .setPositiveButton(R.string.profile_action_deactivate, (dialog, which) -> viewModel.deactivateAccount())
-                .setNegativeButton(R.string.action_cancel, null)
-                .show();
+        OrganicConfirmDialog.show(this, getString(R.string.profile_dialog_deactivate_title),
+                getString(R.string.profile_dialog_deactivate_message), getString(R.string.profile_action_deactivate),
+                getString(R.string.action_cancel), true, viewModel::deactivateAccount);
     }
 
     private static String nullToEmpty(String value) {

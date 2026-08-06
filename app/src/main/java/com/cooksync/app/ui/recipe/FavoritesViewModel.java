@@ -1,5 +1,8 @@
 package com.cooksync.app.ui.recipe;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
@@ -17,9 +20,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -27,13 +32,21 @@ import java.util.function.Consumer;
  * Manages data state for {@link FavoriteRecipesActivity}: the user's favorited recipes,
  * search/sort/difficulty/tag filtering (client-side, mirroring {@link MyRecipesViewModel}
  * since {@code GET /api/favorites} also returns the whole set unpaginated), an optional
- * "only the ones I annotated" filter, and removing a recipe from favorites.
+ * "only the ones I annotated" filter, and removing a recipe from favorites with a client-side
+ * undo window (see {@link #removeFavorite}).
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 04/08/2026
  */
 public class FavoritesViewModel extends ViewModel {
+
+    /**
+     * How long a removal waits before actually reaching the server, giving the "Undo" toast
+     * action a window to cancel it. Matches {@code OrganicToast}'s auto-dismiss duration, since
+     * the undo action stops being reachable once the toast itself is gone.
+     */
+    private static final long UNDO_WINDOW_MS = 3200;
 
     private final RecipeRepository repository;
     private final TagRepository tagRepository;
@@ -43,6 +56,9 @@ public class FavoritesViewModel extends ViewModel {
 
     private final List<RecipePreviewResponse> allFavorites = new ArrayList<>();
     private final Set<String> selectedTags = new LinkedHashSet<>();
+
+    private final Handler pendingRemovalHandler = new Handler(Looper.getMainLooper());
+    private final Map<String, Runnable> pendingRemovals = new HashMap<>();
 
     private String currentQuery = null;
     private boolean onlyWithNotes = false;
@@ -192,14 +208,54 @@ public class FavoritesViewModel extends ViewModel {
 
     /**
      * Removes a recipe from favorites and drops it from the local cache immediately, so the
-     * list updates without waiting on a full reload.
+     * list updates without waiting on a full reload. The server call itself is delayed by
+     * {@link #UNDO_WINDOW_MS} rather than sent right away, so a tap on the toast's "Undo"
+     * action (see {@link #undoRemoveFavorite}) can cancel it before it's ever sent — a
+     * removal the user undoes in time never reaches the server at all.
      *
      * @param recipeId the recipe to unfavorite
      */
     public void removeFavorite(String recipeId) {
         allFavorites.removeIf(r -> r.id().equals(recipeId));
         publishFiltered();
-        repository.removeFavorite(recipeId, new MutableLiveData<>());
+
+        Runnable sendRemoval = () -> {
+            pendingRemovals.remove(recipeId);
+            repository.removeFavorite(recipeId, new MutableLiveData<>());
+        };
+        pendingRemovals.put(recipeId, sendRemoval);
+        pendingRemovalHandler.postDelayed(sendRemoval, UNDO_WINDOW_MS);
+    }
+
+    /**
+     * Cancels a still-pending removal and restores the recipe to the list. Does nothing if the
+     * undo window already elapsed and the removal reached the server (the toast that offers
+     * this action auto-dismisses at the same time, so that case isn't reachable in practice).
+     *
+     * @param recipe the recipe to restore, as it looked before being removed
+     */
+    public void undoRemoveFavorite(RecipePreviewResponse recipe) {
+        Runnable pending = pendingRemovals.remove(recipe.id());
+        if (pending == null) {
+            return;
+        }
+        pendingRemovalHandler.removeCallbacks(pending);
+        allFavorites.add(recipe);
+        publishFiltered();
+    }
+
+    /**
+     * Flushes any still-pending removals immediately rather than dropping them, so navigating
+     * away before the undo window elapses doesn't silently discard a removal the user never
+     * undid.
+     */
+    @Override
+    protected void onCleared() {
+        for (Runnable pending : pendingRemovals.values()) {
+            pendingRemovalHandler.removeCallbacks(pending);
+            pending.run();
+        }
+        pendingRemovals.clear();
     }
 
     private void publishFiltered() {
