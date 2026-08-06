@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Background for undo-capable OrganicToasts: a solid pill base (color_neutral_900) with a
+  lighter pill (color_neutral_800) clipped on top, gravity "end" so animating the clip layer's
+  level from 10000 (fully shown) down to 0 (fully hidden) drains it left-to-right — showing how
+  long the user has left before the toast's action becomes unreachable.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/color_neutral_900" />
+            <corners android:radius="999dp" />
+        </shape>
+    </item>
+    <item android:id="@+id/toast_fill_clip">
+        <clip
+            android:clipOrientation="horizontal"
+            android:gravity="end">
+            <shape android:shape="rectangle">
+                <solid android:color="@color/color_neutral_800" />
+                <corners android:radius="999dp" />
+            </shape>
+        </clip>
+    </item>
+</layer-list>

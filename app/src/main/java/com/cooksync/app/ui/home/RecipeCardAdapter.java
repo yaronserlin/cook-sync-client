@@ -34,7 +34,14 @@ public class RecipeCardAdapter extends RecyclerView.Adapter<RecipeCardAdapter.Vi
 
     public interface OnRecipeClickListener {
         void onRecipeClick(String recipeId);
-        void onFavoriteClick(String recipeId);
+
+        /**
+         * @param recipeId the tapped card's recipe id
+         * @param wasFavorite whether the recipe was already favorited before this tap (i.e.
+         *                    {@code false} means this tap is adding it, {@code true} means
+         *                    it's removing it)
+         */
+        void onFavoriteClick(String recipeId, boolean wasFavorite);
     }
 
     public void setOnRecipeClickListener(OnRecipeClickListener listener) {
@@ -90,7 +97,7 @@ public class RecipeCardAdapter extends RecyclerView.Adapter<RecipeCardAdapter.Vi
 
         holder.btnFavorite.setOnClickListener(v -> {
             if (listener != null) {
-                listener.onFavoriteClick(recipe.id());
+                listener.onFavoriteClick(recipe.id(), isFavorite);
             }
         });
     }

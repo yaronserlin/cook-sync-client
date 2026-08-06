@@ -173,6 +173,35 @@
         <item name="buttonBarPositiveButtonStyle">@style/CookSync.Dialog.Button.Positive.Danger</item>
     </style>
 
+    <!-- Pill shape for the bottom nav's active-item indicator, matching the design system's
+         ".pill-on" (56x30dp fully-rounded pill behind the selected item's icon). -->
+    <style name="ShapeAppearance.CookSync.Pill" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <!-- Active-indicator sizing/color for the bottom nav, matching ".pill-on"
+         (56x30dp, color-accent-200). Material's BottomNavigationView defaults this style to
+         @null under Widget.MaterialComponents (non-Material3) themes, so it must be set
+         explicitly to enable the indicator at all. -->
+    <style name="Widget.CookSync.BottomNavigationView.ActiveIndicator" parent="">
+        <item name="android:width">56dp</item>
+        <item name="android:height">30dp</item>
+        <item name="android:color">@color/color_accent_200</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.CookSync.Pill</item>
+    </style>
+
+    <!-- Shared bottom navigation bar style, matching the design system's ".bnav"/".bitem"
+         states: inactive items are 52%-opacity color_text, the selected item's icon sits in
+         the accent-200 pill above and its icon+label turn color_accent_800. Applied to every
+         screen hosting the bottom nav (Home, Recipe list, Profile) so the look stays a
+         single-point fix rather than per-screen attributes. -->
+    <style name="Widget.CookSync.BottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="itemIconTint">@color/bottom_nav_item_color</item>
+        <item name="itemTextColor">@color/bottom_nav_item_color</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.CookSync.BottomNavigationView.ActiveIndicator</item>
+        <item name="labelVisibilityMode">labeled</item>
+    </style>
+
     <!-- Re-themes a bare android.widget.NumberPicker to match the Organic palette: the
          picker has no public Material styling surface, so this overrides the theme attrs its
          internal views actually read — colorControlNormal for the up/down arrows and

@@ -1,8 +1,5 @@
 package com.cooksync.app.ui.recipe;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
@@ -13,6 +10,7 @@ import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.TagRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.util.PendingActionScheduler;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
 
@@ -20,11 +18,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -57,8 +53,7 @@ public class FavoritesViewModel extends ViewModel {
     private final List<RecipePreviewResponse> allFavorites = new ArrayList<>();
     private final Set<String> selectedTags = new LinkedHashSet<>();
 
-    private final Handler pendingRemovalHandler = new Handler(Looper.getMainLooper());
-    private final Map<String, Runnable> pendingRemovals = new HashMap<>();
+    private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
     private String currentQuery = null;
     private boolean onlyWithNotes = false;
@@ -218,13 +213,8 @@ public class FavoritesViewModel extends ViewModel {
     public void removeFavorite(String recipeId) {
         allFavorites.removeIf(r -> r.id().equals(recipeId));
         publishFiltered();
-
-        Runnable sendRemoval = () -> {
-            pendingRemovals.remove(recipeId);
-            repository.removeFavorite(recipeId, new MutableLiveData<>());
-        };
-        pendingRemovals.put(recipeId, sendRemoval);
-        pendingRemovalHandler.postDelayed(sendRemoval, UNDO_WINDOW_MS);
+        pendingActions.schedule(recipeId, UNDO_WINDOW_MS,
+                () -> repository.removeFavorite(recipeId, new MutableLiveData<>()));
     }
 
     /**
@@ -235,11 +225,9 @@ public class FavoritesViewModel extends ViewModel {
      * @param recipe the recipe to restore, as it looked before being removed
      */
     public void undoRemoveFavorite(RecipePreviewResponse recipe) {
-        Runnable pending = pendingRemovals.remove(recipe.id());
-        if (pending == null) {
+        if (!pendingActions.cancel(recipe.id())) {
             return;
         }
-        pendingRemovalHandler.removeCallbacks(pending);
         allFavorites.add(recipe);
         publishFiltered();
     }
@@ -251,11 +239,7 @@ public class FavoritesViewModel extends ViewModel {
      */
     @Override
     protected void onCleared() {
-        for (Runnable pending : pendingRemovals.values()) {
-            pendingRemovalHandler.removeCallbacks(pending);
-            pending.run();
-        }
-        pendingRemovals.clear();
+        pendingActions.flushAll();
     }
 
     private void publishFiltered() {

@@ -10,6 +10,7 @@ import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.TagRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.util.PendingActionScheduler;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
@@ -36,6 +37,13 @@ import java.util.function.Consumer;
  */
 public class MyRecipesViewModel extends ViewModel {
 
+    /**
+     * How long a delete/visibility change waits before actually reaching the server, giving the
+     * "Undo" toast action a window to cancel it. Matches {@code OrganicToast}'s auto-dismiss
+     * duration, since the undo action stops being reachable once the toast itself is gone.
+     */
+    private static final long UNDO_WINDOW_MS = 3200;
+
     private final RecipeRepository repository;
     private final TagRepository tagRepository;
 
@@ -46,6 +54,8 @@ public class MyRecipesViewModel extends ViewModel {
 
     private final List<RecipePreviewResponse> allRecipes = new ArrayList<>();
     private final Set<String> selectedTags = new LinkedHashSet<>();
+
+    private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
     private String currentQuery = null;
     /** One of "ALL", "PUBLIC", "PRIVATE". */
@@ -68,10 +78,19 @@ public class MyRecipesViewModel extends ViewModel {
         return tagsResult;
     }
 
+    /**
+     * Fires only when a deferred delete actually reaches the server and fails (see
+     * {@link #deleteRecipe}) — a successful delete needs no signal here since the list already
+     * reflects it optimistically, and an undone delete never reaches the server at all.
+     */
     public LiveData<ApiResult<Void>> getDeleteResult() {
         return deleteResult;
     }
 
+    /**
+     * Fires only when a deferred visibility change actually reaches the server and fails (see
+     * {@link #toggleVisibility}), for the same reason as {@link #getDeleteResult()}.
+     */
     public LiveData<ApiResult<RecipeResponse>> getVisibilityResult() {
         return visibilityResult;
     }
@@ -209,12 +228,113 @@ public class MyRecipesViewModel extends ViewModel {
         publishFiltered();
     }
 
-    public void deleteRecipe(String recipeId) {
-        repository.deleteRecipe(recipeId, deleteResult);
+    /**
+     * Removes a recipe from the list immediately, so the UI updates without waiting on a
+     * network round trip. The actual delete is delayed by {@link #UNDO_WINDOW_MS} rather than
+     * sent right away, so a tap on the toast's "Undo" action (see {@link #undoDeleteRecipe})
+     * can cancel it before it's ever sent — a delete the user undoes in time never reaches the
+     * server at all. If the deferred call does reach the server and fails, the recipe is
+     * restored and the failure is published via {@link #getDeleteResult()}.
+     *
+     * @param recipe the recipe to delete, as currently shown
+     */
+    public void deleteRecipe(RecipePreviewResponse recipe) {
+        String recipeId = recipe.id();
+        allRecipes.removeIf(r -> r.id().equals(recipeId));
+        publishFiltered();
+
+        pendingActions.schedule(recipeId, UNDO_WINDOW_MS, () -> {
+            MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
+            observeOnce(result, apiResult -> {
+                if (apiResult instanceof ApiResult.Error<Void>) {
+                    allRecipes.add(recipe);
+                    publishFiltered();
+                }
+                deleteResult.setValue(apiResult);
+            });
+            repository.deleteRecipe(recipeId, result);
+        });
     }
 
-    public void toggleVisibility(String recipeId, boolean currentlyPublic) {
-        repository.updateRecipeVisibility(recipeId, currentlyPublic ? "PRIVATE" : "PUBLIC", visibilityResult);
+    /**
+     * Cancels a still-pending delete and restores the recipe to the list. Does nothing if the
+     * undo window already elapsed and the delete reached the server.
+     *
+     * @param recipe the recipe to restore, as it looked before being deleted
+     */
+    public void undoDeleteRecipe(RecipePreviewResponse recipe) {
+        if (!pendingActions.cancel(recipe.id())) {
+            return;
+        }
+        allRecipes.add(recipe);
+        publishFiltered();
+    }
+
+    /**
+     * Flips a recipe's visibility in the list immediately, deferring the actual server call the
+     * same way {@link #deleteRecipe} defers a delete — see {@link #undoToggleVisibility}.
+     *
+     * @param recipe the recipe to toggle, as currently shown
+     */
+    public void toggleVisibility(RecipePreviewResponse recipe) {
+        String recipeId = recipe.id();
+        String newVisibility = "PUBLIC".equalsIgnoreCase(recipe.visibility()) ? "PRIVATE" : "PUBLIC";
+        replaceRecipe(recipeId, withVisibility(recipe, newVisibility));
+        publishFiltered();
+
+        pendingActions.schedule(recipeId, UNDO_WINDOW_MS, () -> {
+            MutableLiveData<ApiResult<RecipeResponse>> result = new MutableLiveData<>();
+            observeOnce(result, apiResult -> {
+                if (apiResult instanceof ApiResult.Error<RecipeResponse>) {
+                    replaceRecipe(recipeId, recipe);
+                    publishFiltered();
+                }
+                visibilityResult.setValue(apiResult);
+            });
+            repository.updateRecipeVisibility(recipeId, newVisibility, result);
+        });
+    }
+
+    /**
+     * Cancels a still-pending visibility change and restores the recipe's original visibility.
+     * Does nothing if the undo window already elapsed and the change reached the server.
+     *
+     * @param recipe the recipe to restore, as it looked before being toggled
+     */
+    public void undoToggleVisibility(RecipePreviewResponse recipe) {
+        if (!pendingActions.cancel(recipe.id())) {
+            return;
+        }
+        replaceRecipe(recipe.id(), recipe);
+        publishFiltered();
+    }
+
+    /** Swaps the list entry with the given id for {@code replacement}, in place. */
+    private void replaceRecipe(String recipeId, RecipePreviewResponse replacement) {
+        for (int i = 0; i < allRecipes.size(); i++) {
+            if (allRecipes.get(i).id().equals(recipeId)) {
+                allRecipes.set(i, replacement);
+                return;
+            }
+        }
+    }
+
+    /** Copies {@code recipe} with only its {@code visibility} changed. */
+    private static RecipePreviewResponse withVisibility(RecipePreviewResponse recipe, String visibility) {
+        return new RecipePreviewResponse(recipe.id(), recipe.authorName(), recipe.title(), recipe.description(),
+                recipe.difficulty(), visibility, recipe.prepTimeMinutes(), recipe.cookTimeMinutes(),
+                recipe.reviewCount(), recipe.averageRating(), recipe.createdAt(), recipe.tags(),
+                recipe.primaryImageUrl(), recipe.hasPersonalNote(), recipe.personalNoteText());
+    }
+
+    /**
+     * Flushes any still-pending deletes/visibility changes immediately rather than dropping
+     * them, so navigating away before the undo window elapses doesn't silently discard an
+     * action the user never undid.
+     */
+    @Override
+    protected void onCleared() {
+        pendingActions.flushAll();
     }
 
     /**

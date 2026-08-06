@@ -1,9 +1,12 @@
 package com.cooksync.app.ui.common;
 
+import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -104,6 +107,22 @@ public final class OrganicToast {
                 onAction.run();
                 snackbar.dismiss();
             });
+
+            // Drains left-to-right over the toast's lifetime so the user can see how long they
+            // have left to tap "Undo" — only for undo-capable toasts. Driven purely through the
+            // background drawable's level (bg_toast_fill_pill's clip layer) rather than an extra
+            // view, since a background drawable never affects this view's measured size.
+            Drawable fillBackground = activity.getDrawable(R.drawable.bg_toast_fill_pill).mutate();
+            // toast_organic_root's XML backgroundTint would otherwise be silently reapplied to
+            // this new background too, painting both of its layers the same flat color and
+            // hiding the fill entirely.
+            toastView.setBackgroundTintList(null);
+            toastView.setBackground(fillBackground);
+            ValueAnimator drainAnimator = ValueAnimator.ofInt(10_000, 0);
+            drainAnimator.setDuration(DURATION_MS);
+            drainAnimator.setInterpolator(new LinearInterpolator());
+            drainAnimator.addUpdateListener(anim -> fillBackground.setLevel((int) anim.getAnimatedValue()));
+            drainAnimator.start();
         }
 
         layout.addView(toastView);

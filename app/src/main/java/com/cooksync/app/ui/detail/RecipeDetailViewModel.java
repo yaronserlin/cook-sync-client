@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.util.PendingActionScheduler;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -17,10 +18,20 @@ import java.util.List;
  * Manages data state for {@link RecipeDetailActivity}.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 04/08/2026
  */
 public class RecipeDetailViewModel extends ViewModel {
+
+    /**
+     * How long a review delete/report waits before actually reaching the server, giving the
+     * "Undo" toast action a window to cancel it. Matches {@code OrganicToast}'s auto-dismiss
+     * duration, since the undo action stops being reachable once the toast itself is gone.
+     */
+    private static final long UNDO_WINDOW_MS = 3200;
+
+    /** Prefixes a report's pending-action key so it can't collide with a delete on the same review. */
+    private static final String REPORT_KEY_PREFIX = "report:";
 
     private final RecipeRepository repository;
 
@@ -29,6 +40,8 @@ public class RecipeDetailViewModel extends ViewModel {
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> favoritesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> noteSaveResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> reviewActionResult = new MutableLiveData<>();
+
+    private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
     public RecipeDetailViewModel() {
         this.repository = new RecipeRepositoryImpl();
@@ -54,7 +67,12 @@ public class RecipeDetailViewModel extends ViewModel {
         return noteSaveResult;
     }
 
-    /** Outcome of the most recent review delete or report action. */
+    /**
+     * Fires only when a deferred review delete/report actually reaches the server and fails
+     * (see {@link #deleteReview}/{@link #reportReview}) — a success needs no signal here since
+     * the caller already reflects it optimistically, and an undone action never reaches the
+     * server at all.
+     */
     public LiveData<ApiResult<Void>> getReviewActionResult() {
         return reviewActionResult;
     }
@@ -71,12 +89,37 @@ public class RecipeDetailViewModel extends ViewModel {
         repository.getFavorites(favoritesResult);
     }
 
+    /**
+     * Toggles the recipe's favorite state. Removing is sent immediately; adding is deferred by
+     * {@link #UNDO_WINDOW_MS} so a tap on the toast's "Undo" action (see
+     * {@link #undoAddFavorite}) can cancel it before it's ever sent. If a remove is requested
+     * while its matching add is still pending, the pending add is simply cancelled rather than
+     * sending a remove for something the server never received.
+     *
+     * @param recipeId the recipe to favorite/unfavorite
+     * @param currentlyFavorite whether it's currently favorited (i.e. {@code true} removes it)
+     */
     public void toggleFavorite(String recipeId, boolean currentlyFavorite) {
         if (currentlyFavorite) {
+            if (pendingActions.cancel(recipeId)) {
+                return;
+            }
             repository.removeFavorite(recipeId, new MutableLiveData<>());
         } else {
-            repository.addFavorite(recipeId, new MutableLiveData<>());
+            pendingActions.schedule(recipeId, UNDO_WINDOW_MS,
+                    () -> repository.addFavorite(recipeId, new MutableLiveData<>()));
         }
+    }
+
+    /**
+     * Cancels a still-pending "add to favorites" before it reaches the server.
+     *
+     * @param recipeId the id of the recipe whose favorite-add should be undone
+     * @return {@code true} if an add was actually pending and got cancelled; {@code false} if
+     *         the undo window already elapsed and the add reached the server
+     */
+    public boolean undoAddFavorite(String recipeId) {
+        return pendingActions.cancel(recipeId);
     }
 
     /**
@@ -101,22 +144,59 @@ public class RecipeDetailViewModel extends ViewModel {
     }
 
     /**
-     * Deletes a review the current user authored.
+     * Deletes a review the current user authored. The caller is expected to hide the review
+     * immediately; the actual server call is delayed by {@link #UNDO_WINDOW_MS} so a tap on the
+     * toast's "Undo" action (see {@link #undoDeleteReview}) can cancel it before it's ever
+     * sent — a delete the user undoes in time never reaches the server at all.
      *
      * @param reviewId the ID of the review to delete
      */
     public void deleteReview(String reviewId) {
-        repository.deleteReview(reviewId, reviewActionResult);
+        pendingActions.schedule(reviewId, UNDO_WINDOW_MS, () -> repository.deleteReview(reviewId, reviewActionResult));
     }
 
     /**
-     * Reports a review authored by another user.
+     * Cancels a still-pending delete before it reaches the server.
+     *
+     * @param reviewId the ID of the review whose delete should be cancelled
+     * @return {@code true} if a delete was actually pending and got cancelled; {@code false} if
+     *         the undo window already elapsed and the delete reached the server
+     */
+    public boolean undoDeleteReview(String reviewId) {
+        return pendingActions.cancel(reviewId);
+    }
+
+    /**
+     * Reports a review authored by another user. Deferred and undoable the same way as
+     * {@link #deleteReview} — see {@link #undoReportReview}.
      *
      * @param reviewId the ID of the review being reported
      * @param reason the report reason ("SPAM", "ABUSE", or "OFF_TOPIC")
      * @param comment optional supplementary notes
      */
     public void reportReview(String reviewId, String reason, String comment) {
-        repository.reportReview(reviewId, reason, comment, reviewActionResult);
+        pendingActions.schedule(REPORT_KEY_PREFIX + reviewId, UNDO_WINDOW_MS,
+                () -> repository.reportReview(reviewId, reason, comment, reviewActionResult));
+    }
+
+    /**
+     * Cancels a still-pending report before it reaches the server.
+     *
+     * @param reviewId the ID of the review whose report should be cancelled
+     * @return {@code true} if a report was actually pending and got cancelled; {@code false} if
+     *         the undo window already elapsed and the report reached the server
+     */
+    public boolean undoReportReview(String reviewId) {
+        return pendingActions.cancel(REPORT_KEY_PREFIX + reviewId);
+    }
+
+    /**
+     * Flushes any still-pending review actions immediately rather than dropping them, so
+     * navigating away before the undo window elapses doesn't silently discard an action the
+     * user never undid.
+     */
+    @Override
+    protected void onCleared() {
+        pendingActions.flushAll();
     }
 }

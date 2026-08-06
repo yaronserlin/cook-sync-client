@@ -3,6 +3,12 @@
   Content view for OrganicToast, inflated into a Snackbar's SnackbarLayout once its default
   background/padding have been stripped. Matches the design system's ".toast" component: a
   dark pill with a leading icon, message and an optional uppercase trailing action.
+
+  The default background is bg_pill_solid tinted color_neutral_900. For undo-capable toasts,
+  OrganicToast swaps it for bg_toast_fill_pill and animates that drawable's level instead of
+  touching this view hierarchy at all — a background drawable never affects a view's measured
+  size, so this can't reintroduce the height bugs an earlier extra-View/ConstraintLayout
+  approach caused here.
 -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"

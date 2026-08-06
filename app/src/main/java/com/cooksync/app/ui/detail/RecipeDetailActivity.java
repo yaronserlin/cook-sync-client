@@ -104,6 +104,9 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
     private boolean isFavorite = false;
     private final List<ReviewResponse> allReviews = new ArrayList<>();
+    /** The review last optimistically removed by {@link #confirmDeleteReview}, restored if the
+     *  deferred delete fails server-side; {@code null} whenever no delete is in flight. */
+    private ReviewResponse pendingDeletedReview;
     private final List<NoteResponse> currentNotes = new ArrayList<>();
     private final java.util.Map<Integer, com.google.android.material.card.MaterialCardView> starChips = new java.util.HashMap<>();
     private Integer activeStarFilter = null;
@@ -206,9 +209,18 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
         btnFavorite.setOnClickListener(v -> {
             String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
-            viewModel.toggleFavorite(recipeId, isFavorite);
+            boolean wasFavorite = isFavorite;
+            viewModel.toggleFavorite(recipeId, wasFavorite);
             isFavorite = !isFavorite;
             updateFavoriteIcon();
+            if (!wasFavorite) {
+                OrganicToast.showWithAction(this, null, R.drawable.ic_heart_filled, "Added to favorites", "Undo", () -> {
+                    if (viewModel.undoAddFavorite(recipeId)) {
+                        isFavorite = false;
+                        updateFavoriteIcon();
+                    }
+                });
+            }
         });
 
         ratingRow.setOnClickListener(v -> scrollView.smoothScrollTo(0, reviewsHeader.getTop() + ((View) reviewsHeader.getParent()).getTop()));
@@ -275,8 +287,11 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
             @Override
             public void onReportReview(ReviewResponse review) {
-                ReportReviewDialog.show(RecipeDetailActivity.this, (reason, comment) ->
-                        viewModel.reportReview(review.id(), reason, comment));
+                ReportReviewDialog.show(RecipeDetailActivity.this, (reason, comment) -> {
+                    viewModel.reportReview(review.id(), reason, comment);
+                    OrganicToast.showWithAction(RecipeDetailActivity.this, null, 0, "Review reported", "Undo",
+                            () -> viewModel.undoReportReview(review.id()));
+                });
             }
         });
         reviewAdapter.setOnAvatarClickListener(this::openFullscreenImage);
@@ -337,10 +352,15 @@ public class RecipeDetailActivity extends AppCompatActivity {
             }
         });
 
+        // Only a deferred delete/report that reached the server and failed shows up here — a
+        // success needs no signal since the review list already reflects it optimistically.
         viewModel.getReviewActionResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success<Void>) {
-                viewModel.loadRecipe(getIntent().getStringExtra(EXTRA_RECIPE_ID));
-            } else if (result instanceof ApiResult.Error<Void> error) {
+            if (result instanceof ApiResult.Error<Void> error) {
+                if (pendingDeletedReview != null) {
+                    allReviews.add(pendingDeletedReview);
+                    pendingDeletedReview = null;
+                    refreshReviewsDisplay();
+                }
                 OrganicToast.show(this, null, error.getMessage());
             }
         });
@@ -370,7 +390,19 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
     private void confirmDeleteReview(ReviewResponse review) {
         OrganicConfirmDialog.show(this, "Delete this review?", "This can't be undone.",
-                "Delete", "Cancel", true, () -> viewModel.deleteReview(review.id()));
+                "Delete", "Cancel", true, () -> {
+                    pendingDeletedReview = review;
+                    allReviews.remove(review);
+                    refreshReviewsDisplay();
+                    viewModel.deleteReview(review.id());
+                    OrganicToast.showWithAction(this, null, R.drawable.ic_delete, "Review deleted", "Undo", () -> {
+                        if (viewModel.undoDeleteReview(review.id())) {
+                            allReviews.add(review);
+                            pendingDeletedReview = null;
+                            refreshReviewsDisplay();
+                        }
+                    });
+                });
     }
 
     private NoteResponse findRecipeNote() {

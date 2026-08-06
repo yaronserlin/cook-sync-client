@@ -12,6 +12,7 @@ import com.cooksync.app.data.repository.TagRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.domain.FeedState;
+import com.cooksync.app.util.PendingActionScheduler;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -37,6 +38,15 @@ import java.util.function.Consumer;
 public class HomeViewModel extends ViewModel {
 
     private static final int PAGE_SIZE = 10;
+
+    /**
+     * How long an "add to favorites" waits before actually reaching the server, giving the
+     * "Undo" toast action a window to cancel it. Matches {@code OrganicToast}'s auto-dismiss
+     * duration, since the undo action stops being reachable once the toast itself is gone.
+     */
+    private static final long UNDO_WINDOW_MS = 3200;
+
+    private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
     private final RecipeRepository recipeRepository;
     private final TagRepository tagRepository;
@@ -287,10 +297,14 @@ public class HomeViewModel extends ViewModel {
     }
 
     /**
-     * Optimistically toggles a recipe's favorite state in {@link #favoritesResult}, then fires
-     * the corresponding add/remove call. If the server call fails, the optimistic change is
-     * rolled back and {@link #errorEvent} is emitted so the UI can inform the user — the heart
-     * icon never claims a state the server didn't actually confirm.
+     * Optimistically toggles a recipe's favorite state in {@link #favoritesResult}. Removing a
+     * favorite is sent immediately, same as before; adding one is deferred by
+     * {@link #UNDO_WINDOW_MS} instead, so a tap on the toast's "Undo" action (see
+     * {@link #undoAddFavorite}) can cancel it before it's ever sent. If a remove is requested
+     * while its matching add is still pending, the pending add is simply cancelled rather than
+     * sending a remove for something the server never received. If a server call that does go
+     * out fails, the optimistic change is rolled back and {@link #errorEvent} is emitted so the
+     * UI can inform the user — the heart icon never claims a state the server didn't confirm.
      *
      * @param recipeId the id of the recipe to favorite/unfavorite
      */
@@ -301,28 +315,70 @@ public class HomeViewModel extends ViewModel {
                         : new ArrayList<>();
 
         boolean isFavorite = previous.stream().anyMatch(r -> r.id().equals(recipeId));
-        List<RecipePreviewResponse> optimistic = new ArrayList<>(previous);
-        MutableLiveData<ApiResult<Void>> writeResult = new MutableLiveData<>();
 
         if (isFavorite) {
-            optimistic.removeIf(r -> r.id().equals(recipeId));
-            favoritesResult.setValue(new ApiResult.Success<>(optimistic));
+            List<RecipePreviewResponse> withoutRecipe = new ArrayList<>(previous);
+            withoutRecipe.removeIf(r -> r.id().equals(recipeId));
+            favoritesResult.setValue(new ApiResult.Success<>(withoutRecipe));
+
+            if (pendingActions.cancel(recipeId)) {
+                return;
+            }
+            MutableLiveData<ApiResult<Void>> writeResult = new MutableLiveData<>();
+            observeOnce(writeResult, result -> {
+                if (result instanceof ApiResult.Error<Void> error) {
+                    favoritesResult.setValue(new ApiResult.Success<>(previous));
+                    errorEvent.setValue(new Event<>(error.getMessage()));
+                }
+            });
             recipeRepository.removeFavorite(recipeId, writeResult);
         } else {
+            List<RecipePreviewResponse> withRecipe = new ArrayList<>(previous);
             currentRecipes.stream()
                     .filter(r -> r.id().equals(recipeId))
                     .findFirst()
-                    .ifPresent(optimistic::add);
-            favoritesResult.setValue(new ApiResult.Success<>(optimistic));
-            recipeRepository.addFavorite(recipeId, writeResult);
-        }
+                    .ifPresent(withRecipe::add);
+            favoritesResult.setValue(new ApiResult.Success<>(withRecipe));
 
-        observeOnce(writeResult, result -> {
-            if (result instanceof ApiResult.Error<Void> error) {
-                favoritesResult.setValue(new ApiResult.Success<>(previous));
-                errorEvent.setValue(new Event<>(error.getMessage()));
-            }
-        });
+            pendingActions.schedule(recipeId, UNDO_WINDOW_MS, () -> {
+                MutableLiveData<ApiResult<Void>> writeResult = new MutableLiveData<>();
+                observeOnce(writeResult, result -> {
+                    if (result instanceof ApiResult.Error<Void> error) {
+                        favoritesResult.setValue(new ApiResult.Success<>(previous));
+                        errorEvent.setValue(new Event<>(error.getMessage()));
+                    }
+                });
+                recipeRepository.addFavorite(recipeId, writeResult);
+            });
+        }
+    }
+
+    /**
+     * Cancels a still-pending "add to favorites" and restores the pre-add state. Does nothing
+     * if the undo window already elapsed and the add reached the server.
+     *
+     * @param recipeId the id of the recipe whose favorite-add should be undone
+     */
+    public void undoAddFavorite(String recipeId) {
+        if (!pendingActions.cancel(recipeId)) {
+            return;
+        }
+        List<RecipePreviewResponse> current =
+                favoritesResult.getValue() instanceof ApiResult.Success<List<RecipePreviewResponse>> success
+                        ? new ArrayList<>(success.getData())
+                        : new ArrayList<>();
+        current.removeIf(r -> r.id().equals(recipeId));
+        favoritesResult.setValue(new ApiResult.Success<>(current));
+    }
+
+    /**
+     * Flushes any still-pending favorite adds immediately rather than dropping them, so
+     * navigating away before the undo window elapses doesn't silently discard an add the user
+     * never undid.
+     */
+    @Override
+    protected void onCleared() {
+        pendingActions.flushAll();
     }
 
     /**

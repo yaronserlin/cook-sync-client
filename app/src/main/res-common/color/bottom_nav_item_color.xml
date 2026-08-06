@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Icon/label tint for the bottom navigation bar, matching the design system's
+     .bitem (52%-opacity color_text) / .bitem-on (color_accent_800) states. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/color_accent_800" android:state_checked="true" />
+    <item android:color="@color/color_text" android:alpha="0.52" />
+</selector>

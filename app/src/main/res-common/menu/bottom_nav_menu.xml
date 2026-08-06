@@ -10,7 +10,7 @@
         android:title="@string/nav_favorites" />
     <item
         android:id="@+id/nav_my_recipes"
-        android:icon="@drawable/ic_book"
+        android:icon="@drawable/ic_chef_hat"
         android:title="@string/nav_my_recipes" />
     <item
         android:id="@+id/nav_profile"

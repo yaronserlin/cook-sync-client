@@ -158,21 +158,18 @@ public class MyRecipesActivity extends RecipeListActivity {
             }
         });
 
+        // Both results now only fire for a deferred call that reached the server and failed —
+        // a success needs no signal since the list already reflects it optimistically, and the
+        // "Recipe deleted"/"is now public/private" toast (with its Undo action) is shown
+        // immediately from confirmDelete()/showOptionsMenu() instead of from here.
         viewModel.getDeleteResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success<Void>) {
-                OrganicToast.show(this, bottomNav, R.drawable.ic_delete, "Recipe deleted");
-                viewModel.loadMyRecipes();
-            } else if (result instanceof ApiResult.Error<Void> error) {
+            if (result instanceof ApiResult.Error<Void> error) {
                 OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
 
         viewModel.getVisibilityResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success<RecipeResponse> success) {
-                boolean isPublic = "PUBLIC".equalsIgnoreCase(success.getData().visibility());
-                OrganicToast.show(this, bottomNav, isPublic ? "Recipe is now public" : "Recipe is now private");
-                viewModel.loadMyRecipes();
-            } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
+            if (result instanceof ApiResult.Error<RecipeResponse> error) {
                 OrganicToast.show(this, bottomNav, error.getMessage());
             }
         });
@@ -261,7 +258,10 @@ public class MyRecipesActivity extends RecipeListActivity {
         popup.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
             if (id == R.id.action_toggle_visibility) {
-                viewModel.toggleVisibility(recipe.id(), isPublic);
+                viewModel.toggleVisibility(recipe);
+                String message = isPublic ? "Recipe is now private" : "Recipe is now public";
+                OrganicToast.showWithAction(this, bottomNav, 0, message, "Undo",
+                        () -> viewModel.undoToggleVisibility(recipe));
                 return true;
             }
             if (id == R.id.action_delete_recipe) {
@@ -276,6 +276,10 @@ public class MyRecipesActivity extends RecipeListActivity {
     private void confirmDelete(RecipePreviewResponse recipe) {
         OrganicConfirmDialog.show(this, "Delete this recipe?",
                 "\"" + recipe.title() + "\" will be permanently deleted. This can't be undone.",
-                "Delete", "Cancel", true, () -> viewModel.deleteRecipe(recipe.id()));
+                "Delete", "Cancel", true, () -> {
+                    viewModel.deleteRecipe(recipe);
+                    OrganicToast.showWithAction(this, bottomNav, R.drawable.ic_delete, "Recipe deleted", "Undo",
+                            () -> viewModel.undoDeleteRecipe(recipe));
+                });
     }
 }

@@ -61,9 +61,7 @@ public class HomeActivity extends AppCompatActivity {
         setupAdapters();
         setupObservers();
 
-        viewModel.loadInitialFeed();
         viewModel.loadTags();
-        viewModel.loadFavorites();
 
         findViewById(R.id.btn_filters).setOnClickListener(v -> {
                 FiltersBottomSheetDialogFragment dialog = new FiltersBottomSheetDialogFragment();
@@ -76,6 +74,17 @@ public class HomeActivity extends AppCompatActivity {
                 });
                 dialog.show(getSupportFragmentManager(), "filters");
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Refresh feed and favorites whenever we return to the Home screen
+        viewModel.loadInitialFeed();
+        viewModel.loadFavorites();
+        // Home is reused (not recreated) when returning via Back from another tab, so the
+        // bottom nav's checked state must be resynced here too, not just in onCreate.
+        bottomNav.setSelectedItemId(R.id.nav_home);
     }
 
     private void initViews() {
@@ -134,8 +143,12 @@ public class HomeActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFavoriteClick(String recipeId) {
+            public void onFavoriteClick(String recipeId, boolean wasFavorite) {
                 viewModel.toggleFavorite(recipeId);
+                if (!wasFavorite) {
+                    OrganicToast.showWithAction(HomeActivity.this, bottomNav, R.drawable.ic_heart_filled,
+                            "Added to favorites", "Undo", () -> viewModel.undoAddFavorite(recipeId));
+                }
             }
         });
         rvFeed.setAdapter(recipeAdapter);

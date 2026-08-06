@@ -107,10 +107,14 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
 
         String imageUrl = step.imageUrl();
         boolean hasImage = imageUrl != null && !imageUrl.isBlank();
-        // Stays hidden (collapsed, not just an empty placeholder tile) until the load actually
-        // succeeds, so a slow or failed fetch never leaves a blank card sitting mid-step.
-        holder.stepImageContainer.setVisibility(View.GONE);
+        // The container is sized as soon as we know there's an image to try, since Glide can
+        // only resolve a target size for a view that actually takes part in layout — a GONE
+        // ancestor is skipped during measure/layout and never gets one. Only the image itself
+        // stays invisible until the load succeeds, matching the recipe description's inline
+        // image treatment, so a slow fetch never shows a broken tile.
+        holder.stepImageContainer.setVisibility(hasImage ? View.VISIBLE : View.GONE);
         if (hasImage) {
+            holder.stepImage.setVisibility(View.INVISIBLE);
             Glide.with(holder.stepImage.getContext())
                     .load(imageUrl)
                     .centerCrop()
@@ -118,13 +122,14 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model,
                                                      Target<Drawable> target, boolean isFirstResource) {
+                            holder.stepImageContainer.setVisibility(View.GONE);
                             return false;
                         }
 
                         @Override
                         public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
                                                         DataSource dataSource, boolean isFirstResource) {
-                            holder.stepImageContainer.setVisibility(View.VISIBLE);
+                            holder.stepImage.setVisibility(View.VISIBLE);
                             return false;
                         }
                     })

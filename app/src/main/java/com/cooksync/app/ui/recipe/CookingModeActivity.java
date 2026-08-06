@@ -32,6 +32,7 @@ import com.bumptech.glide.request.target.Target;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
+import com.cooksync.app.ui.common.FullscreenImageActivity;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.detail.RecipeDetailActivity;
@@ -283,18 +284,22 @@ public class CookingModeActivity extends AppCompatActivity {
 
     /**
      * Loads the current step's illustration image, if it has one, matching the recipe detail
-     * screen's treatment: the container stays hidden until the load actually succeeds, so a
-     * slow or failed fetch never leaves a blank tile sitting mid-step.
+     * screen's treatment. The container is sized as soon as we know there's an image to try,
+     * since Glide can only resolve a target size for a view that actually takes part in
+     * layout — a GONE ancestor is skipped during measure/layout and never gets one. Only the
+     * image itself stays invisible until the load succeeds, so a slow fetch never shows a
+     * broken tile.
      *
      * @param step the instruction step currently shown
      */
     private void bindStepImage(@NonNull InstructionResponse step) {
         String imageUrl = step.imageUrl();
         boolean hasImage = imageUrl != null && !imageUrl.isBlank();
-        stepImageContainer.setVisibility(View.GONE);
+        stepImageContainer.setVisibility(hasImage ? View.VISIBLE : View.GONE);
         if (!hasImage) {
             return;
         }
+        stepImage.setVisibility(View.INVISIBLE);
         Glide.with(stepImage.getContext())
                 .load(imageUrl)
                 .centerCrop()
@@ -302,17 +307,30 @@ public class CookingModeActivity extends AppCompatActivity {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model,
                                                  Target<Drawable> target, boolean isFirstResource) {
+                        stepImageContainer.setVisibility(View.GONE);
                         return false;
                     }
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
                                                     DataSource dataSource, boolean isFirstResource) {
-                        stepImageContainer.setVisibility(View.VISIBLE);
+                        stepImage.setVisibility(View.VISIBLE);
                         return false;
                     }
                 })
                 .into(stepImage);
+        stepImage.setOnClickListener(v -> openFullscreenImage(imageUrl));
+    }
+
+    /**
+     * Opens {@link FullscreenImageActivity} to view the current step's photo full-screen.
+     *
+     * @param imageUrl the step photo's URL
+     */
+    private void openFullscreenImage(String imageUrl) {
+        Intent intent = new Intent(this, FullscreenImageActivity.class);
+        intent.putExtra(FullscreenImageActivity.EXTRA_IMAGE_URL, imageUrl);
+        startActivity(intent);
     }
 
     /**
