@@ -148,7 +148,7 @@ public class MyRecipesActivity extends RecipeListActivity {
                 }
             } else if (result instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
                 showSkeleton(false);
-                OrganicToast.show(this, bottomNav, error.getMessage());
+                OrganicToast.showError(this, bottomNav, error.getMessage());
             }
         });
 
@@ -164,13 +164,13 @@ public class MyRecipesActivity extends RecipeListActivity {
         // immediately from confirmDelete()/showOptionsMenu() instead of from here.
         viewModel.getDeleteResult().observe(this, result -> {
             if (result instanceof ApiResult.Error<Void> error) {
-                OrganicToast.show(this, bottomNav, error.getMessage());
+                OrganicToast.showError(this, bottomNav, error.getMessage());
             }
         });
 
         viewModel.getVisibilityResult().observe(this, result -> {
             if (result instanceof ApiResult.Error<RecipeResponse> error) {
-                OrganicToast.show(this, bottomNav, error.getMessage());
+                OrganicToast.showError(this, bottomNav, error.getMessage());
             }
         });
     }

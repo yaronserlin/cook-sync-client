@@ -146,8 +146,10 @@ public class HomeActivity extends AppCompatActivity {
             public void onFavoriteClick(String recipeId, boolean wasFavorite) {
                 viewModel.toggleFavorite(recipeId);
                 if (!wasFavorite) {
-                    OrganicToast.showWithAction(HomeActivity.this, bottomNav, R.drawable.ic_heart_filled,
-                            "Added to favorites", "Undo", () -> viewModel.undoAddFavorite(recipeId));
+                    OrganicToast.showSuccess(HomeActivity.this, bottomNav, "Added to favorites");
+                } else {
+                    OrganicToast.showWithAction(HomeActivity.this, bottomNav, R.drawable.ic_heart_outline,
+                            "Removed from favorites", "Undo", () -> viewModel.undoRemoveFavorite(recipeId));
                 }
             }
         });
@@ -189,7 +191,7 @@ public class HomeActivity extends AppCompatActivity {
                 updateNoResultsState(success.getRecipes().isEmpty());
             } else if (state instanceof FeedState.Error error) {
                 showSkeleton(false);
-                OrganicToast.show(this, bottomNav, error.getMessage());
+                OrganicToast.showError(this, bottomNav, error.getMessage());
             }
         });
 
@@ -209,7 +211,7 @@ public class HomeActivity extends AppCompatActivity {
         viewModel.getErrorEvent().observe(this, event -> {
             String message = event.getContentIfNotHandled();
             if (message != null) {
-                OrganicToast.show(this, bottomNav, message);
+                OrganicToast.showError(this, bottomNav, message);
             }
         });
     }

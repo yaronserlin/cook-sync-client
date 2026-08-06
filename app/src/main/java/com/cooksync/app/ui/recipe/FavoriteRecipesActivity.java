@@ -151,7 +151,7 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
                 }
             } else if (result instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
                 showSkeleton(false);
-                OrganicToast.show(this, bottomNav, error.getMessage());
+                OrganicToast.showError(this, bottomNav, error.getMessage());
             }
         });
 

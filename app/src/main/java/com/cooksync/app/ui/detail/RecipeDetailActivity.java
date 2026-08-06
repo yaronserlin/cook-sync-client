@@ -214,9 +214,11 @@ public class RecipeDetailActivity extends AppCompatActivity {
             isFavorite = !isFavorite;
             updateFavoriteIcon();
             if (!wasFavorite) {
-                OrganicToast.showWithAction(this, null, R.drawable.ic_heart_filled, "Added to favorites", "Undo", () -> {
-                    if (viewModel.undoAddFavorite(recipeId)) {
-                        isFavorite = false;
+                OrganicToast.showSuccess(this, null, "Added to favorites");
+            } else {
+                OrganicToast.showWithAction(this, null, R.drawable.ic_heart_outline, "Removed from favorites", "Undo", () -> {
+                    if (viewModel.undoRemoveFavorite(recipeId)) {
+                        isFavorite = true;
                         updateFavoriteIcon();
                     }
                 });
@@ -317,7 +319,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
                 showSkeleton(false);
             } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
                 showSkeleton(false);
-                OrganicToast.show(this, null, error.getMessage());
+                OrganicToast.showError(this, null, error.getMessage());
             }
         });
 
@@ -348,7 +350,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
             if (result instanceof ApiResult.Success<Void>) {
                 viewModel.loadNotes(getIntent().getStringExtra(EXTRA_RECIPE_ID));
             } else if (result instanceof ApiResult.Error<Void> error) {
-                OrganicToast.show(this, null, error.getMessage());
+                OrganicToast.showError(this, null, error.getMessage());
             }
         });
 
@@ -361,7 +363,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
                     pendingDeletedReview = null;
                     refreshReviewsDisplay();
                 }
-                OrganicToast.show(this, null, error.getMessage());
+                OrganicToast.showError(this, null, error.getMessage());
             }
         });
     }

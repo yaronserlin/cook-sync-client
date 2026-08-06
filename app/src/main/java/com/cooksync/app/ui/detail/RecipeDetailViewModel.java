@@ -90,35 +90,35 @@ public class RecipeDetailViewModel extends ViewModel {
     }
 
     /**
-     * Toggles the recipe's favorite state. Removing is sent immediately; adding is deferred by
+     * Toggles the recipe's favorite state. Adding is sent immediately; removing is deferred by
      * {@link #UNDO_WINDOW_MS} so a tap on the toast's "Undo" action (see
-     * {@link #undoAddFavorite}) can cancel it before it's ever sent. If a remove is requested
-     * while its matching add is still pending, the pending add is simply cancelled rather than
-     * sending a remove for something the server never received.
+     * {@link #undoRemoveFavorite}) can cancel it before it's ever sent. If an add is requested
+     * while its matching remove is still pending, the pending remove is simply cancelled
+     * rather than sending an add for something the server still has.
      *
      * @param recipeId the recipe to favorite/unfavorite
      * @param currentlyFavorite whether it's currently favorited (i.e. {@code true} removes it)
      */
     public void toggleFavorite(String recipeId, boolean currentlyFavorite) {
         if (currentlyFavorite) {
+            pendingActions.schedule(recipeId, UNDO_WINDOW_MS,
+                    () -> repository.removeFavorite(recipeId, new MutableLiveData<>()));
+        } else {
             if (pendingActions.cancel(recipeId)) {
                 return;
             }
-            repository.removeFavorite(recipeId, new MutableLiveData<>());
-        } else {
-            pendingActions.schedule(recipeId, UNDO_WINDOW_MS,
-                    () -> repository.addFavorite(recipeId, new MutableLiveData<>()));
+            repository.addFavorite(recipeId, new MutableLiveData<>());
         }
     }
 
     /**
-     * Cancels a still-pending "add to favorites" before it reaches the server.
+     * Cancels a still-pending "remove from favorites" before it reaches the server.
      *
-     * @param recipeId the id of the recipe whose favorite-add should be undone
-     * @return {@code true} if an add was actually pending and got cancelled; {@code false} if
-     *         the undo window already elapsed and the add reached the server
+     * @param recipeId the id of the recipe whose favorite-remove should be undone
+     * @return {@code true} if a removal was actually pending and got cancelled; {@code false} if
+     *         the undo window already elapsed and the removal reached the server
      */
-    public boolean undoAddFavorite(String recipeId) {
+    public boolean undoRemoveFavorite(String recipeId) {
         return pendingActions.cancel(recipeId);
     }
 

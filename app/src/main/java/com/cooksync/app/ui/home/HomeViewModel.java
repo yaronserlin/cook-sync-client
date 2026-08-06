@@ -297,14 +297,13 @@ public class HomeViewModel extends ViewModel {
     }
 
     /**
-     * Optimistically toggles a recipe's favorite state in {@link #favoritesResult}. Removing a
-     * favorite is sent immediately, same as before; adding one is deferred by
-     * {@link #UNDO_WINDOW_MS} instead, so a tap on the toast's "Undo" action (see
-     * {@link #undoAddFavorite}) can cancel it before it's ever sent. If a remove is requested
-     * while its matching add is still pending, the pending add is simply cancelled rather than
-     * sending a remove for something the server never received. If a server call that does go
-     * out fails, the optimistic change is rolled back and {@link #errorEvent} is emitted so the
-     * UI can inform the user — the heart icon never claims a state the server didn't confirm.
+     * Optimistically toggles a recipe's favorite state in {@link #favoritesResult}. Adding a
+     * favorite is sent immediately; removing one is deferred by {@link #UNDO_WINDOW_MS}
+     * instead, so a tap on the toast's "Undo" action (see {@link #undoRemoveFavorite}) can
+     * cancel it before it's ever sent. If an add is requested while its matching remove is
+     * still pending, the pending remove is simply cancelled rather than sending an add for
+     * something the server still has. If a server call that does go out fails, the optimistic
+     * change is rolled back and {@link #errorEvent} is emitted so the UI can inform the user.
      *
      * @param recipeId the id of the recipe to favorite/unfavorite
      */
@@ -321,25 +320,6 @@ public class HomeViewModel extends ViewModel {
             withoutRecipe.removeIf(r -> r.id().equals(recipeId));
             favoritesResult.setValue(new ApiResult.Success<>(withoutRecipe));
 
-            if (pendingActions.cancel(recipeId)) {
-                return;
-            }
-            MutableLiveData<ApiResult<Void>> writeResult = new MutableLiveData<>();
-            observeOnce(writeResult, result -> {
-                if (result instanceof ApiResult.Error<Void> error) {
-                    favoritesResult.setValue(new ApiResult.Success<>(previous));
-                    errorEvent.setValue(new Event<>(error.getMessage()));
-                }
-            });
-            recipeRepository.removeFavorite(recipeId, writeResult);
-        } else {
-            List<RecipePreviewResponse> withRecipe = new ArrayList<>(previous);
-            currentRecipes.stream()
-                    .filter(r -> r.id().equals(recipeId))
-                    .findFirst()
-                    .ifPresent(withRecipe::add);
-            favoritesResult.setValue(new ApiResult.Success<>(withRecipe));
-
             pendingActions.schedule(recipeId, UNDO_WINDOW_MS, () -> {
                 MutableLiveData<ApiResult<Void>> writeResult = new MutableLiveData<>();
                 observeOnce(writeResult, result -> {
@@ -348,27 +328,42 @@ public class HomeViewModel extends ViewModel {
                         errorEvent.setValue(new Event<>(error.getMessage()));
                     }
                 });
-                recipeRepository.addFavorite(recipeId, writeResult);
+                recipeRepository.removeFavorite(recipeId, writeResult);
             });
+        } else {
+            List<RecipePreviewResponse> withRecipe = new ArrayList<>(previous);
+            currentRecipes.stream()
+                    .filter(r -> r.id().equals(recipeId))
+                    .findFirst()
+                    .ifPresent(withRecipe::add);
+            favoritesResult.setValue(new ApiResult.Success<>(withRecipe));
+
+            if (pendingActions.cancel(recipeId)) {
+                return;
+            }
+
+            MutableLiveData<ApiResult<Void>> writeResult = new MutableLiveData<>();
+            observeOnce(writeResult, result -> {
+                if (result instanceof ApiResult.Error<Void> error) {
+                    favoritesResult.setValue(new ApiResult.Success<>(previous));
+                    errorEvent.setValue(new Event<>(error.getMessage()));
+                }
+            });
+            recipeRepository.addFavorite(recipeId, writeResult);
         }
     }
 
     /**
-     * Cancels a still-pending "add to favorites" and restores the pre-add state. Does nothing
-     * if the undo window already elapsed and the add reached the server.
+     * Cancels a still-pending "remove from favorites" and restores the favorite state. Does
+     * nothing if the undo window already elapsed and the remove reached the server.
      *
-     * @param recipeId the id of the recipe whose favorite-add should be undone
+     * @param recipeId the id of the recipe whose favorite-remove should be undone
      */
-    public void undoAddFavorite(String recipeId) {
+    public void undoRemoveFavorite(String recipeId) {
         if (!pendingActions.cancel(recipeId)) {
             return;
         }
-        List<RecipePreviewResponse> current =
-                favoritesResult.getValue() instanceof ApiResult.Success<List<RecipePreviewResponse>> success
-                        ? new ArrayList<>(success.getData())
-                        : new ArrayList<>();
-        current.removeIf(r -> r.id().equals(recipeId));
-        favoritesResult.setValue(new ApiResult.Success<>(current));
+        recipeRepository.getFavorites(favoritesResult);
     }
 
     /**
