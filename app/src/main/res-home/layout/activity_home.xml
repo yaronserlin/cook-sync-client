@@ -41,8 +41,6 @@
 
             </LinearLayout>
 
-            <!-- Non-editable tap target: matches the design, where tapping the search field
-                 navigates to the dedicated Search screen rather than filtering in place. -->
             <LinearLayout
                 android:id="@+id/search_bar_tap_target"
                 android:layout_width="match_parent"
@@ -70,7 +68,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:alpha="0.5"
-                    android:text="@string/search_hint"
+                    android:text="@string/home_search_hint"
                     android:textColor="@color/color_text"
                     android:textSize="14sp" />
 
@@ -90,7 +88,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="48dp"
                     android:paddingHorizontal="16dp"
-                    android:text="Filters · 0"
+                    android:text="@string/filters_count_format"
                     app:icon="@drawable/ic_filter"
                     app:iconPadding="8dp"
                     app:iconSize="18dp" />
@@ -108,8 +106,6 @@
 
             </LinearLayout>
 
-            <!-- Names the currently active filters, so applying a filter gives feedback beyond
-                 the "Filters · N" count alone. Hidden entirely when no filter is active. -->
             <TextView
                 android:id="@+id/tv_active_filters_summary"
                 android:layout_width="match_parent"
@@ -148,7 +144,6 @@
             layout="@layout/activity_home_skeleton"
             android:visibility="gone" />
 
-        <!-- Shown instead of the feed when the active filters match no recipes. -->
         <include layout="@layout/layout_no_results_state" />
 
     </FrameLayout>

@@ -37,27 +37,27 @@
             android:exported="false" />
 
         <activity
-            android:name=".ui.detail.RecipeDetailActivity"
+            android:name=".ui.recipe.detail.RecipeDetailActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.recipe.CookingModeActivity"
+            android:name=".ui.recipe.cooking.CookingModeActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.recipe.ReviewActivity"
+            android:name=".ui.recipe.review.ReviewActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.recipe.MyRecipesActivity"
+            android:name=".ui.recipe.list.MyRecipesActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.recipe.FavoriteRecipesActivity"
+            android:name=".ui.recipe.list.FavoriteRecipesActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.recipe.SearchActivity"
+            android:name=".ui.recipe.search.SearchActivity"
             android:exported="false"
             android:windowSoftInputMode="stateVisible" />
 

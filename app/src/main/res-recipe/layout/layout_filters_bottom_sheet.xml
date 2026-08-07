@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Height is capped at runtime to 82% of the screen (matching the design's
-     ".sheetbody{max-height:82%}") via BottomSheetBehavior#setMaxHeight in
-     FiltersBottomSheetDialogFragment#onStart, so wrap_content here just means "as tall as the
-     content needs, up to that cap"; the NestedScrollView below absorbs whatever doesn't fit. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -32,7 +28,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/caprasimo"
-            android:text="Filters"
+            android:text="@string/filters_title"
             android:textColor="@color/color_text"
             android:textSize="24sp" />
 
@@ -43,14 +39,11 @@
             android:layout_height="wrap_content"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            android:text="Reset"
+            android:text="@string/action_reset"
             android:textSize="13sp" />
 
     </LinearLayout>
 
-    <!-- Live feedback on what's currently applied, updated as the user toggles chips below —
-         so the sheet itself always shows which filters are active, not just the button behind
-         it once closed. -->
     <TextView
         android:id="@+id/tv_current_selection"
         android:layout_width="match_parent"
@@ -62,10 +55,6 @@
         android:textStyle="bold"
         tools:text="Applied: Easy · Vegan · 4.0+ · Under 30 min" />
 
-    <!-- Scrollable body: everything between the header and the pinned Apply button below.
-         NestedScrollView is what makes BottomSheetBehavior treat this sheet as internally
-         scrollable once expanded, so overflow content is reachable by dragging/scrolling
-         instead of being clipped off-screen. -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -82,7 +71,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/caprasimo"
-        android:text="Tags"
+        android:text="@string/filters_tags_label"
         android:textColor="@color/color_text"
         android:textSize="20sp" />
 
@@ -97,19 +86,19 @@
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Vegan" />
+            android:text="@string/filter_tag_vegan" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_vegetarian"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Vegetarian" />
+            android:text="@string/filter_tag_vegetarian" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_gluten_free"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Gluten Free" />
+            android:text="@string/filter_tag_gluten_free" />
     </com.google.android.material.chip.ChipGroup>
 
     <TextView
@@ -117,7 +106,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/caprasimo"
-        android:text="Total time"
+        android:text="@string/filters_total_time_label"
         android:textColor="@color/color_text"
         android:textSize="20sp" />
 
@@ -133,20 +122,20 @@
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Any"
+            android:text="@string/filter_time_any"
             android:checked="true" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_time_under_30"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Under 30 min" />
+            android:text="@string/filter_time_under_30" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_time_under_60"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Under 1h" />
+            android:text="@string/filter_time_under_60" />
     </com.google.android.material.chip.ChipGroup>
 
     <TextView
@@ -154,7 +143,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/caprasimo"
-        android:text="Difficulty"
+        android:text="@string/filters_difficulty_label"
         android:textColor="@color/color_text"
         android:textSize="20sp" />
 
@@ -169,19 +158,19 @@
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Easy" />
+            android:text="@string/filter_difficulty_easy" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_medium"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Medium" />
+            android:text="@string/filter_difficulty_medium" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_hard"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hard" />
+            android:text="@string/filter_difficulty_hard" />
     </com.google.android.material.chip.ChipGroup>
 
     <TextView
@@ -189,7 +178,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/caprasimo"
-        android:text="Minimum rating"
+        android:text="@string/filters_min_rating_label"
         android:textColor="@color/color_text"
         android:textSize="20sp" />
 
@@ -205,26 +194,26 @@
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Any"
+            android:text="@string/filter_rating_any"
             android:checked="true" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_rating_35"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="3.5+" />
+            android:text="@string/filter_rating_35" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_rating_40"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="4.0+" />
+            android:text="@string/filter_rating_40" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_rating_45"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="4.5+" />
+            android:text="@string/filter_rating_45" />
     </com.google.android.material.chip.ChipGroup>
 
     <TextView
@@ -232,7 +221,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:fontFamily="@font/caprasimo"
-        android:text="Sort by"
+        android:text="@string/filters_sort_by_label"
         android:textColor="@color/color_text"
         android:textSize="20sp" />
 
@@ -248,20 +237,20 @@
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Newest"
+            android:text="@string/filter_sort_newest"
             android:checked="true" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_sort_rating"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Top Rated" />
+            android:text="@string/filter_sort_top_rated" />
         <com.google.android.material.chip.Chip
             android:id="@+id/chip_sort_time"
             style="@style/Widget.MaterialComponents.Chip.Choice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Shortest Time" />
+            android:text="@string/filter_sort_shortest_time" />
     </com.google.android.material.chip.ChipGroup>
 
     </LinearLayout>
@@ -274,6 +263,6 @@
         android:layout_height="54dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="24dp"
-        android:text="Apply Filters" />
+        android:text="@string/action_apply_filters" />
 
 </LinearLayout>

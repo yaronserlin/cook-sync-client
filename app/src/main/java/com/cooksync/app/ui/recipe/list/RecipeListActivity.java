@@ -1,4 +1,4 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.list;
 
 import android.content.Intent;
 import android.graphics.Typeface;
@@ -16,14 +16,16 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
-import com.cooksync.app.ui.common.SkeletonHelper;
 import com.cooksync.app.ui.home.HomeActivity;
+import com.cooksync.app.ui.profile.ProfileActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.ChipGroup;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Shared base for the "My Recipes" and "Favorites" screens, which are visually identical in
@@ -36,7 +38,7 @@ import java.util.List;
  * @version 1.0
  * @since 04/08/2026
  */
-public abstract class RecipeListActivity extends AppCompatActivity {
+public abstract class RecipeListActivity extends BaseActivity {
 
     protected TextView tvTitle;
     protected TextView tvSubtitle;
@@ -44,7 +46,6 @@ public abstract class RecipeListActivity extends AppCompatActivity {
     protected MaterialButton btnFilters;
     protected LinearLayout chipContainer;
     protected RecyclerView rvList;
-    protected View skeletonView;
     protected View emptyState;
     protected ImageView ivEmptyIcon;
     protected TextView tvEmptyTitle;
@@ -54,8 +55,6 @@ public abstract class RecipeListActivity extends AppCompatActivity {
     protected BottomNavigationView bottomNav;
     private ChipGroup cgRemovableConstraints;
     private View btnClearAll;
-
-    private SkeletonHelper skeletonHelper;
 
     /** Which bottom-nav item corresponds to this screen. */
     @IdRes
@@ -72,7 +71,6 @@ public abstract class RecipeListActivity extends AppCompatActivity {
         btnFilters = findViewById(R.id.btn_filters);
         chipContainer = findViewById(R.id.chip_container);
         rvList = findViewById(R.id.rv_list);
-        skeletonView = findViewById(R.id.skeleton_view);
         emptyState = findViewById(R.id.empty_state);
         ivEmptyIcon = findViewById(R.id.iv_empty_icon);
         tvEmptyTitle = findViewById(R.id.tv_empty_title);
@@ -81,8 +79,7 @@ public abstract class RecipeListActivity extends AppCompatActivity {
         cgRemovableConstraints = noResultsState.findViewById(R.id.cg_removable_constraints);
         btnClearAll = noResultsState.findViewById(R.id.btn_clear_all);
 
-        skeletonHelper = new SkeletonHelper();
-        skeletonHelper.attachAll((android.view.ViewGroup) skeletonView);
+        setupSkeleton(R.id.skeleton_view);
 
         setupBottomNav();
     }
@@ -95,7 +92,7 @@ public abstract class RecipeListActivity extends AppCompatActivity {
             if (id == getSelectedNavItemId()) {
                 return true;
             }
-            Class<? extends AppCompatActivity> target = null;
+            Class<? extends AppCompatActivity> target;
             if (id == R.id.nav_home) {
                 target = HomeActivity.class;
             } else if (id == R.id.nav_my_recipes) {
@@ -103,9 +100,8 @@ public abstract class RecipeListActivity extends AppCompatActivity {
             } else if (id == R.id.nav_favorites) {
                 target = FavoriteRecipesActivity.class;
             } else if (id == R.id.nav_profile) {
-                target = com.cooksync.app.ui.profile.ProfileActivity.class;
-            }
-            if (target == null) {
+                target = ProfileActivity.class;
+            } else {
                 return false;
             }
             Intent intent = new Intent(this, target);
@@ -122,13 +118,35 @@ public abstract class RecipeListActivity extends AppCompatActivity {
      * @param show {@code true} to show the skeleton and hide the list
      */
     protected void showSkeleton(boolean show) {
-        skeletonView.setVisibility(show ? View.VISIBLE : View.GONE);
-        rvList.setVisibility(show ? View.GONE : View.VISIBLE);
-        if (show) {
-            skeletonHelper.start();
-        } else {
-            skeletonHelper.stop();
-        }
+        showSkeleton(show, rvList);
+    }
+
+    /**
+     * Wires {@link #searchView} to invoke {@code onQueryChange} on every submit and every
+     * keystroke, matching the "live filter as you type" search behavior shared by My Recipes
+     * and Favorites (unlike {@code SearchActivity}, neither screen debounces or hits the
+     * network — both filter an already-loaded local list).
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param onQueryChange invoked with the current query text on submit and on every change
+     */
+    protected void setupSearchListener(Consumer<String> onQueryChange) {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                onQueryChange.accept(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                onQueryChange.accept(newText);
+                return true;
+            }
+        });
     }
 
     /**

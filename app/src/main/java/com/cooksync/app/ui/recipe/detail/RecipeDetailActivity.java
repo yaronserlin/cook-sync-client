@@ -1,5 +1,7 @@
-package com.cooksync.app.ui.detail;
+package com.cooksync.app.ui.recipe.detail;
 
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -8,7 +10,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.widget.NestedScrollView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,11 +18,15 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.common.FullscreenImageActivity;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ReportReviewDialog;
-import com.cooksync.app.ui.common.SkeletonHelper;
+import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.home.TagChipAdapter;
+import com.cooksync.app.ui.recipe.cooking.CookingModeActivity;
+import com.cooksync.app.ui.recipe.review.ReviewActivity;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.note.NoteResponse;
@@ -39,6 +44,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Detailed view of a single recipe, showing ingredients, instructions, and reviews.
@@ -51,7 +57,7 @@ import java.util.Map;
  * @version 1.3
  * @since 04/08/2026
  */
-public class RecipeDetailActivity extends AppCompatActivity {
+public class RecipeDetailActivity extends BaseActivity {
 
     public static final String EXTRA_RECIPE_ID = "extra_recipe_id";
 
@@ -67,10 +73,8 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private ReviewAdapter reviewAdapter;
     private DescriptionBlockAdapter descriptionBlockAdapter;
     private TagChipAdapter tagAdapter;
-    private SkeletonHelper skeletonHelper;
 
     private NestedScrollView scrollView;
-    private View skeletonView;
     private View contentGroup;
     private View bottomBar;
     private ImageView heroImage;
@@ -94,7 +98,6 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private TextView tvNote;
     private View groupNoteEdit;
     private EditText etNote;
-    private ImageButton btnNoteSave;
     private ImageButton btnNoteDelete;
 
     /** Guards against a duplicate commit when both the save/delete icon tap and the resulting
@@ -108,7 +111,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
      *  deferred delete fails server-side; {@code null} whenever no delete is in flight. */
     private ReviewResponse pendingDeletedReview;
     private final List<NoteResponse> currentNotes = new ArrayList<>();
-    private final java.util.Map<Integer, com.google.android.material.card.MaterialCardView> starChips = new java.util.HashMap<>();
+    private final Map<Integer, com.google.android.material.card.MaterialCardView> starChips = new HashMap<>();
     private Integer activeStarFilter = null;
     private int sortIndex = 0;
     private boolean isInitialLoad = true;
@@ -124,13 +127,13 @@ public class RecipeDetailActivity extends AppCompatActivity {
             return;
         }
 
-        viewModel = new ViewModelProvider(this).get(RecipeDetailViewModel.class);
+        viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(RecipeDetailViewModel.class);
 
         initViews();
         setupAdapters();
         setupObservers();
 
-        showSkeleton(true);
+        showSkeleton(true, null);
         viewModel.loadRecipe(recipeId);
         viewModel.loadFavorites();
         viewModel.loadNotes(recipeId);
@@ -138,9 +141,8 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
     /**
      * Reloads the recipe on every return to this screen after the first creation, so a
-     * review just submitted from {@link com.cooksync.app.ui.recipe.ReviewActivity} (reached
-     * either from here or from the end of {@link com.cooksync.app.ui.recipe.CookingModeActivity})
-     * shows up immediately without a manual refresh.
+     * review just submitted from {@link ReviewActivity} (reached either from here or from the
+     * end of {@link CookingModeActivity}) shows up immediately without a manual refresh.
      *
      * Complexity:
      * Time: O(1)
@@ -161,11 +163,9 @@ public class RecipeDetailActivity extends AppCompatActivity {
 
     private void initViews() {
         scrollView = findViewById(R.id.detail_scroll);
-        skeletonView = findViewById(R.id.detail_skeleton);
         contentGroup = scrollView;
         bottomBar = findViewById(R.id.detail_bottom_bar);
-        skeletonHelper = new SkeletonHelper();
-        skeletonHelper.attachAll((android.view.ViewGroup) skeletonView);
+        setupSkeleton(R.id.detail_skeleton);
 
         heroImage = findViewById(R.id.detail_image);
         title = findViewById(R.id.detail_title);
@@ -188,15 +188,13 @@ public class RecipeDetailActivity extends AppCompatActivity {
         tvNote = findViewById(R.id.tv_detail_note);
         groupNoteEdit = findViewById(R.id.group_detail_note_edit);
         etNote = findViewById(R.id.et_detail_note);
-        btnNoteSave = findViewById(R.id.btn_detail_note_save);
+        ImageButton btnNoteSave = findViewById(R.id.btn_detail_note_save);
         btnNoteDelete = findViewById(R.id.btn_detail_note_delete);
         groupNoteView.setOnClickListener(v -> openRecipeNoteEditor());
         btnNoteSave.setOnClickListener(v -> commitRecipeNoteInline());
         btnNoteDelete.setOnClickListener(v -> deleteRecipeNoteInline());
         etNote.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                commitRecipeNoteInline();
-            }
+            if (!hasFocus) commitRecipeNoteInline();
         });
 
         starChips.put(5, findViewById(R.id.chip_star_5));
@@ -208,16 +206,17 @@ public class RecipeDetailActivity extends AppCompatActivity {
         findViewById(R.id.btn_back).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         btnFavorite.setOnClickListener(v -> {
-            String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+            String recipeId1 = getIntent().getStringExtra(EXTRA_RECIPE_ID);
             boolean wasFavorite = isFavorite;
-            viewModel.toggleFavorite(recipeId, wasFavorite);
+            viewModel.toggleFavorite(recipeId1, wasFavorite);
             isFavorite = !isFavorite;
             updateFavoriteIcon();
             if (!wasFavorite) {
-                OrganicToast.showSuccess(this, null, "Added to favorites");
+                showSuccess(getString(R.string.favorites_added), null);
             } else {
-                OrganicToast.showWithAction(this, null, R.drawable.ic_heart_outline, "Removed from favorites", "Undo", () -> {
-                    if (viewModel.undoRemoveFavorite(recipeId)) {
+                OrganicToast.showWithAction(this, null, R.drawable.ic_heart_outline,
+                        getString(R.string.favorites_removed), getString(R.string.action_undo), () -> {
+                    if (viewModel.undoRemoveFavorite(recipeId1)) {
                         isFavorite = true;
                         updateFavoriteIcon();
                     }
@@ -228,17 +227,16 @@ public class RecipeDetailActivity extends AppCompatActivity {
         ratingRow.setOnClickListener(v -> scrollView.smoothScrollTo(0, reviewsHeader.getTop() + ((View) reviewsHeader.getParent()).getTop()));
 
         findViewById(R.id.btn_start_cooking).setOnClickListener(v -> {
-            android.content.Intent intent = new android.content.Intent(this, com.cooksync.app.ui.recipe.CookingModeActivity.class);
+            Intent intent = new Intent(this, CookingModeActivity.class);
             intent.putExtra(EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
             startActivity(intent);
         });
 
         findViewById(R.id.btn_review).setOnClickListener(v -> {
-            android.content.Intent intent = new android.content.Intent(this, com.cooksync.app.ui.recipe.ReviewActivity.class);
-            intent.putExtra(com.cooksync.app.ui.recipe.ReviewActivity.EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
+            Intent intent = new Intent(this, ReviewActivity.class);
+            intent.putExtra(ReviewActivity.EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
             startActivity(intent);
         });
-
 
         btnSortReviews.setOnClickListener(v -> {
             sortIndex = (sortIndex + 1) % SORT_OPTIONS.length;
@@ -268,9 +266,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
             @Override
             public void onDeleteNote(InstructionResponse step) {
                 NoteResponse existing = findStepNote(step.id());
-                if (existing != null) {
-                    viewModel.deleteNote(existing.id());
-                }
+                if (existing != null) viewModel.deleteNote(existing.id());
             }
         });
         instructionAdapter.setOnImageClickListener(this::openFullscreenImage);
@@ -289,7 +285,8 @@ public class RecipeDetailActivity extends AppCompatActivity {
             public void onReportReview(ReviewResponse review) {
                 ReportReviewDialog.show(RecipeDetailActivity.this, (reason, comment) -> {
                     viewModel.reportReview(review.id(), reason, comment);
-                    OrganicToast.showWithAction(RecipeDetailActivity.this, null, 0, "Review reported", "Undo",
+                    OrganicToast.showWithAction(RecipeDetailActivity.this, null, 0,
+                            getString(R.string.review_reported), getString(R.string.action_undo),
                             () -> viewModel.undoReportReview(review.id()));
                 });
             }
@@ -314,10 +311,10 @@ public class RecipeDetailActivity extends AppCompatActivity {
         viewModel.getRecipeResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<RecipeResponse> success) {
                 bindRecipe(success.getData());
-                showSkeleton(false);
+                showSkeleton(false, null);
             } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
-                showSkeleton(false);
-                OrganicToast.showError(this, null, error.getMessage());
+                showSkeleton(false, null);
+                showError(error.getMessage(), null);
             }
         });
 
@@ -326,7 +323,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
                 String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
                 isFavorite = false;
                 for (RecipePreviewResponse fav : success.getData()) {
-                    if (fav.id().equals(recipeId)) {
+                    if (Objects.equals(fav.id(), recipeId)) {
                         isFavorite = true;
                         break;
                     }
@@ -348,7 +345,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
             if (result instanceof ApiResult.Success<Void>) {
                 viewModel.loadNotes(getIntent().getStringExtra(EXTRA_RECIPE_ID));
             } else if (result instanceof ApiResult.Error<Void> error) {
-                OrganicToast.showError(this, null, error.getMessage());
+                showError(error.getMessage(), null);
             }
         });
 
@@ -361,41 +358,41 @@ public class RecipeDetailActivity extends AppCompatActivity {
                     pendingDeletedReview = null;
                     refreshReviewsDisplay();
                 }
-                OrganicToast.showError(this, null, error.getMessage());
+                showError(error.getMessage(), null);
             }
         });
     }
 
     /**
-     * Shows a confirm dialog before deleting a review the current user authored, matching the
-     * style of {@link com.cooksync.app.ui.recipe.MyRecipesActivity}'s recipe delete confirm.
-     *
-     * @param review the review to delete
-     */
-    /**
-     * Opens {@link com.cooksync.app.ui.common.FullscreenImageActivity} for a tapped photo
-     * (hero image, description block, instruction step, or review avatar). A no-op if the
-     * photo has no URL, e.g. an avatar still showing its initials fallback.
+     * Opens {@link FullscreenImageActivity} for a tapped photo (hero image, description block,
+     * instruction step, or review avatar). A no-op if the photo has no URL, e.g. an avatar
+     * still showing its initials fallback.
      *
      * @param imageUrl the photo's URL, or {@code null}/blank if there is none to show
      */
     private void openFullscreenImage(String imageUrl) {
-        if (imageUrl == null || imageUrl.isBlank()) {
-            return;
-        }
-        android.content.Intent intent = new android.content.Intent(this, com.cooksync.app.ui.common.FullscreenImageActivity.class);
-        intent.putExtra(com.cooksync.app.ui.common.FullscreenImageActivity.EXTRA_IMAGE_URL, imageUrl);
+        if (imageUrl == null || imageUrl.isBlank()) return;
+        Intent intent = new Intent(this, FullscreenImageActivity.class);
+        intent.putExtra(FullscreenImageActivity.EXTRA_IMAGE_URL, imageUrl);
         startActivity(intent);
     }
 
+    /**
+     * Shows a confirm dialog before deleting a review the current user authored, matching the
+     * style of {@link com.cooksync.app.ui.recipe.list.MyRecipesActivity}'s recipe delete confirm.
+     *
+     * @param review the review to delete
+     */
     private void confirmDeleteReview(ReviewResponse review) {
-        OrganicConfirmDialog.show(this, "Delete this review?", "This can't be undone.",
-                "Delete", "Cancel", true, () -> {
+        OrganicConfirmDialog.show(this, getString(R.string.dialog_delete_review_title),
+                getString(R.string.dialog_delete_review_message),
+                getString(R.string.action_delete), getString(R.string.action_cancel), true, () -> {
                     pendingDeletedReview = review;
                     allReviews.remove(review);
                     refreshReviewsDisplay();
                     viewModel.deleteReview(review.id());
-                    OrganicToast.showWithAction(this, null, R.drawable.ic_delete, "Review deleted", "Undo", () -> {
+                    OrganicToast.showWithAction(this, null, R.drawable.ic_delete,
+                            getString(R.string.review_deleted), getString(R.string.action_undo), () -> {
                         if (viewModel.undoDeleteReview(review.id())) {
                             allReviews.add(review);
                             pendingDeletedReview = null;
@@ -406,27 +403,19 @@ public class RecipeDetailActivity extends AppCompatActivity {
     }
 
     private NoteResponse findRecipeNote() {
-        for (NoteResponse note : currentNotes) {
-            if (note.instructionId() == null) {
-                return note;
-            }
-        }
+        for (NoteResponse note : currentNotes) if (note.instructionId() == null) return note;
         return null;
     }
 
     private NoteResponse findStepNote(String instructionId) {
-        for (NoteResponse note : currentNotes) {
-            if (instructionId.equals(note.instructionId())) {
-                return note;
-            }
-        }
+        for (NoteResponse note : currentNotes) if (Objects.equals(instructionId, note.instructionId())) return note;
         return null;
     }
 
     private void renderRecipeNote() {
         NoteResponse note = findRecipeNote();
         boolean hasNote = note != null;
-        tvNote.setText(hasNote ? note.note() : "Add a private note");
+        tvNote.setText(hasNote ? note.note() : getString(R.string.recipe_add_note_hint));
         tvNote.setAlpha(hasNote ? 1f : 0.7f);
     }
 
@@ -462,14 +451,12 @@ public class RecipeDetailActivity extends AppCompatActivity {
      * actually changed.
      */
     private void commitRecipeNoteInline() {
-        if (noteEditCommitted) {
-            return;
-        }
+        if (noteEditCommitted) return;
         noteEditCommitted = true;
         String text = etNote.getText() == null ? "" : etNote.getText().toString().trim();
         NoteResponse existing = findRecipeNote();
         String currentText = existing != null ? existing.note() : "";
-        if (!text.isEmpty() && !text.equals(currentText)) {
+        if (!text.isEmpty() && !Objects.equals(text, currentText)) {
             String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
             viewModel.saveNote(recipeId, null, text);
         }
@@ -477,43 +464,39 @@ public class RecipeDetailActivity extends AppCompatActivity {
     }
 
     private void deleteRecipeNoteInline() {
-        if (noteEditCommitted) {
-            return;
-        }
+        if (noteEditCommitted) return;
         noteEditCommitted = true;
         NoteResponse existing = findRecipeNote();
-        if (existing != null) {
-            viewModel.deleteNote(existing.id());
-        }
+        if (existing != null) viewModel.deleteNote(existing.id());
         closeRecipeNoteEditor();
     }
 
     private void renderStepNotes() {
         Map<String, String> stepNotes = new HashMap<>();
         for (NoteResponse note : currentNotes) {
-            if (note.instructionId() != null) {
-                stepNotes.put(note.instructionId(), note.note());
-            }
+            if (note.instructionId() != null) stepNotes.put(note.instructionId(), note.note());
         }
         instructionAdapter.setNotes(stepNotes);
     }
-
 
     /**
      * Shows or hides the skeleton loading placeholder, toggling it against the real content
      * scroll view and the bottom action bar (which isn't actionable before data arrives).
      *
      * @param show {@code true} to show the skeleton and hide real content, {@code false} to reveal it
+     * @param ignored unused; {@link BaseActivity#showSkeleton} accepts a content view to toggle,
+     *                but this screen swaps {@link #contentGroup} and {@link #bottomBar} directly
      */
-    private void showSkeleton(boolean show) {
+    @Override
+    protected void showSkeleton(boolean show, View ignored) {
         if (show) {
-            skeletonHelper.start();
-            skeletonView.setVisibility(View.VISIBLE);
+            if (skeletonHelper != null) skeletonHelper.start();
+            if (skeletonView != null) skeletonView.setVisibility(View.VISIBLE);
             contentGroup.setVisibility(View.INVISIBLE);
             bottomBar.setVisibility(View.INVISIBLE);
         } else {
-            skeletonHelper.stop();
-            skeletonView.setVisibility(View.GONE);
+            if (skeletonHelper != null) skeletonHelper.stop();
+            if (skeletonView != null) skeletonView.setVisibility(View.GONE);
             contentGroup.setVisibility(View.VISIBLE);
             bottomBar.setVisibility(View.VISIBLE);
         }
@@ -522,7 +505,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private void bindRecipe(RecipeResponse recipe) {
         String authorName = recipe.createdBy() != null
                 ? recipe.createdBy().firstName() + " " + recipe.createdBy().lastName()
-                : "Anonymous";
+                : getString(R.string.anonymous);
         kicker.setText(getString(R.string.recipe_kicker_format, authorName, formatPublishedDate(recipe.createdAt())));
 
         title.setText(recipe.title());
@@ -533,15 +516,10 @@ public class RecipeDetailActivity extends AppCompatActivity {
         servings.setText(String.valueOf(recipe.servings()));
         ingredientsHeader.setText(getString(R.string.ingredients_header_format, recipe.servings()));
 
-        Glide.with(this)
-                .load(recipe.primaryImageUrl())
-                .placeholder(R.color.color_neutral_300)
-                .centerCrop()
-                .into(heroImage);
+        Glide.with(this).load(recipe.primaryImageUrl()).placeholder(R.color.color_neutral_300).centerCrop().into(heroImage);
         heroImage.setOnClickListener(v -> openFullscreenImage(recipe.primaryImageUrl()));
 
         descriptionBlockAdapter.setBlocks(recipe.descriptionBlocks());
-
         ingredientAdapter.setIngredients(new ArrayList<>(recipe.ingredients()));
         List<InstructionResponse> sortedInstructions = new ArrayList<>(recipe.instructions());
         sortedInstructions.sort(Comparator.comparingInt(InstructionResponse::stepNumber));
@@ -549,9 +527,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
         tagAdapter.setTags(recipe.tags());
 
         allReviews.clear();
-        if (recipe.reviews() != null) {
-            allReviews.addAll(recipe.reviews());
-        }
+        if (recipe.reviews() != null) allReviews.addAll(recipe.reviews());
         activeStarFilter = null;
         sortIndex = 0;
         btnSortReviews.setText(SORT_OPTIONS[sortIndex]);
@@ -576,9 +552,7 @@ public class RecipeDetailActivity extends AppCompatActivity {
         summaryStars.setText(starsForRating(recipe.averageRating()));
 
         java.util.Arrays.fill(starCounts, 0);
-        for (ReviewResponse review : allReviews) {
-            starCounts[clampStars(review.rating())]++;
-        }
+        for (ReviewResponse review : allReviews) starCounts[clampStars(review.rating())]++;
 
         int total = allReviews.size();
         bindBarRow(R.id.bar_row_5, 5, total);
@@ -602,13 +576,11 @@ public class RecipeDetailActivity extends AppCompatActivity {
         starLabel.setText(String.valueOf(star));
         pctLabel.setText(String.valueOf(count));
 
-        android.widget.LinearLayout.LayoutParams fillParams =
-                (android.widget.LinearLayout.LayoutParams) barFill.getLayoutParams();
+        android.widget.LinearLayout.LayoutParams fillParams = (android.widget.LinearLayout.LayoutParams) barFill.getLayoutParams();
         fillParams.weight = percent;
         barFill.setLayoutParams(fillParams);
 
-        android.widget.LinearLayout.LayoutParams spacerParams =
-                (android.widget.LinearLayout.LayoutParams) barSpacer.getLayoutParams();
+        android.widget.LinearLayout.LayoutParams spacerParams = (android.widget.LinearLayout.LayoutParams) barSpacer.getLayoutParams();
         spacerParams.weight = 100 - percent;
         barSpacer.setLayoutParams(spacerParams);
     }
@@ -621,11 +593,11 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private void bindStarChips() {
         for (int star : STAR_VALUES) {
             com.google.android.material.card.MaterialCardView chip = starChips.get(star);
+            if (chip == null) continue;
             TextView label = chip.findViewById(R.id.star_chip_label);
             TextView count = chip.findViewById(R.id.star_chip_count);
             label.setText(getString(R.string.star_chip_label_format, star));
             count.setText(String.valueOf(starCounts[star]));
-
             chip.setOnClickListener(v -> {
                 activeStarFilter = (activeStarFilter != null && activeStarFilter == star) ? null : star;
                 refreshReviewsDisplay();
@@ -637,9 +609,9 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private void updateStarChipHighlight() {
         for (int star : STAR_VALUES) {
             com.google.android.material.card.MaterialCardView chip = starChips.get(star);
+            if (chip == null) continue;
             TextView label = chip.findViewById(R.id.star_chip_label);
             TextView count = chip.findViewById(R.id.star_chip_count);
-
             boolean active = activeStarFilter != null && activeStarFilter == star;
             chip.setCardBackgroundColor(getColor(active ? R.color.color_accent : R.color.color_neutral_300));
             int textColor = getColor(active ? R.color.color_bg : R.color.color_text);
@@ -656,30 +628,24 @@ public class RecipeDetailActivity extends AppCompatActivity {
      */
     private void refreshReviewsDisplay() {
         updateStarChipHighlight();
-
         List<ReviewResponse> displayed = new ArrayList<>(allReviews);
+        if (activeStarFilter != null) displayed.removeIf(r -> clampStars(r.rating()) != activeStarFilter);
 
-        if (activeStarFilter != null) {
-            displayed.removeIf(r -> clampStars(r.rating()) != activeStarFilter);
+        Comparator<ReviewResponse> comparator;
+        String sortOption = SORT_OPTIONS[sortIndex];
+        if (Objects.equals(sortOption, "Highest rated")) {
+            comparator = Comparator.comparing((ReviewResponse r) -> r.rating() == null ? BigDecimal.ZERO : r.rating(), Comparator.reverseOrder());
+        } else if (Objects.equals(sortOption, "Lowest rated")) {
+            comparator = Comparator.comparing((ReviewResponse r) -> r.rating() == null ? BigDecimal.ZERO : r.rating());
+        } else {
+            comparator = Comparator.comparing((ReviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(), Comparator.reverseOrder());
         }
-
-        Comparator<ReviewResponse> comparator = switch (SORT_OPTIONS[sortIndex]) {
-            case "Highest rated" -> Comparator.comparing(
-                    (ReviewResponse r) -> r.rating() == null ? BigDecimal.ZERO : r.rating(),
-                    Comparator.reverseOrder());
-            case "Lowest rated" -> Comparator.comparing(
-                    (ReviewResponse r) -> r.rating() == null ? BigDecimal.ZERO : r.rating());
-            default -> Comparator.comparing(
-                    (ReviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(),
-                    Comparator.reverseOrder());
-        };
         displayed.sort(comparator);
-
         reviewAdapter.setReviews(displayed);
 
         reviewsSummaryLabel.setText(activeStarFilter == null
-                ? displayed.size() + (displayed.size() == 1 ? " review" : " reviews")
-                : displayed.size() + " reviews · filtered by " + activeStarFilter + "★");
+                ? getString(R.string.reviews_count_summary, displayed.size())
+                : getString(R.string.reviews_count_filtered_summary, displayed.size(), activeStarFilter));
 
         reviewsEmptyState.setVisibility(displayed.isEmpty() ? View.VISIBLE : View.GONE);
     }
@@ -687,16 +653,16 @@ public class RecipeDetailActivity extends AppCompatActivity {
     private String starsForRating(Double averageRating) {
         int filled = averageRating == null ? 0 : (int) Math.round(averageRating);
         StringBuilder stars = new StringBuilder();
-        for (int i = 0; i < 5; i++) {
-            stars.append(i < filled ? "★" : "☆");
+        int j = 0;
+        while (j < 5) {
+            stars.append(j < filled ? "★" : "☆");
+            j++;
         }
         return stars.toString();
     }
 
     private int clampStars(BigDecimal rating) {
-        if (rating == null) {
-            return 1;
-        }
+        if (rating == null) return 1;
         int rounded = Math.round(rating.floatValue());
         return Math.max(1, Math.min(5, rounded));
     }
@@ -709,15 +675,16 @@ public class RecipeDetailActivity extends AppCompatActivity {
      * @return a human-readable "Month yyyy" string, or "" if unparseable
      */
     private String formatPublishedDate(String isoTimestamp) {
-        if (isoTimestamp == null || isoTimestamp.isBlank()) {
-            return "";
+        if (isoTimestamp == null || isoTimestamp.isBlank()) return "";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                LocalDate date = LocalDate.parse(isoTimestamp.substring(0, 10));
+                return date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
+            } catch (DateTimeParseException | IndexOutOfBoundsException e) {
+                return "";
+            }
         }
-        try {
-            LocalDate date = LocalDate.parse(isoTimestamp.substring(0, 10));
-            return date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
-        } catch (DateTimeParseException | IndexOutOfBoundsException e) {
-            return "";
-        }
+        return isoTimestamp.substring(0, 10); // Fallback for older APIs
     }
 
     private void updateFavoriteIcon() {

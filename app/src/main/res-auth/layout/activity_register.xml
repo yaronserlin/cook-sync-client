@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Register screen root: FrameLayout with skeleton_container (visible first) and
-  form_container (shown after skeleton hides). All EditTexts carry android:maxLength
-  matching the server-side @Size constraints on RegisterRequestDTO:
-    firstName/lastName: max 50 chars
-    email:              max 254 chars (RFC 5321 hard limit)
-    password:           max 100 chars (mirrors @Size(max=100))
--->
 <FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -16,13 +8,11 @@
     android:fitsSystemWindows="true"
     android:background="@color/color_bg">
 
-    <!-- ── Skeleton (shown on entry, hidden when form is ready) ───── -->
     <include
         android:id="@+id/skeleton_container"
         layout="@layout/activity_register_skeleton"
         android:visibility="visible" />
 
-    <!-- ── Real form ─────────────────────────────────────────────── -->
     <ScrollView
         android:id="@+id/form_container"
         android:layout_width="match_parent"
@@ -39,7 +29,6 @@
             android:paddingTop="24dp"
             android:paddingBottom="32dp">
 
-            <!-- ── App bar: back arrow + "Create account" title ──────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -53,12 +42,11 @@
                     android:layout_height="40dp"
                     android:layout_marginEnd="8dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="@string/action_back"
+                    android:contentDescription="@null"
                     android:padding="8dp"
                     android:src="@drawable/ic_arrow_back"
                     app:tint="@color/color_text" />
 
-                <!-- ── Headline ───────────────────────────────────────────── -->
                 <TextView
                     android:id="@+id/tv_headline"
                     android:layout_width="wrap_content"
@@ -70,7 +58,6 @@
 
             </LinearLayout>
 
-            <!-- ── First name ─────────────────────────────────────────── -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -82,7 +69,7 @@
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Jane"
+                android:hint="@string/hint_first_name"
                 android:inputType="textPersonName|textCapWords"
                 android:imeOptions="actionNext"
                 android:maxLength="50"
@@ -97,7 +84,6 @@
                 android:layout_marginBottom="16dp"
                 android:visibility="gone" />
 
-            <!-- ── Last name ──────────────────────────────────────────── -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -109,7 +95,7 @@
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Smith"
+                android:hint="@string/hint_last_name"
                 android:inputType="textPersonName|textCapWords"
                 android:imeOptions="actionNext"
                 android:maxLength="50"
@@ -124,7 +110,6 @@
                 android:layout_marginBottom="16dp"
                 android:visibility="gone" />
 
-            <!-- ── Email ──────────────────────────────────────────────── -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -136,7 +121,7 @@
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="you@example.com"
+                android:hint="@string/hint_email"
                 android:inputType="textEmailAddress"
                 android:imeOptions="actionNext"
                 android:maxLength="254"
@@ -151,7 +136,6 @@
                 android:layout_marginBottom="16dp"
                 android:visibility="gone" />
 
-            <!-- ── Password ───────────────────────────────────────────── -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -163,7 +147,7 @@
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="••••••••"
+                android:hint="@string/hint_password"
                 android:inputType="textPassword"
                 android:imeOptions="actionNext"
                 android:maxLength="100"
@@ -178,7 +162,6 @@
                 android:layout_marginBottom="16dp"
                 android:visibility="gone" />
 
-            <!-- ── Repeat password ────────────────────────────────────── -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -190,7 +173,7 @@
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="••••••••"
+                android:hint="@string/hint_password"
                 android:inputType="textPassword"
                 android:imeOptions="actionDone"
                 android:maxLength="100"
@@ -205,7 +188,6 @@
                 android:layout_marginBottom="16dp"
                 android:visibility="gone" />
 
-            <!-- ── Terms of use consent ──────────────────────────────────── -->
             <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/cb_terms"
                 android:layout_width="match_parent"
@@ -223,7 +205,6 @@
                 android:layout_marginStart="36dp"
                 android:visibility="gone" />
 
-            <!-- ── Marketing opt-in ───────────────────────────────────────── -->
             <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/cb_marketing"
                 android:layout_width="match_parent"
@@ -234,7 +215,6 @@
                 android:textSize="13sp"
                 app:buttonTint="@color/color_accent" />
 
-            <!-- ── Create account button ──────────────────────────────── -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_create_account"
                 style="@style/CookSync.Button.Primary"
@@ -243,7 +223,6 @@
                 android:text="@string/action_create_account_submit"
                 android:layout_marginBottom="12dp" />
 
-            <!-- ── Already have account button ───────────────────────── -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_have_account"
                 style="@style/CookSync.Button.Secondary"
@@ -252,7 +231,6 @@
                 android:text="@string/action_already_have_account"
                 android:layout_marginBottom="24dp" />
 
-            <!-- ── Loading indicator ─────────────────────────────────── -->
             <ProgressBar
                 android:id="@+id/progress"
                 android:layout_width="36dp"

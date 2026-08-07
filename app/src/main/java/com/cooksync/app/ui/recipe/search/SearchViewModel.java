@@ -1,40 +1,37 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.search;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.data.repository.TagRepository;
-import com.cooksync.app.data.repository.TagRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.BaseViewModel;
+import com.cooksync.app.ui.common.FilterSheetLauncher;
+import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 /**
  * Manages the data state for the dedicated {@link SearchActivity}: running a keyword search
  * against the public recipe catalog, applying the same sort/difficulty/tags/rating/time
- * filters as the Home feed (via the shared {@link FiltersBottomSheetDialogFragment}), and
+ * filters as the Home feed (via the shared {@code FiltersBottomSheetDialogFragment}), and
  * surfacing tag suggestions that match the in-progress query.
  *
  * @author Yaron Serlin
  * @version 1.0
  * @since 05/08/2026
  */
-public class SearchViewModel extends ViewModel {
+public class SearchViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
 
     private final RecipeRepository recipeRepository;
     private final TagRepository tagRepository;
@@ -53,43 +50,32 @@ public class SearchViewModel extends ViewModel {
     private Integer currentMaxTotalTimeMinutes = null;
     private final Set<String> selectedTags = new LinkedHashSet<>();
 
-    public SearchViewModel() {
-        this.recipeRepository = new RecipeRepositoryImpl();
-        this.tagRepository = new TagRepositoryImpl();
+    /**
+     * Constructs the ViewModel with the given repositories, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param recipeRepository the repository used for search/tag-browse calls
+     * @param tagRepository the repository used to load the tag catalog
+     */
+    public SearchViewModel(RecipeRepository recipeRepository, TagRepository tagRepository) {
+        this.recipeRepository = recipeRepository;
+        this.tagRepository = tagRepository;
     }
 
-    public LiveData<ApiResult<List<RecipePreviewResponse>>> getSearchResult() {
-        return searchResult;
-    }
-
-    public LiveData<ApiResult<List<TagResponse>>> getTagsResult() {
-        return tagsResult;
-    }
-
-    public String getCurrentSort() {
-        return currentSort;
-    }
-
-    public String getCurrentDifficulty() {
-        return currentDifficulty;
-    }
-
-    public Double getCurrentMinRating() {
-        return currentMinRating;
-    }
-
-    public Integer getCurrentMaxTotalTimeMinutes() {
-        return currentMaxTotalTimeMinutes;
-    }
-
-    public Set<String> getSelectedTags() {
-        return Collections.unmodifiableSet(selectedTags);
-    }
+    public LiveData<ApiResult<List<RecipePreviewResponse>>> getSearchResult() { return searchResult; }
+    public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
+    public String getCurrentSort() { return currentSort; }
+    public String getCurrentDifficulty() { return currentDifficulty; }
+    public Double getCurrentMinRating() { return currentMinRating; }
+    public Integer getCurrentMaxTotalTimeMinutes() { return currentMaxTotalTimeMinutes; }
+    public Set<String> getSelectedTags() { return Collections.unmodifiableSet(selectedTags); }
 
     /** @return the most recently submitted (non-blank) search query, or {@code null} */
-    public String getCurrentQuery() {
-        return currentQuery;
-    }
+    public String getCurrentQuery() { return currentQuery; }
 
     /**
      * Runs a keyword search against the public recipe catalog. Resets nothing about the active
@@ -249,53 +235,13 @@ public class SearchViewModel extends ViewModel {
 
     /**
      * Filters {@code source} by the active difficulty/tag/rating/time selection and sorts it
-     * per the active sort choice, mirroring {@code HomeViewModel#applyFiltersAndSort}.
+     * per the active sort choice, via {@link RecipeFilterUtils#applyFiltersAndSort}.
      *
      * @param source the raw, unfiltered search results
      * @return a filtered, sorted copy
      */
     private List<RecipePreviewResponse> applyFiltersAndSort(List<RecipePreviewResponse> source) {
-        List<RecipePreviewResponse> displayed = new ArrayList<>(source);
-
-        if (currentDifficulty != null) {
-            displayed.removeIf(r -> r.difficulty() == null || !r.difficulty().equalsIgnoreCase(currentDifficulty));
-        }
-        if (currentMinRating != null) {
-            displayed.removeIf(r -> r.averageRating() == null || r.averageRating() < currentMinRating);
-        }
-        if (currentMaxTotalTimeMinutes != null) {
-            displayed.removeIf(r -> (r.prepTimeMinutes() + r.cookTimeMinutes()) > currentMaxTotalTimeMinutes);
-        }
-        if (!selectedTags.isEmpty()) {
-            displayed.removeIf(r -> r.tags() == null || !selectedTags.stream().allMatch(selected ->
-                    r.tags().stream().anyMatch(tag -> tag.name() != null && tag.name().equalsIgnoreCase(selected))));
-        }
-
-        Comparator<RecipePreviewResponse> comparator = switch (currentSort == null ? "" : currentSort) {
-            case "Top Rated" -> Comparator.comparing(
-                    (RecipePreviewResponse r) -> r.averageRating() == null ? 0.0 : r.averageRating(),
-                    Comparator.reverseOrder());
-            case "Shortest Time" -> Comparator.comparingInt(
-                    r -> r.prepTimeMinutes() + r.cookTimeMinutes());
-            default -> Comparator.comparing(
-                    (RecipePreviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(),
-                    Comparator.reverseOrder());
-        };
-        displayed.sort(comparator);
-
-        return displayed;
-    }
-
-    private <T> void observeOnce(MutableLiveData<ApiResult<T>> liveData, Consumer<ApiResult<T>> onSettled) {
-        liveData.observeForever(new Observer<>() {
-            @Override
-            public void onChanged(ApiResult<T> value) {
-                if (value instanceof ApiResult.Loading) {
-                    return;
-                }
-                liveData.removeObserver(this);
-                onSettled.accept(value);
-            }
-        });
+        return RecipeFilterUtils.applyFiltersAndSort(source, currentDifficulty, currentMinRating,
+                currentMaxTotalTimeMinutes, selectedTags, currentSort);
     }
 }

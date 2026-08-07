@@ -1,4 +1,4 @@
-package com.cooksync.app.ui.detail;
+package com.cooksync.app.ui.recipe.detail;
 
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;

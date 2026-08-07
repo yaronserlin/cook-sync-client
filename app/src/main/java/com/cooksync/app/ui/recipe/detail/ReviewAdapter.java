@@ -1,4 +1,4 @@
-package com.cooksync.app.ui.detail;
+package com.cooksync.app.ui.recipe.detail;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -109,7 +109,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
 
     private void showOverflowMenu(View anchor, ReviewResponse review, boolean isAuthor) {
         PopupMenu popup = new PopupMenu(anchor.getContext(), anchor);
-        popup.getMenu().add(isAuthor ? "Delete" : "Report");
+        popup.getMenu().add(0, 1, 0, isAuthor ? anchor.getContext().getString(R.string.action_delete) : anchor.getContext().getString(R.string.action_report));
         popup.setOnMenuItemClickListener(item -> {
             if (actionListener == null) {
                 return true;

@@ -1,13 +1,12 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.review;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
+import com.cooksync.app.ui.common.BaseViewModel;
 
 /**
  * ViewModel for {@link ReviewActivity}. Validates the rating/title client-side and delegates
@@ -17,27 +16,38 @@ import com.cooksync.app.domain.Event;
  * @version 1.0
  * @since 04/08/2026
  */
-public class ReviewViewModel extends ViewModel {
+public class ReviewViewModel extends BaseViewModel {
 
     private final RecipeRepository repository;
 
     private final MutableLiveData<ApiResult<Void>> submitResult = new MutableLiveData<>();
     private final MutableLiveData<Event<String>> validationError = new MutableLiveData<>();
 
-    public ReviewViewModel() {
-        this.repository = new RecipeRepositoryImpl();
+    /**
+     * Constructs the ViewModel with the given {@link RecipeRepository}, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param repository the repository used for the submit-review call
+     */
+    public ReviewViewModel(RecipeRepository repository) {
+        this.repository = repository;
     }
 
     /**
-     * Validates and submits a review for a recipe.
+     * Validates the rating and title, then submits the review. Fails silently into
+     * {@link #validationError} if either check doesn't pass.
      *
      * Complexity:
-     * Time: O(n) where n is the length of the title/comment text
+     * Time: O(n) where n is the combined length of the title and comment
      * Space: O(1)
      *
-     * @param recipeId the ID of the recipe being reviewed
-     * @param rating the star rating selected (1–5)
-     * @param rawTitle raw text from the title field
+     * @param recipeId the recipe being reviewed
+     * @param rating the star rating, expected 1-5
+     * @param rawTitle raw text from the review-title field
      * @param rawComment raw text from the optional comment field
      */
     public void submitReview(String recipeId, int rating, String rawTitle, String rawComment) {
@@ -54,9 +64,8 @@ public class ReviewViewModel extends ViewModel {
         repository.submitReview(recipeId, rating, title, comment.isEmpty() ? null : comment, submitResult);
     }
 
-    /** @return observable result of the review submission */
+    /** @return observable submit result (Loading → Success/Error) */
     public LiveData<ApiResult<Void>> getSubmitResult() { return submitResult; }
-
     /** @return one-shot client-side validation errors, to surface as a Toast */
     public LiveData<Event<String>> getValidationError() { return validationError; }
 }

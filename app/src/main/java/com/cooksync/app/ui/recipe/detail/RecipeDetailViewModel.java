@@ -1,12 +1,11 @@
-package com.cooksync.app.ui.detail;
+package com.cooksync.app.ui.recipe.detail;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -21,7 +20,7 @@ import java.util.List;
  * @version 1.2
  * @since 04/08/2026
  */
-public class RecipeDetailViewModel extends ViewModel {
+public class RecipeDetailViewModel extends BaseViewModel {
 
     /**
      * How long a review delete/report waits before actually reaching the server, giving the
@@ -43,29 +42,31 @@ public class RecipeDetailViewModel extends ViewModel {
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
-    public RecipeDetailViewModel() {
-        this.repository = new RecipeRepositoryImpl();
+    /**
+     * Constructs the ViewModel with the given {@link RecipeRepository}, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param repository the repository used for recipe/note/favorite/review calls
+     */
+    public RecipeDetailViewModel(RecipeRepository repository) {
+        this.repository = repository;
     }
 
-    public LiveData<ApiResult<RecipeResponse>> getRecipeResult() {
-        return recipeResult;
-    }
+    public LiveData<ApiResult<RecipeResponse>> getRecipeResult() { return recipeResult; }
 
     /**
      * Every private note attached to the recipe: the recipe-wide note (if any) plus one per
      * annotated instruction step, distinguished by {@link NoteResponse#instructionId()}.
      */
-    public LiveData<ApiResult<List<NoteResponse>>> getNotesResult() {
-        return notesResult;
-    }
+    public LiveData<ApiResult<List<NoteResponse>>> getNotesResult() { return notesResult; }
 
-    public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() {
-        return favoritesResult;
-    }
+    public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() { return favoritesResult; }
 
-    public LiveData<ApiResult<Void>> getNoteSaveResult() {
-        return noteSaveResult;
-    }
+    public LiveData<ApiResult<Void>> getNoteSaveResult() { return noteSaveResult; }
 
     /**
      * Fires only when a deferred review delete/report actually reaches the server and fails
@@ -73,9 +74,7 @@ public class RecipeDetailViewModel extends ViewModel {
      * the caller already reflects it optimistically, and an undone action never reaches the
      * server at all.
      */
-    public LiveData<ApiResult<Void>> getReviewActionResult() {
-        return reviewActionResult;
-    }
+    public LiveData<ApiResult<Void>> getReviewActionResult() { return reviewActionResult; }
 
     public void loadRecipe(String recipeId) {
         repository.getRecipeDetail(recipeId, recipeResult);
@@ -197,6 +196,7 @@ public class RecipeDetailViewModel extends ViewModel {
      */
     @Override
     protected void onCleared() {
+        super.onCleared();
         pendingActions.flushAll();
     }
 }

@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Shared page template for "My Recipes" and "Favorites": title/subtitle, search, a Filters
-     button + a row of screen-specific chips, the recipe list (with skeleton + empty state),
-     and the bottom nav. Both screens inflate this same layout so they stay visually identical
-     as required by the design, differing only in which chips/empty-state copy each Activity
-     configures at runtime. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -45,8 +40,7 @@
         android:layout_marginTop="12dp"
         android:background="@drawable/bg_input"
         app:iconifiedByDefault="false"
-        app:queryBackground="@android:color/transparent"
-        tools:queryHint="Search..." />
+        app:queryBackground="@android:color/transparent" />
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -68,7 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:paddingHorizontal="16dp"
-                android:text="Filters · 0"
+                android:text="@string/filters_count_format"
                 app:icon="@drawable/ic_filter"
                 app:iconPadding="8dp"
                 app:iconSize="18dp" />
@@ -77,8 +71,6 @@
                 android:layout_width="10dp"
                 android:layout_height="0dp" />
 
-            <!-- Screen-specific chips (My Recipes: All/Public/Private; Favorites: All/With
-                 notes) are added here at runtime by the host Activity. -->
             <LinearLayout
                 android:id="@+id/chip_container"
                 android:layout_width="wrap_content"
@@ -147,9 +139,6 @@
 
         </LinearLayout>
 
-        <!-- Shown instead of empty_state when the library has recipes but the active search/
-             filters matched none of them — lets the user drop exactly what's filtering them
-             out, matching Search/Home's no-results treatment. -->
         <include layout="@layout/layout_no_results_state" />
 
     </FrameLayout>

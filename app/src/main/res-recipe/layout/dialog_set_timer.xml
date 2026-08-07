@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Hours/minutes/seconds picker shown when the user taps the cooking-mode timer clock to
-     change its duration. NumberPickers are individually re-themed via
-     ThemeOverlay.CookSync.NumberPicker (see themes.xml) since the widget has no public
-     Material styling of its own, and captioned with H / MM / SS so the control reads as
-     intentional rather than three bare system wheels. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -34,7 +29,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:letterSpacing="0.1"
-                android:text="H"
+                android:text="@string/label_hours"
                 android:textColor="@color/color_accent_700"
                 android:textSize="10.5sp"
                 android:textStyle="bold" />
@@ -45,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
-            android:text=":"
+            android:text="@string/label_time_separator"
             android:textColor="@color/color_text"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -67,7 +62,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:letterSpacing="0.1"
-                android:text="MM"
+                android:text="@string/label_minutes"
                 android:textColor="@color/color_accent_700"
                 android:textSize="10.5sp"
                 android:textStyle="bold" />
@@ -78,7 +73,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="4dp"
-            android:text=":"
+            android:text="@string/label_time_separator"
             android:textColor="@color/color_text"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -100,7 +95,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:letterSpacing="0.1"
-                android:text="SS"
+                android:text="@string/label_seconds"
                 android:textColor="@color/color_accent_700"
                 android:textSize="10.5sp"
                 android:textStyle="bold" />

@@ -1,28 +1,25 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.list;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.data.repository.TagRepository;
-import com.cooksync.app.data.repository.TagRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.BaseViewModel;
+import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.util.PendingActionScheduler;
+import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Manages data state for {@link FavoriteRecipesActivity}: the user's favorited recipes,
@@ -35,7 +32,7 @@ import java.util.function.Consumer;
  * @version 1.2
  * @since 04/08/2026
  */
-public class FavoritesViewModel extends ViewModel {
+public class FavoritesViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
 
     /**
      * How long a removal waits before actually reaching the server, giving the "Undo" toast
@@ -62,43 +59,32 @@ public class FavoritesViewModel extends ViewModel {
     private Double currentMinRating = null;
     private Integer currentMaxTotalTimeMinutes = null;
 
-    public FavoritesViewModel() {
-        this.repository = new RecipeRepositoryImpl();
-        this.tagRepository = new TagRepositoryImpl();
+    /**
+     * Constructs the ViewModel with the given repositories, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param repository the repository used for favorites calls
+     * @param tagRepository the repository used to load the available tags
+     */
+    public FavoritesViewModel(RecipeRepository repository, TagRepository tagRepository) {
+        this.repository = repository;
+        this.tagRepository = tagRepository;
     }
 
-    public LiveData<ApiResult<List<RecipePreviewResponse>>> getDisplayedResult() {
-        return displayedResult;
-    }
-
-    public LiveData<ApiResult<List<TagResponse>>> getTagsResult() {
-        return tagsResult;
-    }
-
-    public String getCurrentSort() {
-        return currentSort;
-    }
-
-    public String getCurrentDifficulty() {
-        return currentDifficulty;
-    }
-
-    public Double getCurrentMinRating() {
-        return currentMinRating;
-    }
-
-    public Integer getCurrentMaxTotalTimeMinutes() {
-        return currentMaxTotalTimeMinutes;
-    }
-
-    public Set<String> getSelectedTags() {
-        return Collections.unmodifiableSet(selectedTags);
-    }
+    public LiveData<ApiResult<List<RecipePreviewResponse>>> getDisplayedResult() { return displayedResult; }
+    public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
+    public String getCurrentSort() { return currentSort; }
+    public String getCurrentDifficulty() { return currentDifficulty; }
+    public Double getCurrentMinRating() { return currentMinRating; }
+    public Integer getCurrentMaxTotalTimeMinutes() { return currentMaxTotalTimeMinutes; }
+    public Set<String> getSelectedTags() { return Collections.unmodifiableSet(selectedTags); }
 
     /** Total favorited recipes, ignoring the active search/filters. */
-    public int getTotalCount() {
-        return allFavorites.size();
-    }
+    public int getTotalCount() { return allFavorites.size(); }
 
     /** How many favorited recipes carry a private note, ignoring the active search/filters. */
     public long getWithNotesCount() {
@@ -106,14 +92,10 @@ public class FavoritesViewModel extends ViewModel {
     }
 
     /** {@code true} once favorites have loaded and there's at least one. */
-    public boolean hasAnyFavorites() {
-        return !allFavorites.isEmpty();
-    }
+    public boolean hasAnyFavorites() { return !allFavorites.isEmpty(); }
 
     /** The active search text, or {@code null} if none is set. */
-    public String getCurrentQuery() {
-        return currentQuery;
-    }
+    public String getCurrentQuery() { return currentQuery; }
 
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
@@ -225,9 +207,7 @@ public class FavoritesViewModel extends ViewModel {
      * @param recipe the recipe to restore, as it looked before being removed
      */
     public void undoRemoveFavorite(RecipePreviewResponse recipe) {
-        if (!pendingActions.cancel(recipe.id())) {
-            return;
-        }
+        if (!pendingActions.cancel(recipe.id())) return;
         allFavorites.add(recipe);
         publishFiltered();
     }
@@ -239,6 +219,7 @@ public class FavoritesViewModel extends ViewModel {
      */
     @Override
     protected void onCleared() {
+        super.onCleared();
         pendingActions.flushAll();
     }
 
@@ -256,45 +237,10 @@ public class FavoritesViewModel extends ViewModel {
         if (onlyWithNotes) {
             displayed.removeIf(r -> !r.hasPersonalNote());
         }
-        if (currentDifficulty != null) {
-            displayed.removeIf(r -> r.difficulty() == null || !r.difficulty().equalsIgnoreCase(currentDifficulty));
-        }
-        if (currentMinRating != null) {
-            displayed.removeIf(r -> r.averageRating() == null || r.averageRating() < currentMinRating);
-        }
-        if (currentMaxTotalTimeMinutes != null) {
-            displayed.removeIf(r -> (r.prepTimeMinutes() + r.cookTimeMinutes()) > currentMaxTotalTimeMinutes);
-        }
-        if (!selectedTags.isEmpty()) {
-            displayed.removeIf(r -> r.tags() == null || !selectedTags.stream().allMatch(selected ->
-                    r.tags().stream().anyMatch(tag -> tag.name() != null && tag.name().equalsIgnoreCase(selected))));
-        }
 
-        Comparator<RecipePreviewResponse> comparator = switch (currentSort == null ? "" : currentSort) {
-            case "Top Rated" -> Comparator.comparing(
-                    (RecipePreviewResponse r) -> r.averageRating() == null ? 0.0 : r.averageRating(),
-                    Comparator.reverseOrder());
-            case "Shortest Time" -> Comparator.comparingInt(
-                    r -> r.prepTimeMinutes() + r.cookTimeMinutes());
-            default -> Comparator.comparing(
-                    (RecipePreviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(),
-                    Comparator.reverseOrder());
-        };
-        displayed.sort(comparator);
+        displayed = RecipeFilterUtils.applyFiltersAndSort(displayed, currentDifficulty, currentMinRating,
+                currentMaxTotalTimeMinutes, selectedTags, currentSort);
 
         displayedResult.setValue(new ApiResult.Success<>(displayed));
-    }
-
-    private <T> void observeOnce(MutableLiveData<ApiResult<T>> liveData, Consumer<ApiResult<T>> onSettled) {
-        liveData.observeForever(new Observer<>() {
-            @Override
-            public void onChanged(ApiResult<T> value) {
-                if (value instanceof ApiResult.Loading) {
-                    return;
-                }
-                liveData.removeObserver(this);
-                onSettled.accept(value);
-            }
-        });
     }
 }

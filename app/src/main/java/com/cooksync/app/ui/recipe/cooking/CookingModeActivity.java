@@ -1,4 +1,4 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.cooking;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -21,7 +21,6 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.bumptech.glide.Glide;
@@ -31,11 +30,12 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.domain.Event;
+import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
-import com.cooksync.app.ui.common.OrganicToast;
-import com.cooksync.app.ui.detail.RecipeDetailActivity;
+import com.cooksync.app.ui.common.ViewModelFactory;
+import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
+import com.cooksync.app.ui.recipe.review.ReviewActivity;
 import com.dtos.response.ingredient.IngredientResponse;
 import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.note.NoteResponse;
@@ -50,6 +50,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Full-screen, step-by-step cooking view. Shows one instruction at a time with the
@@ -62,7 +63,7 @@ import java.util.Map;
  * @version 1.0
  * @since 04/08/2026
  */
-public class CookingModeActivity extends AppCompatActivity {
+public class CookingModeActivity extends BaseActivity {
 
     private CookingModeViewModel viewModel;
     private String recipeId;
@@ -107,7 +108,7 @@ public class CookingModeActivity extends AppCompatActivity {
             return;
         }
 
-        viewModel = new ViewModelProvider(this).get(CookingModeViewModel.class);
+        viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(CookingModeViewModel.class);
 
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -172,7 +173,7 @@ public class CookingModeActivity extends AppCompatActivity {
                 buildProgressBars(steps.size());
                 renderCurrentStep();
             } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
-                OrganicToast.show(this, null, error.getMessage());
+                showError(error.getMessage(), null);
                 finish();
             }
         });
@@ -181,9 +182,7 @@ public class CookingModeActivity extends AppCompatActivity {
             if (result instanceof ApiResult.Success<List<NoteResponse>> success) {
                 notesByInstructionId.clear();
                 for (NoteResponse note : success.getData()) {
-                    if (note.instructionId() != null) {
-                        notesByInstructionId.put(note.instructionId(), note);
-                    }
+                    if (note.instructionId() != null) notesByInstructionId.put(note.instructionId(), note);
                 }
                 renderCurrentStep();
             }
@@ -191,22 +190,20 @@ public class CookingModeActivity extends AppCompatActivity {
 
         viewModel.getCurrentStepIndex().observe(this, index -> {
             renderCurrentStep();
-            updateProgressBars(index == null ? 0 : index);
+            updateProgressBars(Objects.requireNonNullElse(index, 0));
         });
 
         viewModel.getTimerRemainingSeconds().observe(this, this::updateTimerClock);
 
         viewModel.getTimerRunning().observe(this, running -> {
-            boolean isRunning = Boolean.TRUE.equals(running);
-            btnTimerToggle.setText(isRunning ? "Pause" : "Resume");
+            boolean isRunning = Objects.equals(running, true);
+            btnTimerToggle.setText(isRunning ? getString(R.string.timer_pause) : getString(R.string.timer_resume));
             btnTimerToggle.setIconResource(isRunning ? R.drawable.ic_pause : R.drawable.ic_play);
         });
 
         viewModel.getTimerFinishedEvent().observe(this, event -> {
             Boolean finished = event.getContentIfNotHandled();
-            if (finished != null) {
-                notifyTimerFinished();
-            }
+            if (finished != null) notifyTimerFinished();
         });
     }
 
@@ -227,9 +224,7 @@ public class CookingModeActivity extends AppCompatActivity {
         for (int i = 0; i < count; i++) {
             View segment = new View(this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT, 1f);
-            if (i < count - 1) {
-                params.setMarginEnd(dpToPx(4));
-            }
+            if (i < count - 1) params.setMarginEnd(dpToPx(4));
             segment.setLayoutParams(params);
             segment.setBackgroundResource(R.drawable.bg_pill_solid);
             llProgressBars.addView(segment);
@@ -246,9 +241,7 @@ public class CookingModeActivity extends AppCompatActivity {
     }
 
     private void renderCurrentStep() {
-        if (steps.isEmpty()) {
-            return;
-        }
+        if (steps.isEmpty()) return;
         int index = Math.min(currentIndex(), steps.size() - 1);
         InstructionResponse step = steps.get(index);
 
@@ -267,17 +260,15 @@ public class CookingModeActivity extends AppCompatActivity {
             tvStepNote.setVisibility(View.GONE);
         }
 
-        boolean hasTimer = Boolean.TRUE.equals(step.hasTimer()) && step.timeSeconds() != null && step.timeSeconds() > 0;
+        boolean hasTimer = Objects.equals(step.hasTimer(), true) && step.timeSeconds() != null && step.timeSeconds() > 0;
         timerContainer.setVisibility(hasTimer ? View.VISIBLE : View.GONE);
-        if (hasTimer) {
-            currentStepTimerTotalSeconds = step.timeSeconds();
-        }
+        if (hasTimer) currentStepTimerTotalSeconds = step.timeSeconds();
 
         btnPrev.setEnabled(index > 0);
         btnPrev.setAlpha(index > 0 ? 1f : 0.4f);
 
         boolean isLastStep = index == steps.size() - 1;
-        btnPrimaryAction.setText(isLastStep ? "Done — rate it" : "Next step");
+        btnPrimaryAction.setText(isLastStep ? getString(R.string.cook_done_action) : getString(R.string.cook_next_action));
         btnPrimaryAction.setIconResource(isLastStep ? R.drawable.ic_check : R.drawable.ic_arrow_forward);
         btnPrimaryAction.setIconGravity(isLastStep ? MaterialButton.ICON_GRAVITY_START : MaterialButton.ICON_GRAVITY_END);
     }
@@ -296,24 +287,20 @@ public class CookingModeActivity extends AppCompatActivity {
         String imageUrl = step.imageUrl();
         boolean hasImage = imageUrl != null && !imageUrl.isBlank();
         stepImageContainer.setVisibility(hasImage ? View.VISIBLE : View.GONE);
-        if (!hasImage) {
-            return;
-        }
+        if (!hasImage) return;
         stepImage.setVisibility(View.INVISIBLE);
         Glide.with(stepImage.getContext())
                 .load(imageUrl)
                 .centerCrop()
-                .listener(new RequestListener<Drawable>() {
+                .listener(new RequestListener<>() {
                     @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model,
-                                                 Target<Drawable> target, boolean isFirstResource) {
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
                         stepImageContainer.setVisibility(View.GONE);
                         return false;
                     }
 
                     @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
-                                                    DataSource dataSource, boolean isFirstResource) {
+                    public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
                         stepImage.setVisibility(View.VISIBLE);
                         return false;
                     }
@@ -361,24 +348,16 @@ public class CookingModeActivity extends AppCompatActivity {
     }
 
     private void updateTimerClock(Integer remainingSeconds) {
-        if (remainingSeconds == null) {
-            return;
-        }
+        if (remainingSeconds == null) return;
         int hours = remainingSeconds / 3600;
         int minutes = (remainingSeconds % 3600) / 60;
         int seconds = remainingSeconds % 60;
-        if (hours > 0) {
-            tvTimerClock.setText(getString(R.string.cook_timer_clock_format_hours, hours, minutes, seconds));
-        } else if (minutes > 0) {
-            tvTimerClock.setText(getString(R.string.cook_timer_clock_format_minutes, minutes, seconds));
-        } else {
-            tvTimerClock.setText(getString(R.string.cook_timer_clock_format_seconds, seconds));
-        }
+        if (hours > 0) tvTimerClock.setText(getString(R.string.cook_timer_clock_format_hours, hours, minutes, seconds));
+        else if (minutes > 0) tvTimerClock.setText(getString(R.string.cook_timer_clock_format_minutes, minutes, seconds));
+        else tvTimerClock.setText(getString(R.string.cook_timer_clock_format_seconds, seconds));
 
         int max = timerRing.getMax();
-        int elapsedFraction = currentStepTimerTotalSeconds <= 0
-                ? 0
-                : max - (int) ((remainingSeconds / (float) currentStepTimerTotalSeconds) * max);
+        int elapsedFraction = currentStepTimerTotalSeconds <= 0 ? 0 : max - (int) ((remainingSeconds / (float) currentStepTimerTotalSeconds) * max);
         timerRing.setProgressCompat(elapsedFraction, true);
     }
 
@@ -391,12 +370,9 @@ public class CookingModeActivity extends AppCompatActivity {
         NumberPicker npHours = dialogView.findViewById(R.id.np_hours);
         NumberPicker npMinutes = dialogView.findViewById(R.id.np_minutes);
         NumberPicker npSeconds = dialogView.findViewById(R.id.np_seconds);
-        npHours.setMinValue(0);
-        npHours.setMaxValue(23);
-        npMinutes.setMinValue(0);
-        npMinutes.setMaxValue(59);
-        npSeconds.setMinValue(0);
-        npSeconds.setMaxValue(59);
+        npHours.setMinValue(0); npHours.setMaxValue(23);
+        npMinutes.setMinValue(0); npMinutes.setMaxValue(59);
+        npSeconds.setMinValue(0); npSeconds.setMaxValue(59);
 
         Integer remaining = viewModel.getTimerRemainingSeconds().getValue();
         int current = remaining == null ? 0 : remaining;
@@ -405,14 +381,14 @@ public class CookingModeActivity extends AppCompatActivity {
         npSeconds.setValue(current % 60);
 
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
-                .setTitle("Set timer")
+                .setTitle(R.string.dialog_set_timer_title)
                 .setView(dialogView)
-                .setPositiveButton("Set", (dialog, which) -> {
+                .setPositiveButton(R.string.action_set, (dialog, which) -> {
                     int totalSeconds = npHours.getValue() * 3600 + npMinutes.getValue() * 60 + npSeconds.getValue();
                     currentStepTimerTotalSeconds = Math.max(totalSeconds, 1);
                     viewModel.setTimerSeconds(currentStepTimerTotalSeconds);
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.action_cancel, null)
                 .show();
     }
 
@@ -428,9 +404,9 @@ public class CookingModeActivity extends AppCompatActivity {
         vibrate();
 
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
-                .setTitle("Time's up!")
-                .setMessage("The timer for this step has finished.")
-                .setPositiveButton("Got it", null)
+                .setTitle(R.string.dialog_timer_finished_title)
+                .setMessage(R.string.dialog_timer_finished_message)
+                .setPositiveButton(R.string.action_got_it, null)
                 .setCancelable(true)
                 .setOnDismissListener(dialog -> stopTimerFinishedSound())
                 .show();
@@ -440,41 +416,30 @@ public class CookingModeActivity extends AppCompatActivity {
         stopTimerFinishedSound();
         try {
             Uri soundUri = RingtoneManager.getActualDefaultRingtoneUri(this, RingtoneManager.TYPE_ALARM);
-            if (soundUri == null) {
-                soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
-            }
+            if (soundUri == null) soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             activeRingtone = RingtoneManager.getRingtone(this, soundUri);
-            if (activeRingtone != null) {
-                activeRingtone.play();
-            }
-        } catch (Exception e) {
+            if (activeRingtone != null) activeRingtone.play();
+        } catch (Exception ignored) {
             // Best-effort: a missing/unreadable system sound shouldn't block the alert dialog.
         }
     }
 
     private void stopTimerFinishedSound() {
-        if (activeRingtone != null && activeRingtone.isPlaying()) {
-            activeRingtone.stop();
-        }
+        if (activeRingtone != null && activeRingtone.isPlaying()) activeRingtone.stop();
         activeRingtone = null;
     }
 
     private void vibrate() {
         Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        if (vibrator == null || !vibrator.hasVibrator()) {
-            return;
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
-        } else {
-            vibrator.vibrate(500);
-        }
+        if (vibrator == null || !vibrator.hasVibrator()) return;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) vibrator.vibrate(VibrationEffect.createOneShot(500, VibrationEffect.DEFAULT_AMPLITUDE));
+        else vibrator.vibrate(500);
     }
 
     private void confirmExit() {
-        OrganicConfirmDialog.show(this, "Stop cooking?",
-                "You'll pick up right where you left off — your progress is saved.",
-                "Stop", "Keep cooking", false, this::finish);
+        OrganicConfirmDialog.show(this, getString(R.string.dialog_stop_cooking_title),
+                getString(R.string.dialog_stop_cooking_message),
+                getString(R.string.action_stop), getString(R.string.action_keep_cooking), false, this::finish);
     }
 
     private int dpToPx(int dp) {

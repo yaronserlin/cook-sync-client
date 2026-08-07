@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     android:background="@color/color_bg"
     android:fitsSystemWindows="true"
-    tools:context=".ui.detail.RecipeDetailActivity">
+    tools:context=".ui.recipe.detail.RecipeDetailActivity">
 
     <androidx.core.widget.NestedScrollView
         android:id="@+id/detail_scroll"
@@ -20,8 +20,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Hero image container is ratio-locked (4:3) instead of a fixed height so crop
-                 behavior is consistent regardless of source photo dimensions. -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
@@ -43,7 +41,7 @@
                     android:layout_height="40dp"
                     android:layout_margin="16dp"
                     android:background="@drawable/bg_white_circle"
-                    android:contentDescription="Back"
+                    android:contentDescription="@null"
                     android:elevation="4dp"
                     android:src="@drawable/ic_arrow_back"
                     app:layout_constraintStart_toStartOf="parent"
@@ -56,7 +54,7 @@
                     android:layout_height="40dp"
                     android:layout_margin="16dp"
                     android:background="@drawable/bg_white_circle"
-                    android:contentDescription="Favorite"
+                    android:contentDescription="@null"
                     android:elevation="4dp"
                     android:src="@drawable/ic_heart_outline"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -71,7 +69,6 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
-                <!-- Kicker: author + publish date, matching the design's ".card-kicker". -->
                 <TextView
                     android:id="@+id/detail_kicker"
                     android:layout_width="match_parent"
@@ -93,8 +90,6 @@
                     android:textSize="28sp"
                     tools:text="Shakshuka with feta" />
 
-                <!-- Description as a vertical sequence of text and image blocks, matching the
-                     design's descBlocks (paragraphs and full-width photos interspersed). -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_description_blocks"
                     android:layout_width="match_parent"
@@ -104,8 +99,6 @@
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_description_text" />
 
-                <!-- Recipe-wide private note: inline edit-in-place, visible only to the
-                     signed-in user. Shows a neutral placeholder until a note exists. -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/detail_note_card"
                     android:layout_width="match_parent"
@@ -164,7 +157,7 @@
                                 android:layout_height="wrap_content"
                                 android:background="@drawable/bg_note_edit"
                                 android:gravity="top|start"
-                                android:hint="Add a private note…"
+                                android:hint="@string/recipe_add_note_hint"
                                 android:inputType="textMultiLine|textCapSentences"
                                 android:minLines="2"
                                 android:paddingVertical="10dp"
@@ -182,7 +175,7 @@
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
                                     android:background="?attr/selectableItemBackgroundBorderless"
-                                    android:contentDescription="Delete note"
+                                    android:contentDescription="@null"
                                     android:padding="6dp"
                                     android:src="@drawable/ic_delete"
                                     android:visibility="gone"
@@ -194,7 +187,7 @@
                                     android:layout_height="32dp"
                                     android:layout_marginStart="4dp"
                                     android:background="?attr/selectableItemBackgroundBorderless"
-                                    android:contentDescription="Save note"
+                                    android:contentDescription="@null"
                                     android:padding="6dp"
                                     android:src="@drawable/ic_check"
                                     app:tint="@color/color_accent_2_800" />
@@ -207,8 +200,6 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Rating row: tappable, jumps to the Reviews section, matching the design's
-                     tap target linking to reviews. -->
                 <LinearLayout
                     android:id="@+id/detail_rating_row"
                     android:layout_width="wrap_content"
@@ -273,7 +264,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="PREP"
+                            android:text="@string/label_prep"
                             android:alpha="0.6"
                             android:textSize="10sp"
                             android:letterSpacing="0.08" />
@@ -299,7 +290,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="COOK"
+                            android:text="@string/label_cook"
                             android:alpha="0.6"
                             android:textSize="10sp"
                             android:letterSpacing="0.08" />
@@ -325,7 +316,7 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="SERVES"
+                            android:text="@string/label_serves"
                             android:alpha="0.6"
                             android:textSize="10sp"
                             android:letterSpacing="0.08" />
@@ -372,7 +363,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
-                    android:text="Instructions"
+                    android:text="@string/label_instructions"
                     android:textColor="@color/color_text"
                     android:textSize="20sp"
                     android:fontFamily="@font/caprasimo" />
@@ -399,7 +390,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:fontFamily="@font/caprasimo"
-                        android:text="Reviews"
+                        android:text="@string/label_reviews"
                         android:textColor="@color/color_text"
                         android:textSize="20sp" />
 
@@ -410,13 +401,11 @@
                         android:layout_height="wrap_content"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        android:text="Write one"
+                        android:text="@string/action_write_review"
                         android:textSize="13sp" />
 
                 </LinearLayout>
 
-                <!-- Rating summary card: average score + per-star breakdown bars, matching the
-                     design's reviews-summary ".card". -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -478,9 +467,6 @@
 
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Star-rating filter chips, matching the design's "{{ rev.chips }}" row.
-                     Each chip shows a star value and how many reviews have that rating; tapping
-                     toggles filtering the review list down to that rating. -->
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -504,8 +490,6 @@
 
                 </HorizontalScrollView>
 
-                <!-- Review list controls: active-filter/count summary + sort toggle, matching
-                     the design's "{{ rev.summary }}" label and "{{ rev.toggleSort }}" button. -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -531,7 +515,7 @@
                         android:layout_height="wrap_content"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        android:text="Newest"
+                        android:text="@string/filter_sort_newest"
                         android:textSize="12.5sp"
                         app:icon="@drawable/ic_filter"
                         app:iconGravity="textStart"
@@ -540,8 +524,6 @@
 
                 </LinearLayout>
 
-                <!-- Empty state shown when the active star filter matches no reviews, matching
-                     the design's "{{ rev.empty }}" card. -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/reviews_empty_state"
                     android:layout_width="match_parent"
@@ -572,7 +554,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:fontFamily="@font/caprasimo"
-                            android:text="No reviews match that filter"
+                            android:text="@string/reviews_empty_filter"
                             android:textColor="@color/color_text"
                             android:textSize="17sp" />
 
@@ -582,7 +564,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="Show all reviews"
+                            android:text="@string/action_show_all_reviews"
                             android:textAllCaps="false"
                             app:cornerRadius="16dp"
                             app:strokeColor="@color/color_divider" />
@@ -624,7 +606,7 @@
             android:layout_width="0dp"
             android:layout_height="54dp"
             android:layout_weight="1"
-            android:text="Start cooking"
+            android:text="@string/action_start_cooking"
             android:textAllCaps="false"
             android:textSize="16sp"
             app:backgroundTint="@color/color_accent"

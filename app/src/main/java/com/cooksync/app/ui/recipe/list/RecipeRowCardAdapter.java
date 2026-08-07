@@ -1,4 +1,4 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.list;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -99,7 +99,7 @@ public class RecipeRowCardAdapter extends RecyclerView.Adapter<RecipeRowCardAdap
         if (showVisibilityBadge) {
             boolean isPublic = "PUBLIC".equalsIgnoreCase(recipe.visibility());
             holder.visibilityBadge.setVisibility(View.VISIBLE);
-            holder.visibilityBadge.setText(isPublic ? "Public" : "Private");
+            holder.visibilityBadge.setText(isPublic ? R.string.filter_public : R.string.filter_private);
             holder.visibilityBadge.setBackgroundResource(isPublic ? R.drawable.bg_tag_public : R.drawable.bg_tag_neutral);
         } else {
             holder.visibilityBadge.setVisibility(View.GONE);

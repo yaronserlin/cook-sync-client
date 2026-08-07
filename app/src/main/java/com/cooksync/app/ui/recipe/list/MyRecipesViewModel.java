@@ -1,16 +1,15 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.list;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.data.repository.TagRepository;
-import com.cooksync.app.data.repository.TagRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.BaseViewModel;
+import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.util.PendingActionScheduler;
+import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
@@ -18,12 +17,10 @@ import com.dtos.response.tags.TagResponse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Manages data state for {@link MyRecipesActivity}: the current user's own recipes, search/
@@ -35,7 +32,7 @@ import java.util.function.Consumer;
  * @version 1.1
  * @since 04/08/2026
  */
-public class MyRecipesViewModel extends ViewModel {
+public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
 
     /**
      * How long a delete/visibility change waits before actually reaching the server, giving the
@@ -53,7 +50,8 @@ public class MyRecipesViewModel extends ViewModel {
     private final MutableLiveData<ApiResult<RecipeResponse>> visibilityResult = new MutableLiveData<>();
 
     private final List<RecipePreviewResponse> allRecipes = new ArrayList<>();
-    private final Set<String> selectedTags = new LinkedHashSet<>();
+    /** Thread-safe since filter changes and background repository callbacks can both touch it. */
+    private final Set<String> selectedTags = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
@@ -65,59 +63,44 @@ public class MyRecipesViewModel extends ViewModel {
     private Double currentMinRating = null;
     private Integer currentMaxTotalTimeMinutes = null;
 
-    public MyRecipesViewModel() {
-        this.repository = new RecipeRepositoryImpl();
-        this.tagRepository = new TagRepositoryImpl();
+    /**
+     * Constructs the ViewModel with the given repositories, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param repository the repository used for recipe management calls
+     * @param tagRepository the repository used to load the available tags
+     */
+    public MyRecipesViewModel(RecipeRepository repository, TagRepository tagRepository) {
+        this.repository = repository;
+        this.tagRepository = tagRepository;
     }
 
-    public LiveData<ApiResult<List<RecipePreviewResponse>>> getRecipesResult() {
-        return recipesResult;
-    }
-
-    public LiveData<ApiResult<List<TagResponse>>> getTagsResult() {
-        return tagsResult;
-    }
+    public LiveData<ApiResult<List<RecipePreviewResponse>>> getRecipesResult() { return recipesResult; }
+    public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
 
     /**
      * Fires only when a deferred delete actually reaches the server and fails (see
      * {@link #deleteRecipe}) — a successful delete needs no signal here since the list already
      * reflects it optimistically, and an undone delete never reaches the server at all.
      */
-    public LiveData<ApiResult<Void>> getDeleteResult() {
-        return deleteResult;
-    }
+    public LiveData<ApiResult<Void>> getDeleteResult() { return deleteResult; }
 
     /**
      * Fires only when a deferred visibility change actually reaches the server and fails (see
      * {@link #toggleVisibility}), for the same reason as {@link #getDeleteResult()}.
      */
-    public LiveData<ApiResult<RecipeResponse>> getVisibilityResult() {
-        return visibilityResult;
-    }
+    public LiveData<ApiResult<RecipeResponse>> getVisibilityResult() { return visibilityResult; }
 
-    public String getCurrentSort() {
-        return currentSort;
-    }
-
-    public String getCurrentDifficulty() {
-        return currentDifficulty;
-    }
-
-    public Double getCurrentMinRating() {
-        return currentMinRating;
-    }
-
-    public Integer getCurrentMaxTotalTimeMinutes() {
-        return currentMaxTotalTimeMinutes;
-    }
-
-    public String getVisibilityFilterValue() {
-        return visibilityFilter;
-    }
-
-    public Set<String> getSelectedTags() {
-        return Collections.unmodifiableSet(selectedTags);
-    }
+    public String getCurrentSort() { return currentSort; }
+    public String getCurrentDifficulty() { return currentDifficulty; }
+    public Double getCurrentMinRating() { return currentMinRating; }
+    public Integer getCurrentMaxTotalTimeMinutes() { return currentMaxTotalTimeMinutes; }
+    public String getVisibilityFilter() { return visibilityFilter; }
+    public Set<String> getSelectedTags() { return Collections.unmodifiableSet(selectedTags); }
 
     /**
      * How many of the user's recipes (across the whole library, ignoring the active search/
@@ -129,14 +112,10 @@ public class MyRecipesViewModel extends ViewModel {
     }
 
     /** {@code true} once the user's recipe library has loaded and contains at least one recipe. */
-    public boolean hasAnyRecipes() {
-        return !allRecipes.isEmpty();
-    }
+    public boolean hasAnyRecipes() { return !allRecipes.isEmpty(); }
 
     /** The active search text, or {@code null} if none is set. */
-    public String getCurrentQuery() {
-        return currentQuery;
-    }
+    public String getCurrentQuery() { return currentQuery; }
 
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
@@ -240,7 +219,7 @@ public class MyRecipesViewModel extends ViewModel {
      */
     public void deleteRecipe(RecipePreviewResponse recipe) {
         String recipeId = recipe.id();
-        allRecipes.removeIf(r -> r.id().equals(recipeId));
+        allRecipes.removeIf(r -> Objects.equals(r.id(), recipeId));
         publishFiltered();
 
         pendingActions.schedule(recipeId, UNDO_WINDOW_MS, () -> {
@@ -263,9 +242,7 @@ public class MyRecipesViewModel extends ViewModel {
      * @param recipe the recipe to restore, as it looked before being deleted
      */
     public void undoDeleteRecipe(RecipePreviewResponse recipe) {
-        if (!pendingActions.cancel(recipe.id())) {
-            return;
-        }
+        if (!pendingActions.cancel(recipe.id())) return;
         allRecipes.add(recipe);
         publishFiltered();
     }
@@ -302,20 +279,20 @@ public class MyRecipesViewModel extends ViewModel {
      * @param recipe the recipe to restore, as it looked before being toggled
      */
     public void undoToggleVisibility(RecipePreviewResponse recipe) {
-        if (!pendingActions.cancel(recipe.id())) {
-            return;
-        }
+        if (!pendingActions.cancel(recipe.id())) return;
         replaceRecipe(recipe.id(), recipe);
         publishFiltered();
     }
 
     /** Swaps the list entry with the given id for {@code replacement}, in place. */
     private void replaceRecipe(String recipeId, RecipePreviewResponse replacement) {
-        for (int i = 0; i < allRecipes.size(); i++) {
-            if (allRecipes.get(i).id().equals(recipeId)) {
+        int i = 0;
+        while (i < allRecipes.size()) {
+            if (Objects.equals(allRecipes.get(i).id(), recipeId)) {
                 allRecipes.set(i, replacement);
                 return;
             }
+            i++;
         }
     }
 
@@ -334,6 +311,7 @@ public class MyRecipesViewModel extends ViewModel {
      */
     @Override
     protected void onCleared() {
+        super.onCleared();
         pendingActions.flushAll();
     }
 
@@ -355,54 +333,10 @@ public class MyRecipesViewModel extends ViewModel {
         if (!"ALL".equals(visibilityFilter)) {
             displayed.removeIf(r -> r.visibility() == null || !r.visibility().equalsIgnoreCase(visibilityFilter));
         }
-        if (currentDifficulty != null) {
-            displayed.removeIf(r -> r.difficulty() == null || !r.difficulty().equalsIgnoreCase(currentDifficulty));
-        }
-        if (currentMinRating != null) {
-            displayed.removeIf(r -> r.averageRating() == null || r.averageRating() < currentMinRating);
-        }
-        if (currentMaxTotalTimeMinutes != null) {
-            displayed.removeIf(r -> (r.prepTimeMinutes() + r.cookTimeMinutes()) > currentMaxTotalTimeMinutes);
-        }
-        if (!selectedTags.isEmpty()) {
-            displayed.removeIf(r -> r.tags() == null || !selectedTags.stream().allMatch(selected ->
-                    r.tags().stream().anyMatch(tag -> tag.name() != null && tag.name().equalsIgnoreCase(selected))));
-        }
 
-        Comparator<RecipePreviewResponse> comparator = switch (currentSort == null ? "" : currentSort) {
-            case "Top Rated" -> Comparator.comparing(
-                    (RecipePreviewResponse r) -> r.averageRating() == null ? 0.0 : r.averageRating(),
-                    Comparator.reverseOrder());
-            case "Shortest Time" -> Comparator.comparingInt(
-                    r -> r.prepTimeMinutes() + r.cookTimeMinutes());
-            default -> Comparator.comparing(
-                    (RecipePreviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(),
-                    Comparator.reverseOrder());
-        };
-        displayed.sort(comparator);
+        displayed = RecipeFilterUtils.applyFiltersAndSort(displayed, currentDifficulty, currentMinRating,
+                currentMaxTotalTimeMinutes, selectedTags, currentSort);
 
         recipesResult.setValue(new ApiResult.Success<>(displayed));
-    }
-
-    /**
-     * Attaches a self-removing observer to a one-shot repository call: skips the initial
-     * {@link ApiResult.Loading} emission, invokes {@code onSettled} for the terminal
-     * Success/Error value, then detaches itself.
-     *
-     * @param <T> the payload type carried by the result
-     * @param liveData the one-shot result stream to observe
-     * @param onSettled callback invoked with the first non-Loading value
-     */
-    private <T> void observeOnce(MutableLiveData<ApiResult<T>> liveData, Consumer<ApiResult<T>> onSettled) {
-        liveData.observeForever(new Observer<>() {
-            @Override
-            public void onChanged(ApiResult<T> value) {
-                if (value instanceof ApiResult.Loading) {
-                    return;
-                }
-                liveData.removeObserver(this);
-                onSettled.accept(value);
-            }
-        });
     }
 }

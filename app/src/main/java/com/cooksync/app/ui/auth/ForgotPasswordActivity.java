@@ -6,12 +6,12 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.common.OrganicToast;
+import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.common.ViewModelFactory;
 
 /**
  * Activity presenting the forgot-password flow: request a reset token by email, then use
@@ -25,7 +25,7 @@ import com.cooksync.app.ui.common.OrganicToast;
  * @version 1.0
  * @since 05/08/2026
  */
-public class ForgotPasswordActivity extends AppCompatActivity {
+public class ForgotPasswordActivity extends BaseActivity {
 
     private ForgotPasswordViewModel viewModel;
 
@@ -46,7 +46,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_forgot_password);
 
-        viewModel = new ViewModelProvider(this).get(ForgotPasswordViewModel.class);
+        viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(ForgotPasswordViewModel.class);
 
         bindViews();
         observeViewModel();
@@ -55,25 +55,25 @@ public class ForgotPasswordActivity extends AppCompatActivity {
 
     private void bindViews() {
         requestStage = findViewById(R.id.request_stage);
-        resetStage   = findViewById(R.id.reset_stage);
+        resetStage = findViewById(R.id.reset_stage);
 
-        etEmail          = findViewById(R.id.et_email);
-        etToken          = findViewById(R.id.et_token);
-        etNewPassword    = findViewById(R.id.et_new_password);
+        etEmail = findViewById(R.id.et_email);
+        etToken = findViewById(R.id.et_token);
+        etNewPassword = findViewById(R.id.et_new_password);
         etRepeatPassword = findViewById(R.id.et_repeat_password);
 
-        tvEmailError          = findViewById(R.id.tv_email_error);
-        tvTokenError          = findViewById(R.id.tv_token_error);
-        tvNewPasswordError    = findViewById(R.id.tv_new_password_error);
+        tvEmailError = findViewById(R.id.tv_email_error);
+        tvTokenError = findViewById(R.id.tv_token_error);
+        tvNewPasswordError = findViewById(R.id.tv_new_password_error);
         tvRepeatPasswordError = findViewById(R.id.tv_repeat_password_error);
 
         progress = findViewById(R.id.progress);
     }
 
     private void observeViewModel() {
-        viewModel.getEmailError().observe(this,          e -> showFieldError(tvEmailError, e));
-        viewModel.getTokenError().observe(this,          e -> showFieldError(tvTokenError, e));
-        viewModel.getNewPasswordError().observe(this,    e -> showFieldError(tvNewPasswordError, e));
+        viewModel.getEmailError().observe(this, e -> showFieldError(tvEmailError, e));
+        viewModel.getTokenError().observe(this, e -> showFieldError(tvTokenError, e));
+        viewModel.getNewPasswordError().observe(this, e -> showFieldError(tvNewPasswordError, e));
         viewModel.getRepeatPasswordError().observe(this, e -> showFieldError(tvRepeatPasswordError, e));
 
         viewModel.getForgotPasswordResult().observe(this, result -> {
@@ -85,7 +85,7 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 resetStage.setVisibility(View.VISIBLE);
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
-                OrganicToast.show(this, null, error.getMessage());
+                showError(error.getMessage(), null);
             }
         });
 
@@ -94,11 +94,11 @@ public class ForgotPasswordActivity extends AppCompatActivity {
                 progress.setVisibility(View.VISIBLE);
             } else if (result instanceof ApiResult.Success) {
                 progress.setVisibility(View.GONE);
-                OrganicToast.show(this, null, getString(R.string.reset_password_success));
+                showSuccess(getString(R.string.reset_password_success), null);
                 finish();
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
-                OrganicToast.show(this, null, error.getMessage());
+                showError(error.getMessage(), null);
             }
         });
     }

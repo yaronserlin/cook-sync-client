@@ -2,11 +2,10 @@ package com.cooksync.app.ui.auth;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.AuthRepository;
-import com.cooksync.app.data.repository.AuthRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.BaseViewModel;
 import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;
@@ -20,26 +19,29 @@ import com.dtos.request.auth.ResetPasswordRequestDTO;
  * @version 1.0
  * @since 05/08/2026
  */
-public class ForgotPasswordViewModel extends ViewModel {
+public class ForgotPasswordViewModel extends BaseViewModel {
 
     private final AuthRepository authRepository;
 
     private final MutableLiveData<ApiResult<Void>> forgotPasswordResult = new MutableLiveData<>();
-    private final MutableLiveData<ApiResult<Void>> resetPasswordResult  = new MutableLiveData<>();
-    private final MutableLiveData<String> emailError          = new MutableLiveData<>();
-    private final MutableLiveData<String> tokenError          = new MutableLiveData<>();
-    private final MutableLiveData<String> newPasswordError    = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<Void>> resetPasswordResult = new MutableLiveData<>();
+    private final MutableLiveData<String> emailError = new MutableLiveData<>();
+    private final MutableLiveData<String> tokenError = new MutableLiveData<>();
+    private final MutableLiveData<String> newPasswordError = new MutableLiveData<>();
     private final MutableLiveData<String> repeatPasswordError = new MutableLiveData<>();
 
     /**
-     * Constructs the ViewModel with a concrete {@link AuthRepositoryImpl}.
+     * Constructs the ViewModel with the given {@link AuthRepository}, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
+     *
+     * @param authRepository the repository used for the forgot/reset password calls
      */
-    public ForgotPasswordViewModel() {
-        this.authRepository = new AuthRepositoryImpl();
+    public ForgotPasswordViewModel(AuthRepository authRepository) {
+        this.authRepository = authRepository;
     }
 
     /**

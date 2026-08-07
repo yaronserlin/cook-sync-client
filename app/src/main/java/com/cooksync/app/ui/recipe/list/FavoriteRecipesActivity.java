@@ -1,121 +1,106 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.list;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.PopupMenu;
 import android.widget.TextView;
 
 import androidx.annotation.IdRes;
-import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
-import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
-import com.cooksync.app.ui.detail.RecipeDetailActivity;
+import com.cooksync.app.ui.common.ViewModelFactory;
+import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
-import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lists every recipe (published or private) the current user has authored, with search,
- * sort/difficulty/tag filtering, a Public/Private chip filter, and per-recipe management
- * actions (toggle visibility, delete) via an overflow menu.
+ * Lists every recipe the current user has favorited, with search, sort/difficulty/tag
+ * filtering, and a filter for favorites that carry a private note. Tapping the (always-filled)
+ * heart on a card removes that recipe from favorites and offers an "Undo" toast to reverse it
+ * (see {@link FavoritesViewModel#removeFavorite}). Uses the same shared list layout and row
+ * card as {@link MyRecipesActivity}, differing only in data source, chips, and trailing action.
  *
  * @author Yaron Serlin
  * @version 1.2
  * @since 04/08/2026
  */
-public class MyRecipesActivity extends RecipeListActivity {
+public class FavoriteRecipesActivity extends RecipeListActivity {
 
-    private MyRecipesViewModel viewModel;
+    private FavoritesViewModel viewModel;
     private RecipeRowCardAdapter adapter;
     private List<String> loadedTagNames = new ArrayList<>();
 
     private TextView chipAll;
-    private TextView chipPublic;
-    private TextView chipPrivate;
+    private TextView chipNotesOnly;
 
     @IdRes
     @Override
     protected int getSelectedNavItemId() {
-        return R.id.nav_my_recipes;
+        return R.id.nav_favorites;
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        viewModel = new ViewModelProvider(this).get(MyRecipesViewModel.class);
+        viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(FavoritesViewModel.class);
 
         initViews();
         setupObservers();
 
         showSkeleton(true);
-        viewModel.loadMyRecipes();
+        viewModel.loadFavorites();
         viewModel.loadTags();
     }
 
     private void initViews() {
-        ivEmptyIcon.setImageResource(R.drawable.ic_book);
-        tvEmptyTitle.setText("No recipes yet");
-        tvEmptySubtitle.setText("Recipes you publish will show up here.");
-        searchView.setQueryHint("Search your recipes...");
+        tvTitle.setText(R.string.favorites_title);
+        ivEmptyIcon.setImageResource(R.drawable.ic_heart_filled);
+        tvEmptyTitle.setText(R.string.favorites_empty_title);
+        tvEmptySubtitle.setText(R.string.favorites_empty_subtitle);
+        searchView.setQueryHint(getString(R.string.favorites_search_hint));
+        tvSubtitle.setVisibility(View.VISIBLE);
 
         adapter = new RecipeRowCardAdapter();
-        adapter.setTrailingAction(RecipeRowCardAdapter.TrailingAction.OPTIONS_MENU);
-        adapter.setShowVisibilityBadge(true);
+        adapter.setTrailingAction(RecipeRowCardAdapter.TrailingAction.FAVORITE_TOGGLE);
+        adapter.setShowVisibilityBadge(false);
         adapter.setListener(new RecipeRowCardAdapter.Listener() {
             @Override
             public void onRecipeClick(RecipePreviewResponse recipe) {
-                Intent intent = new Intent(MyRecipesActivity.this, RecipeDetailActivity.class);
+                Intent intent = new Intent(FavoriteRecipesActivity.this, RecipeDetailActivity.class);
                 intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipe.id());
                 startActivity(intent);
             }
 
             @Override
             public void onTrailingActionClick(RecipePreviewResponse recipe, View anchor) {
-                showOptionsMenu(recipe, anchor);
+                viewModel.removeFavorite(recipe.id());
+                OrganicToast.showWithAction(FavoriteRecipesActivity.this, bottomNav, R.drawable.ic_heart_outline,
+                        getString(R.string.favorites_removed), getString(R.string.action_undo), () -> viewModel.undoRemoveFavorite(recipe));
             }
         });
         rvList.setAdapter(adapter);
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                viewModel.search(query);
-                return true;
-            }
+        setupSearchListener(viewModel::search);
 
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                viewModel.search(newText);
-                return true;
-            }
-        });
+        btnFilters.setOnClickListener(v ->
+                FilterSheetLauncher.show(getSupportFragmentManager(), loadedTagNames, viewModel,
+                        (sortBy, difficulty, tags, minRating, maxTotalTimeMinutes) -> {
+                            viewModel.applyFilters(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
+                            updateFilterButton();
+                        }));
 
-        btnFilters.setOnClickListener(v -> {
-            FiltersBottomSheetDialogFragment dialog = new FiltersBottomSheetDialogFragment();
-            dialog.setAvailableTags(loadedTagNames);
-            dialog.setInitialState(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags(),
-                    viewModel.getCurrentMinRating(), viewModel.getCurrentMaxTotalTimeMinutes());
-            dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags, minRating, maxTotalTimeMinutes) -> {
-                viewModel.applyFilters(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
-                updateFilterButton();
-            });
-            dialog.show(getSupportFragmentManager(), "filters");
-        });
-
-        chipAll = addChip("All", true, () -> selectVisibility("ALL"));
-        chipPublic = addChip("Public", false, () -> selectVisibility("PUBLIC"));
-        chipPrivate = addChip("Private", false, () -> selectVisibility("PRIVATE"));
+        chipAll = addChip(getString(R.string.filter_all), true, () -> selectNotesFilter(false));
+        chipNotesOnly = addChip(getString(R.string.favorites_with_notes_chip_format, 0L), false, () -> selectNotesFilter(true));
 
         setOnClearAllClickListener(() -> {
             viewModel.applyFilters("Newest", null, new ArrayList<>(), null, null);
@@ -125,30 +110,33 @@ public class MyRecipesActivity extends RecipeListActivity {
     }
 
     private void setupObservers() {
-        viewModel.getRecipesResult().observe(this, result -> {
+        viewModel.getDisplayedResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
                 showSkeleton(false);
                 List<RecipePreviewResponse> recipes = success.getData();
                 adapter.setRecipes(recipes);
 
-                tvTitle.setText(getString(R.string.my_recipes_title_format, viewModel.getPublishedCount()));
+                tvSubtitle.setText(getString(R.string.favorites_subtitle_format,
+                        viewModel.getTotalCount(), viewModel.getWithNotesCount()));
+                chipNotesOnly.setText(getString(R.string.favorites_with_notes_chip_format, viewModel.getWithNotesCount()));
+                updateFilterButton();
 
                 if (!recipes.isEmpty()) {
                     hideNoResultsState();
                     emptyState.setVisibility(View.GONE);
                     rvList.setVisibility(View.VISIBLE);
-                } else if (!viewModel.hasAnyRecipes()) {
-                    // Genuinely no recipes yet — the static "No recipes yet" empty state.
+                } else if (!viewModel.hasAnyFavorites()) {
+                    // Genuinely no favorites yet — the static "No favorites yet" empty state.
                     emptyState.setVisibility(View.VISIBLE);
                     rvList.setVisibility(View.GONE);
                 } else {
-                    // Recipes exist, but the active search/filters matched none of them.
+                    // Favorites exist, but the active search/filters matched none of them.
                     emptyState.setVisibility(View.GONE);
                     showNoResultsState(buildRemovableConstraints());
                 }
             } else if (result instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
                 showSkeleton(false);
-                OrganicToast.showError(this, bottomNav, error.getMessage());
+                showError(error.getMessage(), bottomNav);
             }
         });
 
@@ -157,29 +145,12 @@ public class MyRecipesActivity extends RecipeListActivity {
                 loadedTagNames = success.getData().stream().map(TagResponse::name).collect(java.util.stream.Collectors.toList());
             }
         });
-
-        // Both results now only fire for a deferred call that reached the server and failed —
-        // a success needs no signal since the list already reflects it optimistically, and the
-        // "Recipe deleted"/"is now public/private" toast (with its Undo action) is shown
-        // immediately from confirmDelete()/showOptionsMenu() instead of from here.
-        viewModel.getDeleteResult().observe(this, result -> {
-            if (result instanceof ApiResult.Error<Void> error) {
-                OrganicToast.showError(this, bottomNav, error.getMessage());
-            }
-        });
-
-        viewModel.getVisibilityResult().observe(this, result -> {
-            if (result instanceof ApiResult.Error<RecipeResponse> error) {
-                OrganicToast.showError(this, bottomNav, error.getMessage());
-            }
-        });
     }
 
-    private void selectVisibility(String visibility) {
-        viewModel.setVisibilityFilter(visibility);
-        styleChip(chipAll, "ALL".equals(visibility));
-        styleChip(chipPublic, "PUBLIC".equals(visibility));
-        styleChip(chipPrivate, "PRIVATE".equals(visibility));
+    private void selectNotesFilter(boolean onlyWithNotes) {
+        viewModel.setOnlyWithNotes(onlyWithNotes);
+        styleChip(chipAll, !onlyWithNotes);
+        styleChip(chipNotesOnly, onlyWithNotes);
     }
 
     /**
@@ -245,41 +216,5 @@ public class MyRecipesActivity extends RecipeListActivity {
                     }));
         }
         return constraints;
-    }
-
-    private void showOptionsMenu(RecipePreviewResponse recipe, View anchor) {
-        boolean isPublic = "PUBLIC".equalsIgnoreCase(recipe.visibility());
-
-        PopupMenu popup = new PopupMenu(this, anchor);
-        popup.getMenuInflater().inflate(R.menu.menu_my_recipe_options, popup.getMenu());
-        popup.getMenu().findItem(R.id.action_toggle_visibility)
-                .setTitle(isPublic ? "Make private" : "Make public");
-
-        popup.setOnMenuItemClickListener(item -> {
-            int id = item.getItemId();
-            if (id == R.id.action_toggle_visibility) {
-                viewModel.toggleVisibility(recipe);
-                String message = isPublic ? "Recipe is now private" : "Recipe is now public";
-                OrganicToast.showWithAction(this, bottomNav, 0, message, "Undo",
-                        () -> viewModel.undoToggleVisibility(recipe));
-                return true;
-            }
-            if (id == R.id.action_delete_recipe) {
-                confirmDelete(recipe);
-                return true;
-            }
-            return false;
-        });
-        popup.show();
-    }
-
-    private void confirmDelete(RecipePreviewResponse recipe) {
-        OrganicConfirmDialog.show(this, "Delete this recipe?",
-                "\"" + recipe.title() + "\" will be permanently deleted. This can't be undone.",
-                "Delete", "Cancel", true, () -> {
-                    viewModel.deleteRecipe(recipe);
-                    OrganicToast.showWithAction(this, bottomNav, R.drawable.ic_delete, "Recipe deleted", "Undo",
-                            () -> viewModel.undoDeleteRecipe(recipe));
-                });
     }
 }

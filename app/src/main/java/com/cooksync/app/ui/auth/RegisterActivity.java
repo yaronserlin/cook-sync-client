@@ -5,17 +5,17 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.common.SkeletonHelper;
+import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.common.ViewModelFactory;
+import com.cooksync.app.ui.home.HomeActivity;
 import com.google.android.material.checkbox.MaterialCheckBox;
 
 /**
@@ -34,7 +34,7 @@ import com.google.android.material.checkbox.MaterialCheckBox;
  * @version 1.0
  * @since 04/08/2026
  */
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends BaseActivity {
 
     /**
      * Duration in milliseconds the skeleton is shown before the form is revealed.
@@ -43,13 +43,8 @@ public class RegisterActivity extends AppCompatActivity {
     private static final long SKELETON_DELAY_MS = 400L;
 
     private RegisterViewModel viewModel;
-    private SkeletonHelper skeletonHelper;
     private final Handler uiHandler = new Handler(Looper.getMainLooper());
 
-    // ── Skeleton ─────────────────────────────────────────────────────────────────
-    private ViewGroup skeletonContainer;
-
-    // ── Form ─────────────────────────────────────────────────────────────────────
     private View formContainer;
     private EditText etFirstName;
     private EditText etLastName;
@@ -81,10 +76,10 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        viewModel = new ViewModelProvider(this).get(RegisterViewModel.class);
+        viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(RegisterViewModel.class);
 
         bindViews();
-        startSkeletonShimmer();
+        setupSkeleton(R.id.skeleton_container);
         observeViewModel();
         setListeners();
 
@@ -93,7 +88,8 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     /**
-     * Stops the shimmer animator and cancels the pending skeleton-transition runnable.
+     * Cancels the pending skeleton-transition runnable so it never fires after the
+     * Activity has left the foreground.
      *
      * Complexity:
      * Time: O(1)
@@ -102,24 +98,8 @@ public class RegisterActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        skeletonHelper.stop();
         uiHandler.removeCallbacksAndMessages(null);
     }
-
-    /**
-     * Releases skeleton view references and the animator to prevent memory leaks.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of skeleton bone views
-     * Space: O(1)
-     */
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        skeletonHelper.release();
-    }
-
-    // ─── Private setup ───────────────────────────────────────────────────────────
 
     /**
      * Binds all view references.
@@ -129,39 +109,25 @@ public class RegisterActivity extends AppCompatActivity {
      * Space: O(1)
      */
     private void bindViews() {
-        skeletonContainer = findViewById(R.id.skeleton_container);
-        formContainer     = findViewById(R.id.form_container);
+        formContainer = findViewById(R.id.form_container);
 
-        etFirstName      = findViewById(R.id.et_first_name);
-        etLastName       = findViewById(R.id.et_last_name);
-        etEmail          = findViewById(R.id.et_email);
-        etPassword       = findViewById(R.id.et_password);
+        etFirstName = findViewById(R.id.et_first_name);
+        etLastName = findViewById(R.id.et_last_name);
+        etEmail = findViewById(R.id.et_email);
+        etPassword = findViewById(R.id.et_password);
         etRepeatPassword = findViewById(R.id.et_repeat_password);
 
-        tvFirstNameError      = findViewById(R.id.tv_first_name_error);
-        tvLastNameError       = findViewById(R.id.tv_last_name_error);
-        tvEmailError          = findViewById(R.id.tv_email_error);
-        tvPasswordError       = findViewById(R.id.tv_password_error);
+        tvFirstNameError = findViewById(R.id.tv_first_name_error);
+        tvLastNameError = findViewById(R.id.tv_last_name_error);
+        tvEmailError = findViewById(R.id.tv_email_error);
+        tvPasswordError = findViewById(R.id.tv_password_error);
         tvRepeatPasswordError = findViewById(R.id.tv_repeat_password_error);
-        tvTermsError          = findViewById(R.id.tv_terms_error);
+        tvTermsError = findViewById(R.id.tv_terms_error);
 
-        cbTerms     = findViewById(R.id.cb_terms);
+        cbTerms = findViewById(R.id.cb_terms);
         cbMarketing = findViewById(R.id.cb_marketing);
 
         progress = findViewById(R.id.progress);
-    }
-
-    /**
-     * Attaches the {@link SkeletonHelper} to all leaf bones in the skeleton container
-     * and starts the pulse animation.
-     *
-     * Complexity:
-     * Time: O(n) where n is the number of views in the skeleton hierarchy
-     * Space: O(n)
-     */
-    private void startSkeletonShimmer() {
-        skeletonHelper = new SkeletonHelper();
-        skeletonHelper.attachAll(skeletonContainer).start();
     }
 
     /**
@@ -172,12 +138,12 @@ public class RegisterActivity extends AppCompatActivity {
      * Space: O(1)
      */
     private void observeViewModel() {
-        viewModel.getFirstNameError().observe(this,  e -> showFieldError(tvFirstNameError, e));
-        viewModel.getLastNameError().observe(this,   e -> showFieldError(tvLastNameError, e));
-        viewModel.getEmailError().observe(this,      e -> showFieldError(tvEmailError, e));
-        viewModel.getPasswordError().observe(this,   e -> showFieldError(tvPasswordError, e));
+        viewModel.getFirstNameError().observe(this, e -> showFieldError(tvFirstNameError, e));
+        viewModel.getLastNameError().observe(this, e -> showFieldError(tvLastNameError, e));
+        viewModel.getEmailError().observe(this, e -> showFieldError(tvEmailError, e));
+        viewModel.getPasswordError().observe(this, e -> showFieldError(tvPasswordError, e));
         viewModel.getRepeatPassError().observe(this, e -> showFieldError(tvRepeatPasswordError, e));
-        viewModel.getTermsError().observe(this,      e -> showFieldError(tvTermsError, e));
+        viewModel.getTermsError().observe(this, e -> showFieldError(tvTermsError, e));
 
         viewModel.getRegisterResult().observe(this, result -> {
             if (result instanceof ApiResult.Loading) {
@@ -219,8 +185,6 @@ public class RegisterActivity extends AppCompatActivity {
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
     }
 
-    // ─── Transition helpers ──────────────────────────────────────────────────────
-
     /**
      * Hides the skeleton, stops the shimmer animator, and reveals the registration form.
      *
@@ -229,9 +193,7 @@ public class RegisterActivity extends AppCompatActivity {
      * Space: O(1)
      */
     private void transitionToForm() {
-        skeletonHelper.stop();
-        skeletonContainer.setVisibility(View.GONE);
-        formContainer.setVisibility(View.VISIBLE);
+        showSkeleton(false, formContainer);
     }
 
     /**
@@ -275,7 +237,7 @@ public class RegisterActivity extends AppCompatActivity {
      * Space: O(1)
      */
     private void navigateToMain() {
-        Intent intent = new Intent(this, com.cooksync.app.ui.home.HomeActivity.class);
+        Intent intent = new Intent(this, HomeActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

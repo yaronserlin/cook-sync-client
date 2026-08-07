@@ -2,14 +2,12 @@ package com.cooksync.app.ui.profile;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.AuthRepository;
-import com.cooksync.app.data.repository.AuthRepositoryImpl;
 import com.cooksync.app.data.repository.MediaRepository;
-import com.cooksync.app.data.repository.MediaRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
+import com.cooksync.app.ui.common.BaseViewModel;
 import com.cooksync.app.util.InputValidator;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
@@ -29,7 +27,7 @@ import com.dtos.response.cloudinary.CloudinarySignatureResponse;
  * @version 1.0
  * @since 04/08/2026
  */
-public class ProfileViewModel extends ViewModel {
+public class ProfileViewModel extends BaseViewModel {
 
     private final AuthRepository authRepository;
     private final MediaRepository mediaRepository;
@@ -44,18 +42,20 @@ public class ProfileViewModel extends ViewModel {
     private final MutableLiveData<Event<String>> validationError = new MutableLiveData<>();
 
     /**
-     * Constructs the ViewModel with concrete repository implementations.
+     * Constructs the ViewModel with the given repositories, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
+     *
+     * @param authRepository the repository used for profile/password/email/account calls
+     * @param mediaRepository the repository used for Cloudinary upload-signature requests
      */
-    public ProfileViewModel() {
-        this.authRepository = new AuthRepositoryImpl();
-        this.mediaRepository = new MediaRepositoryImpl();
+    public ProfileViewModel(AuthRepository authRepository, MediaRepository mediaRepository) {
+        this.authRepository = authRepository;
+        this.mediaRepository = mediaRepository;
     }
-
-    // ─── Actions ────────────────────────────────────────────────────────────────
 
     /**
      * Validates and submits an updated first/last name.
@@ -177,29 +177,20 @@ public class ProfileViewModel extends ViewModel {
         authRepository.logout(logoutResult);
     }
 
-    // ─── Observable state ────────────────────────────────────────────────────────
-
     /** @return observable result of a name update */
     public LiveData<ApiResult<Void>> getProfileResult() { return profileResult; }
-
     /** @return observable result of an avatar URL update */
     public LiveData<ApiResult<Void>> getAvatarResult() { return avatarResult; }
-
     /** @return observable result of a password change */
     public LiveData<ApiResult<Void>> getPasswordResult() { return passwordResult; }
-
     /** @return observable result of an email change */
     public LiveData<ApiResult<AuthResponse>> getEmailResult() { return emailResult; }
-
     /** @return observable result of an account deactivation */
     public LiveData<ApiResult<Void>> getDeactivateResult() { return deactivateResult; }
-
     /** @return observable result of a logout */
     public LiveData<ApiResult<Void>> getLogoutResult() { return logoutResult; }
-
     /** @return observable result of a Cloudinary upload-signature request */
     public LiveData<ApiResult<CloudinarySignatureResponse>> getSignatureResult() { return signatureResult; }
-
     /** @return one-shot client-side validation errors, to surface as a Toast */
     public LiveData<Event<String>> getValidationError() { return validationError; }
 }

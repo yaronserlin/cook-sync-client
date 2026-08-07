@@ -1,5 +1,6 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.search;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
@@ -7,7 +8,6 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -16,9 +16,12 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
-import com.cooksync.app.ui.common.OrganicToast;
+import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.home.TagChipAdapter;
+import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
 
@@ -30,17 +33,50 @@ import java.util.stream.Collectors;
  * Dedicated recipe search screen, reached by tapping the search field on {@link
  * com.cooksync.app.ui.home.HomeActivity}. Runs a keyword search against the public recipe
  * catalog, surfaces matching tag suggestions while typing, supports the same sort/difficulty/
- * tags/rating/time filters as Home via the shared {@link FiltersBottomSheetDialogFragment},
+ * tags/rating/time filters as Home via the shared {@link com.cooksync.app.ui.recipe.FiltersBottomSheetDialogFragment},
  * and displays results in the design's compact row format.
  *
  * @author Yaron Serlin
  * @version 1.0
  * @since 05/08/2026
  */
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends BaseActivity {
 
     /** How long to wait after the last keystroke before running a live search. */
     private static final long SEARCH_DEBOUNCE_MS = 350L;
+
+    private static final String EXTRA_SORT = "extra_sort";
+    private static final String EXTRA_DIFFICULTY = "extra_difficulty";
+    private static final String EXTRA_TAGS = "extra_tags";
+    private static final String EXTRA_MIN_RATING = "extra_min_rating";
+    private static final String EXTRA_MAX_TOTAL_TIME_MINUTES = "extra_max_total_time_minutes";
+
+    /**
+     * Builds an {@link Intent} to this screen carrying {@code filters}' current sort/
+     * difficulty/tags/rating/time, so a screen the viewer already filtered (e.g. Home) hands
+     * that state off instead of Search silently resetting to its own defaults.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param context the calling screen's context
+     * @param filters the filter state to carry over, typically the calling screen's ViewModel
+     * @return an intent to {@link SearchActivity}, pre-seeded with {@code filters}
+     */
+    public static Intent newIntentWithFilters(Context context, FilterSheetLauncher.FilterState filters) {
+        Intent intent = new Intent(context, SearchActivity.class);
+        intent.putExtra(EXTRA_SORT, filters.getCurrentSort());
+        intent.putExtra(EXTRA_DIFFICULTY, filters.getCurrentDifficulty());
+        intent.putStringArrayListExtra(EXTRA_TAGS, new ArrayList<>(filters.getSelectedTags()));
+        if (filters.getCurrentMinRating() != null) {
+            intent.putExtra(EXTRA_MIN_RATING, filters.getCurrentMinRating());
+        }
+        if (filters.getCurrentMaxTotalTimeMinutes() != null) {
+            intent.putExtra(EXTRA_MAX_TOTAL_TIME_MINUTES, filters.getCurrentMaxTotalTimeMinutes());
+        }
+        return intent;
+    }
 
     private SearchViewModel viewModel;
     private SearchResultAdapter recipeAdapter;
@@ -67,15 +103,38 @@ public class SearchActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
 
-        viewModel = new ViewModelProvider(this).get(SearchViewModel.class);
+        viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(SearchViewModel.class);
 
         initViews();
         setupAdapters();
         setupObservers();
+        seedFiltersFromIntent();
 
         viewModel.loadTags();
         searchView.setIconified(false);
         searchView.requestFocus();
+    }
+
+    /**
+     * Applies whatever filter state {@link #newIntentWithFilters} attached to the launching
+     * intent, if any, so filters chosen on the calling screen are already active by the time
+     * the viewer runs their first search here. A no-op if this screen was reached without a
+     * seeded intent (e.g. tapped in some future entry point that doesn't have prior filters).
+     */
+    private void seedFiltersFromIntent() {
+        String sort = getIntent().getStringExtra(EXTRA_SORT);
+        if (sort == null) {
+            return;
+        }
+        String difficulty = getIntent().getStringExtra(EXTRA_DIFFICULTY);
+        List<String> tags = getIntent().getStringArrayListExtra(EXTRA_TAGS);
+        Double minRating = getIntent().hasExtra(EXTRA_MIN_RATING)
+                ? getIntent().getDoubleExtra(EXTRA_MIN_RATING, 0) : null;
+        Integer maxTotalTimeMinutes = getIntent().hasExtra(EXTRA_MAX_TOTAL_TIME_MINUTES)
+                ? getIntent().getIntExtra(EXTRA_MAX_TOTAL_TIME_MINUTES, 0) : null;
+
+        viewModel.applyFilters(sort, difficulty, tags, minRating, maxTotalTimeMinutes);
+        updateFiltersBadge();
     }
 
     private void initViews() {
@@ -107,17 +166,12 @@ public class SearchActivity extends AppCompatActivity {
             }
         });
 
-        findViewById(R.id.btn_filters).setOnClickListener(v -> {
-            FiltersBottomSheetDialogFragment dialog = new FiltersBottomSheetDialogFragment();
-            dialog.setAvailableTags(loadedTagNames);
-            dialog.setInitialState(viewModel.getCurrentSort(), viewModel.getCurrentDifficulty(), viewModel.getSelectedTags(),
-                    viewModel.getCurrentMinRating(), viewModel.getCurrentMaxTotalTimeMinutes());
-            dialog.setOnFiltersAppliedListener((sortBy, difficulty, tags, minRating, maxTotalTimeMinutes) -> {
-                viewModel.applyFilters(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
-                updateFiltersBadge();
-            });
-            dialog.show(getSupportFragmentManager(), "filters");
-        });
+        findViewById(R.id.btn_filters).setOnClickListener(v ->
+                FilterSheetLauncher.show(getSupportFragmentManager(), loadedTagNames, viewModel,
+                        (sortBy, difficulty, tags, minRating, maxTotalTimeMinutes) -> {
+                            viewModel.applyFilters(sortBy, difficulty, tags, minRating, maxTotalTimeMinutes);
+                            updateFiltersBadge();
+                        }));
 
         matchingTagsSection = findViewById(R.id.matching_tags_section);
         rvResults = findViewById(R.id.rv_results);
@@ -153,9 +207,7 @@ public class SearchActivity extends AppCompatActivity {
      */
     private void runSearch(String query) {
         hasSearched = query != null && !query.isBlank();
-        if (!hasSearched) {
-            matchingTagsSection.setVisibility(View.GONE);
-        }
+        if (!hasSearched) matchingTagsSection.setVisibility(View.GONE);
         viewModel.search(query);
     }
 
@@ -185,8 +237,8 @@ public class SearchActivity extends AppCompatActivity {
     private void setupAdapters() {
         recipeAdapter = new SearchResultAdapter();
         recipeAdapter.setOnRecipeClickListener(recipeId -> {
-            Intent intent = new Intent(SearchActivity.this, com.cooksync.app.ui.detail.RecipeDetailActivity.class);
-            intent.putExtra(com.cooksync.app.ui.detail.RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
+            Intent intent = new Intent(SearchActivity.this, RecipeDetailActivity.class);
+            intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
             startActivity(intent);
         });
         rvResults.setAdapter(recipeAdapter);
@@ -221,7 +273,7 @@ public class SearchActivity extends AppCompatActivity {
                 updateSummaryAndEmptyState(recipes);
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
-                OrganicToast.show(this, null, error.getMessage());
+                showError(error.getMessage(), null);
             }
         });
 
@@ -339,20 +391,14 @@ public class SearchActivity extends AppCompatActivity {
      * @return the summary text to show above the results
      */
     private String buildResultsSummary(int count) {
-        String countPhrase = count == 1 ? "1 recipe" : count + " recipes";
+        String countPhrase = count == 1 ? getString(R.string.count_1_recipe) : getString(R.string.count_n_recipes, count);
         String query = viewModel.getCurrentQuery();
 
         List<String> activeFilters = new ArrayList<>();
-        if (viewModel.getCurrentDifficulty() != null) {
-            activeFilters.add(viewModel.getCurrentDifficulty());
-        }
+        if (viewModel.getCurrentDifficulty() != null) activeFilters.add(viewModel.getCurrentDifficulty());
         activeFilters.addAll(viewModel.getSelectedTags());
-        if (viewModel.getCurrentMaxTotalTimeMinutes() != null) {
-            activeFilters.add("Under " + viewModel.getCurrentMaxTotalTimeMinutes() + " min");
-        }
-        if (viewModel.getCurrentMinRating() != null) {
-            activeFilters.add(viewModel.getCurrentMinRating() + "+");
-        }
+        if (viewModel.getCurrentMaxTotalTimeMinutes() != null) activeFilters.add(getString(R.string.filters_applied_time_format, viewModel.getCurrentMaxTotalTimeMinutes()));
+        if (viewModel.getCurrentMinRating() != null) activeFilters.add(getString(R.string.filters_applied_rating_format, viewModel.getCurrentMinRating()));
 
         if (!activeFilters.isEmpty()) {
             String base = query != null

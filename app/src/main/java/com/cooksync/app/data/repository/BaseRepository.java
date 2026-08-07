@@ -1,5 +1,7 @@
 package com.cooksync.app.data.repository;
 
+import com.cooksync.app.CookSyncApplication;
+import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.dtos.response.ApiResponse;
 
@@ -16,6 +18,10 @@ import retrofit2.Response;
  * extraction. Every repository extends this instead of re-implementing the same
  * try/execute/map-to-{@link ApiResult} boilerplate, so a fix or improvement here (e.g. richer
  * error parsing) applies to every feature area at once.
+ *
+ * <p>All user-facing error text is resolved from {@code strings.xml} via
+ * {@link CookSyncApplication#getAppContext()} rather than hardcoded, keeping the app
+ * localisable and consistent with the rest of the UI layer.</p>
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -49,7 +55,7 @@ public abstract class BaseRepository {
             }
             return new ApiResult.Error<>(extractErrorMessage(response), null);
         } catch (IOException e) {
-            return new ApiResult.Error<>("Network error. Check your connection and try again.", e);
+            return new ApiResult.Error<>(CookSyncApplication.getAppContext().getString(R.string.error_network), e);
         }
     }
 
@@ -73,13 +79,13 @@ public abstract class BaseRepository {
             }
         }
         return switch (response.code()) {
-            case 400 -> "Invalid request. Please check your input.";
-            case 401 -> "Invalid credentials. Please try again.";
-            case 403 -> "You do not have permission to perform this action.";
-            case 404 -> "The requested item could not be found.";
-            case 409 -> "An account with this email already exists.";
-            case 500 -> "Server error. Please try again later.";
-            default -> "Unexpected error (" + response.code() + "). Please try again.";
+            case 400 -> CookSyncApplication.getAppContext().getString(R.string.error_invalid_request);
+            case 401 -> CookSyncApplication.getAppContext().getString(R.string.error_invalid_credentials);
+            case 403 -> CookSyncApplication.getAppContext().getString(R.string.error_no_permission);
+            case 404 -> CookSyncApplication.getAppContext().getString(R.string.error_not_found);
+            case 409 -> CookSyncApplication.getAppContext().getString(R.string.error_account_exists);
+            case 500 -> CookSyncApplication.getAppContext().getString(R.string.error_server);
+            default -> CookSyncApplication.getAppContext().getString(R.string.error_unexpected, response.code());
         };
     }
 }

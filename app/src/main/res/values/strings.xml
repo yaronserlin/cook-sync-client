@@ -1,6 +1,254 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">CookSync</string>
-    <string name="error_network">Could not reach the server. Check your connection and try again.</string>
-    <string name="error_session_expired">Your session has expired. Please sign in again.</string>
+    <string name="hint_email">you@example.com</string>
+    <string name="hint_password">••••••••</string>
+    <string name="hint_first_name">Jane</string>
+    <string name="hint_last_name">Smith</string>
+    <string name="hint_reset_token">Reset token&#8230;</string>
+    <string name="error_invalid_request">Invalid request. Please check your input.</string>
+    <string name="error_invalid_credentials">Invalid credentials. Please try again.</string>
+    <string name="error_no_permission">You do not have permission to perform this action.</string>
+    <string name="error_not_found">The requested item could not be found.</string>
+    <string name="error_account_exists">An account with this email already exists.</string>
+    <string name="error_server">Server error. Please try again later.</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_unexpected">Unexpected error (%1$d). Please try again.</string>
+    <string name="error_session_expired">Your session expired — please sign in again.</string>
+    <string name="error_load_image">Couldn\'t load image</string>
+
+    <!-- Auth Titles & Subtitles -->
+    <string name="login_title">Welcome back</string>
+    <string name="login_subtitle">Sign in to sync your recipes and private notes across every device.</string>
+    <string name="register_title">Create account</string>
+    <string name="forgot_password_title">Forgot password</string>
+    <string name="forgot_password_subtitle">Enter your email and we\'ll send you a link to reset your password.</string>
+    <string name="forgot_password_sent_message">We\'ve sent a reset token to your email.</string>
+
+    <!-- Labels -->
+    <string name="label_email">Email address</string>
+    <string name="label_password">Password</string>
+    <string name="label_first_name">First name</string>
+    <string name="label_last_name">Last name</string>
+    <string name="label_repeat_password">Repeat password</string>
+    <string name="label_reset_token">Reset token</string>
+    <string name="label_reset_token_hint">Token from email</string>
+    <string name="label_new_password">New password</string>
+    <string name="label_new_email">New email address</string>
+    <string name="label_current_password">Current password</string>
+    <string name="label_terms_accepted">I agree to the Terms of Use and Privacy Policy</string>
+    <string name="label_marketing_opt_in">Send me occasional recipe highlights and tips</string>
+    <string name="label_add_note_step_hint">Add a note for this step&#8230;</string>
+    <string name="label_optional_comment">Optional comment</string>
+    <string name="label_hours">H</string>
+    <string name="label_minutes">MM</string>
+    <string name="label_seconds">SS</string>
+    <string name="label_time_separator">:</string>
+
+    <!-- Auth Actions -->
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_create_account">Create account</string>
+    <string name="action_create_account_submit">Create account</string>
+    <string name="action_already_have_account">Already have an account? Sign in</string>
+    <string name="action_forgot_password">Forgot password?</string>
+    <string name="action_send_reset_link">Send reset link</string>
+    <string name="action_reset_password">Reset password</string>
+    <string name="action_back">Back</string>
+
+    <!-- Common Actions -->
+    <string name="action_undo">Undo</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_set">Set</string>
+    <string name="action_got_it">Got it</string>
+    <string name="action_reset">Reset</string>
+    <string name="action_exit">Exit</string>
+    <string name="action_prev">Prev</string>
+    <string name="action_apply_filters">Apply Filters</string>
+    <string name="action_write_review">Write one</string>
+    <string name="action_start_cooking">Start cooking</string>
+    <string name="action_show_all_reviews">Show all reviews</string>
+    <string name="action_close">Close</string>
+    <string name="action_add_note">Add a note</string>
+    <string name="action_make_public">Make public</string>
+    <string name="action_make_private">Make private</string>
+
+    <!-- Footer -->
+    <string name="footer_privacy">Your data is yours. We don\'t sell your recipes or private notes.</string>
+
+    <!-- Labels -->
+    <string name="label_prep">PREP</string>
+    <string name="label_cook">COOK</string>
+    <string name="label_serves">SERVES</string>
+    <string name="label_instructions">Instructions</string>
+    <string name="label_reviews">Reviews</string>
+    <string name="label_fullscreen_photo_description">Full-screen photo</string>
+
+    <!-- Filters -->
+    <string name="filter_all">All</string>
+    <string name="filter_public">Public</string>
+    <string name="filter_private">Private</string>
+    <string name="filters_count_format">Filters · %1$d</string>
+    <string name="filters_applied_time_format">Under %1$d min</string>
+    <string name="filters_applied_rating_format">%1$.1f+</string>
+    <string name="filters_none_applied">None applied</string>
+    <string name="filters_applied_summary_format">Showing · %1$s</string>
+
+    <!-- Filters Sheet -->
+    <string name="filters_title">Filters</string>
+    <string name="filters_tags_label">Tags</string>
+    <string name="filters_total_time_label">Total time</string>
+    <string name="filters_difficulty_label">Difficulty</string>
+    <string name="filters_min_rating_label">Minimum rating</string>
+    <string name="filters_sort_by_label">Sort by</string>
+    <string name="filter_tag_vegan">Vegan</string>
+    <string name="filter_tag_vegetarian">Vegetarian</string>
+    <string name="filter_tag_gluten_free">Gluten Free</string>
+    <string name="filter_time_any">Any</string>
+    <string name="filter_time_under_30">Under 30 min</string>
+    <string name="filter_time_under_60">Under 1h</string>
+    <string name="filter_difficulty_easy">Easy</string>
+    <string name="filter_difficulty_medium">Medium</string>
+    <string name="filter_difficulty_hard">Hard</string>
+    <string name="filter_rating_any">Any</string>
+    <string name="filter_rating_35">3.5+</string>
+    <string name="filter_rating_40">4.0+</string>
+    <string name="filter_rating_45">4.5+</string>
+    <string name="filter_sort_newest">Newest</string>
+    <string name="filter_sort_top_rated">Top Rated</string>
+    <string name="filter_sort_shortest_time">Shortest Time</string>
+
+    <!-- Home -->
+    <string name="home_title">Discover</string>
+    <string name="home_search_hint">Search recipes&#8230;</string>
+
+    <!-- Favorites -->
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty_title">No favorites yet</string>
+    <string name="favorites_empty_subtitle">Tap the heart on any recipe. Your favorites keep private notes that nobody else can see.</string>
+    <string name="favorites_search_hint">Search your favorites&#8230;</string>
+    <string name="favorites_added">Added to favorites</string>
+    <string name="favorites_removed">Removed from favorites</string>
+    <string name="favorites_subtitle_format">%1$d recipes · %2$d with notes</string>
+    <string name="favorites_with_notes_chip_format">With notes %1$d</string>
+
+    <!-- My Recipes -->
+    <string name="my_recipes_title_format">My recipes · %1$d published</string>
+    <string name="my_recipes_empty_title">No recipes yet</string>
+    <string name="my_recipes_empty_subtitle">Recipes you publish will show up here.</string>
+    <string name="my_recipes_search_hint">Search your recipes&#8230;</string>
+    <string name="recipe_now_public">Recipe is now public</string>
+    <string name="recipe_now_private">Recipe is now private</string>
+    <string name="recipe_deleted">Recipe deleted</string>
+    <string name="dialog_delete_recipe_title">Delete this recipe?</string>
+    <string name="dialog_delete_recipe_message">\"%1$s\" will be permanently deleted. This can\'t be undone.</string>
+
+    <!-- Recipe Detail -->
+    <string name="recipe_kicker_format">%1$s · %2$s</string>
+    <string name="review_count_format">%1$d reviews</string>
+    <string name="review_count_plain_format">%1$d reviews</string>
+    <string name="time_format_short">%1$d min</string>
+    <string name="time_format">%1$d mins</string>
+    <string name="ingredients_header_format">Ingredients · %1$d servings</string>
+    <string name="star_chip_label_format">%1$d\u2605</string>
+    <string name="recipe_add_note_hint">Add a private note</string>
+    <string name="anonymous">Anonymous</string>
+    <string name="reviews_count_summary">%1$d reviews</string>
+    <string name="reviews_count_filtered_summary">%1$d reviews · filtered by %2$d\u2605</string>
+    <string name="review_reported">Review reported</string>
+    <string name="review_deleted">Review deleted</string>
+    <string name="dialog_delete_review_title">Delete this review?</string>
+    <string name="dialog_delete_review_message">This can\'t be undone.</string>
+    <string name="reviews_empty_filter">No reviews match that filter</string>
+    <string name="recipe_options_description">Options</string>
+    <string name="recipe_note_strip_format">Private note · %1$s</string>
+    <string name="label_favorite">Favorite</string>
+    <string name="label_review_options">Review options</string>
+
+    <!-- Cooking Mode -->
+    <string name="cook_step_label_format">STEP %1$d OF %2$d</string>
+    <string name="cook_note_prefix_format">Your note: %1$s</string>
+    <string name="cook_uses_chip_format">%1$s %2$s %3$s</string>
+    <string name="cook_timer_clock_format_hours">%1$02d:%2$02d:%3$02d</string>
+    <string name="cook_timer_clock_format_minutes">%1$02d:%2$02d</string>
+    <string name="cook_timer_clock_format_seconds">00:%1$02d</string>
+    <string name="timer_pause">Pause</string>
+    <string name="timer_resume">Resume</string>
+    <string name="cook_done_action">Done — rate it</string>
+    <string name="cook_next_action">Next step</string>
+    <string name="dialog_set_timer_title">Set timer</string>
+    <string name="dialog_timer_finished_title">Time\'s up!</string>
+    <string name="dialog_timer_finished_message">The timer for this step has finished.</string>
+    <string name="dialog_stop_cooking_title">Stop cooking?</string>
+    <string name="dialog_stop_cooking_message">You\'ll pick up right where you left off — your progress is saved.</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_keep_cooking">Keep cooking</string>
+    <string name="action_report">Report</string>
+    <string name="cook_this_step_uses">THIS STEP USES</string>
+    <string name="cook_remaining">REMAINING</string>
+    <string name="cook_timer_add_minute">+1 min</string>
+    <string name="cook_edit_timer_description">Edit timer</string>
+
+    <!-- Search -->
+    <string name="search_matching_tags_label">Matching tags</string>
+    <string name="search_hint">Search recipes&#8230;</string>
+    <string name="search_empty_prompt">Search for recipes, ingredients, or authors</string>
+    <string name="search_no_results_title">No results found</string>
+    <string name="search_no_results_subtitle">Try removing some filters or changing your search.</string>
+    <string name="search_action_clear_all">Clear all</string>
+    <string name="count_1_recipe">1 recipe</string>
+    <string name="count_n_recipes">%1$d recipes</string>
+    <string name="search_results_summary_format">%1$s · sorted by %2$s</string>
+    <string name="search_results_summary_with_query_format">%1$s for \"%2$s\" · sorted by %3$s</string>
+    <string name="search_result_subtitle_format">%1$s · %2$d reviews</string>
+
+    <!-- Review Submission -->
+    <string name="review_title">Rate &amp; review</string>
+    <string name="review_subtitle">How did it turn out? Your feedback helps the author and other cooks.</string>
+    <string name="review_star_content_description">Star</string>
+    <string name="review_tap_to_rate">Tap to rate</string>
+    <string name="review_label_title">Review title</string>
+    <string name="review_title_hint">e.g. Delicious and easy!</string>
+    <string name="review_label_comment">Comment (optional)</string>
+    <string name="review_comment_hint">Any tips or changes you made?</string>
+    <string name="review_action_submit">Submit review</string>
+    <string name="review_action_skip">Not now</string>
+    <string name="review_rating_selected_format">%1$d stars</string>
+    <string name="review_submitted">Review submitted</string>
+    <string name="report_review_title">Report review</string>
+    <string name="report_reason_spam">Spam</string>
+    <string name="report_reason_abusive">Abusive or harmful</string>
+    <string name="report_reason_off_topic">Off-topic</string>
+
+    <!-- Auth -->
+    <string name="reset_password_success">Password reset successfully</string>
+
+    <!-- Profile -->
+    <string name="profile_title">Profile</string>
+    <string name="profile_section_account">Account Details</string>
+    <string name="profile_avatar_content_description">Profile avatar</string>
+    <string name="profile_updated">Profile updated</string>
+    <string name="profile_avatar_updated">Avatar updated</string>
+    <string name="profile_password_updated">Password updated</string>
+    <string name="profile_email_updated">Email updated</string>
+    <string name="profile_account_deactivated">Account deactivated</string>
+    <string name="profile_row_edit_name">Edit name</string>
+    <string name="profile_row_change_password">Change password</string>
+    <string name="profile_row_change_email">Change email</string>
+    <string name="profile_dialog_edit_name_title">Edit name</string>
+    <string name="profile_dialog_change_password_title">Change password</string>
+    <string name="profile_dialog_change_email_title">Change email</string>
+    <string name="profile_dialog_logout_title">Sign out?</string>
+    <string name="profile_dialog_logout_message">You\'ll need to sign back in to access your favorites and notes.</string>
+    <string name="profile_action_logout">Sign out</string>
+    <string name="profile_dialog_deactivate_title">Deactivate account?</string>
+    <string name="profile_dialog_deactivate_message">This will permanently delete your account and all your recipes. This cannot be undone.</string>
+    <string name="profile_action_deactivate">Deactivate</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_my_recipes">My Recipes</string>
+    <string name="nav_profile">Profile</string>
 </resources>

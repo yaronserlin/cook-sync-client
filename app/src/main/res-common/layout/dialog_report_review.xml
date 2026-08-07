@@ -1,49 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Body for the shared "report review" dialog (ReportReviewDialog): a reason radio group
-     plus an optional free-text comment. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:paddingHorizontal="20dp"
+    android:paddingTop="8dp"
+    android:paddingBottom="24dp">
 
     <RadioGroup
         android:id="@+id/rg_report_reason"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-        <RadioButton
-            android:id="@+id/rb_reason_spam"
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_spam"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="Spam" />
+            android:text="@string/report_reason_spam" />
 
-        <RadioButton
-            android:id="@+id/rb_reason_abuse"
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_abusive"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Abusive or harmful" />
+            android:text="@string/report_reason_abusive" />
 
-        <RadioButton
-            android:id="@+id/rb_reason_off_topic"
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rb_off_topic"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Off-topic" />
+            android:text="@string/report_reason_off_topic" />
 
     </RadioGroup>
 
-    <EditText
-        android:id="@+id/et_report_comment"
-        style="@style/CookSync.Input"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="top|start"
-        android:hint="Additional details (optional)"
-        android:inputType="textMultiLine|textCapSentences"
-        android:minLines="2"
-        android:paddingVertical="12dp" />
+        android:layout_marginTop="16dp"
+        app:boxCornerRadiusBottomEnd="12dp"
+        app:boxCornerRadiusBottomStart="12dp"
+        app:boxCornerRadiusTopEnd="12dp"
+        app:boxCornerRadiusTopStart="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_report_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:hint="@string/label_optional_comment"
+            android:inputType="textMultiLine"
+            android:minLines="2" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>

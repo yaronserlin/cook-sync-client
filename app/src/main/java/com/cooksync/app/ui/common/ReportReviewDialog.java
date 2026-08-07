@@ -39,19 +39,23 @@ public final class ReportReviewDialog {
     /**
      * Shows the report dialog.
      *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
      * @param context the hosting screen's context
      * @param callback invoked with the chosen reason and comment; never called if the user cancels
      */
     public static void show(@NonNull Context context, @NonNull Callback callback) {
         View dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_report_review, null);
-        RadioButton reasonSpam = dialogView.findViewById(R.id.rb_reason_spam);
-        RadioButton reasonAbuse = dialogView.findViewById(R.id.rb_reason_abuse);
+        RadioButton reasonSpam = dialogView.findViewById(R.id.rb_spam);
+        RadioButton reasonAbuse = dialogView.findViewById(R.id.rb_abusive);
         EditText comment = dialogView.findViewById(R.id.et_report_comment);
 
         new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_CookSync_Dialog)
-                .setTitle("Report review")
+                .setTitle(R.string.report_review_title)
                 .setView(dialogView)
-                .setPositiveButton("Submit", (dialog, which) -> {
+                .setPositiveButton(R.string.action_save, (dialog, which) -> {
                     String reason;
                     if (reasonSpam.isChecked()) {
                         reason = "SPAM";
@@ -63,7 +67,7 @@ public final class ReportReviewDialog {
                     String commentText = comment.getText() == null ? "" : comment.getText().toString().trim();
                     callback.onSubmit(reason, commentText.isEmpty() ? null : commentText);
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(R.string.action_cancel, null)
                 .show();
     }
 }

@@ -30,4 +30,16 @@
     <color name="color_neutral_400">#C0B6A5</color>
     <color name="color_neutral_800">#474238</color>
     <color name="color_neutral_900">#2E2B25</color>
+
+    <!-- Semantic toast colors, derived from the Organic palette instead of stock Material
+         red/green/amber so they read as part of the same warm, desaturated (hue 24, sat 0.55)
+         system as accent/accent-2, rather than clashing primary colors dropped on top of it. -->
+    <!-- Success reuses the existing accent-2 (sage) ramp — already an approved Organic token,
+         and sage already reads as "positive" without introducing a third hue family. -->
+    <color name="color_success">@color/color_accent_2_700</color>
+    <color name="color_success_dark">@color/color_accent_2_800</color>
+    <!-- Danger: a muted brick-red, same lightness/saturation family as accent_700/800 but
+         rotated toward true red so it's still unmistakably "danger" next to the terracotta accent. -->
+    <color name="color_danger">#A8412E</color>
+    <color name="color_danger_dark">#7A2E20</color>
 </resources>

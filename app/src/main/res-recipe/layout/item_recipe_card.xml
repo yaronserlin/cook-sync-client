@@ -136,7 +136,7 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Favorite"
+                    android:contentDescription="@string/label_favorite"
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_heart_outline"
                     app:tint="@color/color_accent" />

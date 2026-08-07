@@ -1,16 +1,15 @@
-package com.cooksync.app.ui.recipe;
+package com.cooksync.app.ui.recipe.cooking;
 
 import android.os.CountDownTimer;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
+import com.cooksync.app.ui.common.BaseViewModel;
 import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -27,7 +26,7 @@ import java.util.List;
  * @version 1.0
  * @since 04/08/2026
  */
-public class CookingModeViewModel extends ViewModel {
+public class CookingModeViewModel extends BaseViewModel {
 
     private final RecipeRepository repository;
 
@@ -40,33 +39,26 @@ public class CookingModeViewModel extends ViewModel {
 
     private CountDownTimer countDownTimer;
 
-    public CookingModeViewModel() {
-        this.repository = new RecipeRepositoryImpl();
+    /**
+     * Constructs the ViewModel with the given {@link RecipeRepository}, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param repository the repository used for recipe/note calls
+     */
+    public CookingModeViewModel(RecipeRepository repository) {
+        this.repository = repository;
     }
 
-    public LiveData<ApiResult<RecipeResponse>> getRecipeResult() {
-        return recipeResult;
-    }
-
-    public LiveData<ApiResult<List<NoteResponse>>> getNotesResult() {
-        return notesResult;
-    }
-
-    public LiveData<Integer> getCurrentStepIndex() {
-        return currentStepIndex;
-    }
-
-    public LiveData<Integer> getTimerRemainingSeconds() {
-        return timerRemainingSeconds;
-    }
-
-    public LiveData<Boolean> getTimerRunning() {
-        return timerRunning;
-    }
-
-    public LiveData<Event<Boolean>> getTimerFinishedEvent() {
-        return timerFinishedEvent;
-    }
+    public LiveData<ApiResult<RecipeResponse>> getRecipeResult() { return recipeResult; }
+    public LiveData<ApiResult<List<NoteResponse>>> getNotesResult() { return notesResult; }
+    public LiveData<Integer> getCurrentStepIndex() { return currentStepIndex; }
+    public LiveData<Integer> getTimerRemainingSeconds() { return timerRemainingSeconds; }
+    public LiveData<Boolean> getTimerRunning() { return timerRunning; }
+    public LiveData<Event<Boolean>> getTimerFinishedEvent() { return timerFinishedEvent; }
 
     /**
      * Loads the recipe being cooked.

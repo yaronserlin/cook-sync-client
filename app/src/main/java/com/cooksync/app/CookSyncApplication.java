@@ -2,6 +2,7 @@ package com.cooksync.app;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -25,17 +26,37 @@ import java.lang.ref.WeakReference;
  * every open screen silently failing its API calls instead of returning the user to
  * {@link LoginActivity}.
  *
+ * <p>Also exposes the process-wide {@link Context} via {@link #getAppContext()} so classes
+ * outside the UI layer (e.g. {@code *RepositoryImpl}) can resolve string resources without
+ * needing a {@code Context} threaded through every call.</p>
+ *
  * @author Yaron Serlin
  * @version 1.1
  * @since 04/08/2026
  */
 public class CookSyncApplication extends Application {
 
+    private static Context appContext;
+
     private WeakReference<Activity> currentActivity = new WeakReference<>(null);
 
     /** True once the process has actually seen a logged-in session, so a fresh install's
      *  initial {@code false} state (no session yet) is never mistaken for a forced logout. */
     private boolean sessionWasActive = false;
+
+    /**
+     * Returns the process-wide application {@link Context}, available once {@link #onCreate()}
+     * has run.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return the application context
+     */
+    public static Context getAppContext() {
+        return appContext;
+    }
 
     /**
      * Initializes {@link TokenStore} and {@link SessionManager} singletons, and wires up the
@@ -48,6 +69,7 @@ public class CookSyncApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        appContext = getApplicationContext();
         TokenStore.init(this);
         SessionManager.getInstance().restoreFromTokenStore();
 
@@ -99,7 +121,7 @@ public class CookSyncApplication extends Application {
             return;
         }
         if (top != null && wasForced) {
-            OrganicToast.show(top, null, "Your session expired — please sign in again.");
+            OrganicToast.show(top, null, getString(R.string.error_session_expired));
         }
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -107,7 +129,7 @@ public class CookSyncApplication extends Application {
     }
 
     /**
-     * Tracks the current foreground activity so {@link #redirectToLogin()} knows where the
+     * Tracks the current foreground activity so {@link #redirectToLogin} knows where the
      * user currently is, without every screen needing to opt in individually.
      */
     private class ActivityTrackingCallbacks implements ActivityLifecycleCallbacks {

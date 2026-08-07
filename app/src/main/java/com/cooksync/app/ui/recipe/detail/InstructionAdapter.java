@@ -1,4 +1,4 @@
-package com.cooksync.app.ui.detail;
+package com.cooksync.app.ui.recipe.detail;
 
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Adapter for the step-by-step instructions list: each step's mandatory description, an
@@ -118,17 +119,17 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
             Glide.with(holder.stepImage.getContext())
                     .load(imageUrl)
                     .centerCrop()
-                    .listener(new RequestListener<Drawable>() {
+                    .listener(new RequestListener<>() {
                         @Override
                         public boolean onLoadFailed(@Nullable GlideException e, Object model,
-                                                     Target<Drawable> target, boolean isFirstResource) {
+                                                     @NonNull Target<Drawable> target, boolean isFirstResource) {
                             holder.stepImageContainer.setVisibility(View.GONE);
                             return false;
                         }
 
                         @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
-                                                        DataSource dataSource, boolean isFirstResource) {
+                        public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target,
+                                                        @NonNull DataSource dataSource, boolean isFirstResource) {
                             holder.stepImage.setVisibility(View.VISIBLE);
                             return false;
                         }
@@ -143,7 +144,7 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
 
         String note = notesByInstructionId.get(step.id());
         boolean hasNote = note != null && !note.isEmpty();
-        boolean editing = step.id().equals(editingInstructionId);
+        boolean editing = Objects.equals(step.id(), editingInstructionId);
 
         // Once a note exists, the note text itself is the edit entry point; "Add a note" is
         // only shown as an affordance when there's nothing to tap yet.
@@ -181,7 +182,7 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
             }
             alreadyCommitted[0] = true;
             String text = holder.noteEditText.getText() == null ? "" : holder.noteEditText.getText().toString().trim();
-            if (!text.isEmpty() && !text.equals(note) && noteChangeListener != null) {
+            if (!text.isEmpty() && !Objects.equals(text, note) && noteChangeListener != null) {
                 noteChangeListener.onSaveNote(step, text);
             }
             editingInstructionId = null;

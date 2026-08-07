@@ -22,7 +22,7 @@ import java.util.Set;
  * Adapter for a horizontal tag chip row. Used in two contexts: as an interactive multi-select
  * filter bar on {@link com.cooksync.app.ui.home.HomeActivity} (with a leading "All" option
  * that clears every selected tag), and as a read-only display of a single recipe's own tags
- * on {@link com.cooksync.app.ui.detail.RecipeDetailActivity} (no "All" option, since there is
+ * on {@link com.cooksync.app.ui.recipe.detail.RecipeDetailActivity} (no "All" option, since there is
  * nothing to filter there).
  *
  * @author Yaron Serlin
@@ -65,7 +65,7 @@ public class TagChipAdapter extends RecyclerView.Adapter<TagChipAdapter.ViewHold
     public void setTags(List<TagResponse> newTags) {
         tags.clear();
         if (includeAllOption) {
-            tags.add(new TagResponse(null, "All", null, null));
+            tags.add(new TagResponse(null, null, null, null)); // name is null, will be handled in onBindViewHolder
         }
         tags.addAll(newTags);
         notifyDataSetChanged();
@@ -95,9 +95,15 @@ public class TagChipAdapter extends RecyclerView.Adapter<TagChipAdapter.ViewHold
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         TagResponse tag = tags.get(position);
-        holder.tagName.setText(tag.name());
+        boolean isAllOption = tag.id() == null;
 
-        boolean isSelected = tag.id() == null
+        if (isAllOption) {
+            holder.tagName.setText(R.string.filter_all);
+        } else {
+            holder.tagName.setText(tag.name());
+        }
+
+        boolean isSelected = isAllOption
                 ? selectedTagNames.isEmpty()
                 : selectedTagNames.contains(tag.name());
 

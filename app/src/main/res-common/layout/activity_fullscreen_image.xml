@@ -11,7 +11,7 @@
         android:id="@+id/fullscreen_image"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:contentDescription="Full-screen photo"
+        android:contentDescription="@string/label_fullscreen_photo_description"
         android:scaleType="fitCenter"
         android:visibility="invisible"
         tools:src="@tools:sample/backgrounds/scenic"
@@ -31,7 +31,7 @@
         android:layout_gravity="top|start"
         android:layout_margin="16dp"
         android:background="@drawable/bg_white_circle"
-        android:contentDescription="Close"
+        android:contentDescription="@string/action_close"
         android:elevation="4dp"
         android:src="@drawable/ic_close"
         app:tint="@color/color_text" />

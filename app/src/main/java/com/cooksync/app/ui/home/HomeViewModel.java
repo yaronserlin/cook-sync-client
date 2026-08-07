@@ -2,17 +2,16 @@ package com.cooksync.app.ui.home;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Observer;
-import androidx.lifecycle.ViewModel;
 
 import com.cooksync.app.data.repository.RecipeRepository;
-import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.data.repository.TagRepository;
-import com.cooksync.app.data.repository.TagRepositoryImpl;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.domain.FeedState;
+import com.cooksync.app.ui.common.BaseViewModel;
+import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.util.PendingActionScheduler;
+import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -20,22 +19,20 @@ import com.dtos.response.tags.TagResponse;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 
 /**
  * Manages the data state for the {@link HomeActivity}, including paginated recipe
  * feed loading and tag/difficulty/rating/time filtering. Keyword search lives on the
- * dedicated {@link com.cooksync.app.ui.recipe.SearchActivity} instead.
+ * dedicated search screen instead.
  *
  * @author Yaron Serlin
  * @version 1.0
  * @since 04/08/2026
  */
-public class HomeViewModel extends ViewModel {
+public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
 
     private static final int PAGE_SIZE = 10;
 
@@ -47,7 +44,6 @@ public class HomeViewModel extends ViewModel {
     private static final long UNDO_WINDOW_MS = 3200;
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
-
     private final RecipeRepository recipeRepository;
     private final TagRepository tagRepository;
 
@@ -65,22 +61,25 @@ public class HomeViewModel extends ViewModel {
     private Double currentMinRating = null;
     private Integer currentMaxTotalTimeMinutes = null;
 
-    public HomeViewModel() {
-        this.recipeRepository = new RecipeRepositoryImpl();
-        this.tagRepository = new TagRepositoryImpl();
+    /**
+     * Constructs the ViewModel with the given repositories, injected by
+     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param recipeRepository the repository used for feed/favorite calls
+     * @param tagRepository the repository used to load the available tags
+     */
+    public HomeViewModel(RecipeRepository recipeRepository, TagRepository tagRepository) {
+        this.recipeRepository = recipeRepository;
+        this.tagRepository = tagRepository;
     }
 
-    public LiveData<FeedState> getFeedState() {
-        return feedState;
-    }
-
-    public LiveData<ApiResult<List<TagResponse>>> getTagsResult() {
-        return tagsResult;
-    }
-
-    public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() {
-        return favoritesResult;
-    }
+    public LiveData<FeedState> getFeedState() { return feedState; }
+    public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
+    public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() { return favoritesResult; }
 
     /**
      * One-off error notifications (e.g. a failed favorite toggle) meant to be shown once
@@ -88,17 +87,13 @@ public class HomeViewModel extends ViewModel {
      *
      * @return the error event stream
      */
-    public LiveData<Event<String>> getErrorEvent() {
-        return errorEvent;
-    }
+    public LiveData<Event<String>> getErrorEvent() { return errorEvent; }
 
     /**
      * Resets pagination, then reloads the feed from the first page. The active
      * sort/difficulty/tag selections are left untouched.
      */
-    public void loadInitialFeed() {
-        refresh();
-    }
+    public void loadInitialFeed() { refresh(); }
 
     /**
      * Fetches the next page of recipes if there are more available and no request
@@ -121,9 +116,7 @@ public class HomeViewModel extends ViewModel {
      * @param tagName the tag to toggle on/off
      */
     public void toggleTag(String tagName) {
-        if (tagName == null) {
-            return;
-        }
+        if (tagName == null) return;
         if (!selectedTags.remove(tagName)) {
             selectedTags.add(tagName);
         }
@@ -134,9 +127,7 @@ public class HomeViewModel extends ViewModel {
      * Clears every selected tag (the Home tag row's "All" chip) and refreshes the feed.
      */
     public void clearTags() {
-        if (selectedTags.isEmpty()) {
-            return;
-        }
+        if (selectedTags.isEmpty()) return;
         selectedTags.clear();
         refresh();
     }
@@ -145,25 +136,11 @@ public class HomeViewModel extends ViewModel {
      * An unmodifiable snapshot of the currently selected tag names, for the tag-row highlight
      * and the active-filters summary.
      */
-    public Set<String> getSelectedTags() {
-        return Collections.unmodifiableSet(selectedTags);
-    }
-
-    public String getCurrentSort() {
-        return currentSort;
-    }
-
-    public String getCurrentDifficulty() {
-        return currentDifficulty;
-    }
-
-    public Double getCurrentMinRating() {
-        return currentMinRating;
-    }
-
-    public Integer getCurrentMaxTotalTimeMinutes() {
-        return currentMaxTotalTimeMinutes;
-    }
+    public Set<String> getSelectedTags() { return Collections.unmodifiableSet(selectedTags); }
+    public String getCurrentSort() { return currentSort; }
+    public String getCurrentDifficulty() { return currentDifficulty; }
+    public Double getCurrentMinRating() { return currentMinRating; }
+    public Integer getCurrentMaxTotalTimeMinutes() { return currentMaxTotalTimeMinutes; }
 
     /**
      * Applies the sort/difficulty/tags chosen in the filters sheet and reloads the feed from
@@ -171,8 +148,8 @@ public class HomeViewModel extends ViewModel {
      *
      * <p>The server's {@code /public/paged}, {@code /public/search} and
      * {@code /public/tag/{tag}} endpoints don't accept sort, difficulty, or multi-tag
-     * parameters, so filtering and sorting happen client-side, over whatever recipes have been
-     * loaded so far (see {@link #applyFiltersAndSort}). Server-side support for these would let
+     * parameters, so filtering and sorting happen client-side via {@link RecipeFilterUtils},
+     * over whatever recipes have been loaded so far. Server-side support for these would let
      * filtering cover the full catalog immediately instead of only the pages loaded via
      * scrolling.</p>
      *
@@ -257,43 +234,16 @@ public class HomeViewModel extends ViewModel {
 
     /**
      * Filters {@code source} by the active difficulty/tag selection and sorts it per the
-     * active sort choice, returning a new list — {@code source} itself (the raw accumulated
-     * page cache) is left untouched so further pagination keeps working against the full set.
-     * A recipe must carry <em>every</em> selected tag (AND, not OR) to remain in the result.
+     * active sort choice, via {@link RecipeFilterUtils#applyFiltersAndSort}. {@code source}
+     * itself (the raw accumulated page cache) is left untouched so further pagination keeps
+     * working against the full set.
      *
      * @param source the raw, unfiltered recipes accumulated so far
      * @return a filtered, sorted copy ready to display
      */
     private List<RecipePreviewResponse> applyFiltersAndSort(List<RecipePreviewResponse> source) {
-        List<RecipePreviewResponse> displayed = new ArrayList<>(source);
-
-        if (currentDifficulty != null) {
-            displayed.removeIf(r -> r.difficulty() == null || !r.difficulty().equalsIgnoreCase(currentDifficulty));
-        }
-        if (currentMinRating != null) {
-            displayed.removeIf(r -> r.averageRating() == null || r.averageRating() < currentMinRating);
-        }
-        if (currentMaxTotalTimeMinutes != null) {
-            displayed.removeIf(r -> (r.prepTimeMinutes() + r.cookTimeMinutes()) > currentMaxTotalTimeMinutes);
-        }
-        if (!selectedTags.isEmpty()) {
-            displayed.removeIf(r -> r.tags() == null || !selectedTags.stream().allMatch(selected ->
-                    r.tags().stream().anyMatch(tag -> tag.name() != null && tag.name().equalsIgnoreCase(selected))));
-        }
-
-        Comparator<RecipePreviewResponse> comparator = switch (currentSort == null ? "" : currentSort) {
-            case "Top Rated" -> Comparator.comparing(
-                    (RecipePreviewResponse r) -> r.averageRating() == null ? 0.0 : r.averageRating(),
-                    Comparator.reverseOrder());
-            case "Shortest Time" -> Comparator.comparingInt(
-                    r -> r.prepTimeMinutes() + r.cookTimeMinutes());
-            default -> Comparator.comparing(
-                    (RecipePreviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(),
-                    Comparator.reverseOrder());
-        };
-        displayed.sort(comparator);
-
-        return displayed;
+        return RecipeFilterUtils.applyFiltersAndSort(source, currentDifficulty, currentMinRating,
+                currentMaxTotalTimeMinutes, selectedTags, currentSort);
     }
 
     /**
@@ -360,9 +310,7 @@ public class HomeViewModel extends ViewModel {
      * @param recipeId the id of the recipe whose favorite-remove should be undone
      */
     public void undoRemoveFavorite(String recipeId) {
-        if (!pendingActions.cancel(recipeId)) {
-            return;
-        }
+        if (!pendingActions.cancel(recipeId)) return;
         recipeRepository.getFavorites(favoritesResult);
     }
 
@@ -373,30 +321,7 @@ public class HomeViewModel extends ViewModel {
      */
     @Override
     protected void onCleared() {
+        super.onCleared();
         pendingActions.flushAll();
-    }
-
-    /**
-     * Attaches a self-removing observer to a one-shot repository call: skips the initial
-     * {@link ApiResult.Loading} emission, invokes {@code onSettled} for the terminal
-     * Success/Error value, then detaches itself so the short-lived {@code liveData} instance
-     * and this lambda can be garbage collected. Centralizes the observe-once pattern used by
-     * every fire-and-forget repository call in this ViewModel.
-     *
-     * @param <T> the payload type carried by the result
-     * @param liveData the one-shot result stream to observe
-     * @param onSettled callback invoked with the first non-Loading value
-     */
-    private <T> void observeOnce(MutableLiveData<ApiResult<T>> liveData, Consumer<ApiResult<T>> onSettled) {
-        liveData.observeForever(new Observer<>() {
-            @Override
-            public void onChanged(ApiResult<T> value) {
-                if (value instanceof ApiResult.Loading) {
-                    return;
-                }
-                liveData.removeObserver(this);
-                onSettled.accept(value);
-            }
-        });
     }
 }

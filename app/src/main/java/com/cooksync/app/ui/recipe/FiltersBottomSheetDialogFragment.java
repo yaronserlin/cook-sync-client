@@ -20,6 +20,7 @@ import com.google.android.material.chip.ChipGroup;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -28,9 +29,14 @@ import java.util.Set;
  * since the actual tag catalog is server-defined and can't be guessed reliably client-side.
  * Tags support multi-selection (e.g. "Vegan" and "Dessert" active together), matching the
  * design's Tags filter row.
+ *
+ * @author Yaron Serlin
+ * @version 1.0
+ * @since 04/08/2026
  */
 public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment {
 
+    /** Callback invoked with the chosen filter/sort values when "Apply" is tapped. */
     public interface OnFiltersAppliedListener {
         void onFiltersApplied(String sortBy, String difficulty, List<String> tags,
                                Double minRating, Integer maxTotalTimeMinutes);
@@ -55,7 +61,7 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
      * @param tagNames tag display names currently known to the app (e.g. from {@code GET /api/tags})
      */
     public void setAvailableTags(List<String> tagNames) {
-        this.availableTags = tagNames == null ? Collections.emptyList() : tagNames;
+        this.availableTags = Objects.requireNonNullElse(tagNames, Collections.emptyList());
     }
 
     /**
@@ -71,9 +77,9 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
      */
     public void setInitialState(String sortBy, String difficulty, Set<String> tags,
                                  Double minRating, Integer maxTotalTimeMinutes) {
-        this.initialSort = sortBy == null ? "Newest" : sortBy;
+        this.initialSort = Objects.requireNonNullElse(sortBy, "Newest");
         this.initialDifficulty = difficulty;
-        this.initialTags = tags == null ? Collections.emptySet() : tags;
+        this.initialTags = Objects.requireNonNullElse(tags, Collections.emptySet());
         this.initialMinRating = minRating;
         this.initialMaxTotalTimeMinutes = maxTotalTimeMinutes;
     }
@@ -100,18 +106,15 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
     public void onStart() {
         super.onStart();
         Dialog dialog = getDialog();
-        if (!(dialog instanceof BottomSheetDialog)) {
-            return;
+        if (dialog instanceof BottomSheetDialog bsd) {
+            FrameLayout bottomSheet = bsd.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet != null) {
+                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setMaxHeight((int) (getResources().getDisplayMetrics().heightPixels * 0.82f));
+                behavior.setSkipCollapsed(true);
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+            }
         }
-        FrameLayout bottomSheet = ((BottomSheetDialog) dialog)
-                .findViewById(com.google.android.material.R.id.design_bottom_sheet);
-        if (bottomSheet == null) {
-            return;
-        }
-        BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
-        behavior.setMaxHeight((int) (getResources().getDisplayMetrics().heightPixels * 0.82f));
-        behavior.setSkipCollapsed(true);
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
     }
 
     @Override
@@ -144,16 +147,21 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
             }
         }
 
-        for (int i = 0; i < cgSort.getChildCount(); i++) {
-            Chip chip = (Chip) cgSort.getChildAt(i);
-            if (chip.getText().toString().equals(initialSort)) {
+        int j = 0;
+        while (j < cgSort.getChildCount()) {
+            Chip chip = (Chip) cgSort.getChildAt(j);
+            if (Objects.equals(chip.getText().toString(), initialSort)) {
                 cgSort.check(chip.getId());
                 break;
             }
+            j++;
         }
-        for (int i = 0; i < cgDifficulty.getChildCount(); i++) {
-            Chip chip = (Chip) cgDifficulty.getChildAt(i);
-            chip.setChecked(chip.getText().toString().equals(initialDifficulty));
+
+        int k = 0;
+        while (k < cgDifficulty.getChildCount()) {
+            Chip chip = (Chip) cgDifficulty.getChildAt(k);
+            chip.setChecked(Objects.equals(chip.getText().toString(), initialDifficulty));
+            k++;
         }
 
         if (initialMaxTotalTimeMinutes != null) {
@@ -196,16 +204,16 @@ public class FiltersBottomSheetDialogFragment extends BottomSheetDialogFragment 
                     difficulty = ((Chip) cgDifficulty.findViewById(diffId)).getText().toString();
                 }
 
+                List<String> tags = new ArrayList<>();
                 // Iterate children directly rather than getCheckedChipIds() + findViewById:
                 // findViewById only ever returns the *first* view matching a given id, so if
                 // multiple chips shared an id (as they did before each got a unique generated
                 // id above) this would silently resolve every checked chip to the same one.
-                List<String> tags = new ArrayList<>();
                 for (int i = 0; i < cgDiet.getChildCount(); i++) {
                     Chip dietChip = (Chip) cgDiet.getChildAt(i);
                     if (dietChip.isChecked()) {
                         Object rawTag = dietChip.getTag();
-                        tags.add(rawTag instanceof String ? (String) rawTag : dietChip.getText().toString());
+                        tags.add(rawTag instanceof String s ? s : dietChip.getText().toString());
                     }
                 }
 

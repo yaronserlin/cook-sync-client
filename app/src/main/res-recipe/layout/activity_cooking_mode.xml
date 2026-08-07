@@ -1,8 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Full-screen step-by-step cooking view, matching the design's dark "is.cook" screen:
-     dark accent-900 background, per-step progress bar row, one instruction step at a time,
-     "this step uses" ingredient tags, an optional private note, and an optional circular
-     countdown timer. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -12,8 +8,6 @@
     android:background="@color/color_accent_900"
     android:orientation="vertical">
 
-    <!-- Top bar: Exit / recipe title / overflow (decorative, matches the design's unwired
-         ellipsis menu). -->
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,7 +25,7 @@
             android:insetBottom="0dp"
             android:minWidth="0dp"
             android:minHeight="0dp"
-            android:text="Exit"
+            android:text="@string/action_exit"
             android:textAllCaps="false"
             android:textColor="@color/color_accent_200"
             android:textSize="13sp"
@@ -61,8 +55,6 @@
 
     </RelativeLayout>
 
-    <!-- Per-step progress row; segments are added at runtime in CookingModeActivity, one per
-         instruction step, since the step count is only known once the recipe loads. -->
     <LinearLayout
         android:id="@+id/ll_progress_bars"
         android:layout_width="match_parent"
@@ -105,8 +97,6 @@
                 android:textSize="29sp"
                 tools:text="Whisk the cornflour into a little cold milk until smooth." />
 
-            <!-- Optional step illustration; hidden when the step has no image, matching the
-                 recipe detail screen's inline step-image treatment (16:9, rounded). -->
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/step_image_container"
                 android:layout_width="match_parent"
@@ -137,7 +127,6 @@
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <!-- "This step uses" ingredient tags. -->
             <LinearLayout
                 android:id="@+id/uses_container"
                 android:layout_width="match_parent"
@@ -151,7 +140,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.1"
-                    android:text="THIS STEP USES"
+                    android:text="@string/cook_this_step_uses"
                     android:textColor="@color/color_accent_300"
                     android:textSize="10.5sp"
                     android:textStyle="bold" />
@@ -166,8 +155,6 @@
 
             </LinearLayout>
 
-            <!-- Private note callout for this step; hidden when the step has no note. Read-only
-                 here — editing happens exclusively on the recipe detail screen. -->
             <TextView
                 android:id="@+id/tv_step_note"
                 android:layout_width="match_parent"
@@ -181,7 +168,6 @@
                 android:visibility="gone"
                 tools:text="My note — only 10 minutes on my stove." />
 
-            <!-- Optional per-step countdown timer; hidden for steps with no timer. -->
             <LinearLayout
                 android:id="@+id/timer_container"
                 android:layout_width="match_parent"
@@ -228,16 +214,13 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:letterSpacing="0.1"
-                            android:text="REMAINING"
+                            android:text="@string/cook_remaining"
                             android:textColor="@color/color_accent_300"
                             android:textSize="9sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>
 
-                    <!-- Tapping the clock (or this badge) opens a dialog to change the
-                         timer's duration; the badge exists purely so it's discoverable as
-                         tappable, since a bare number doesn't read as an editable control. -->
                     <ImageView
                         android:id="@+id/btn_timer_edit"
                         android:layout_width="30dp"
@@ -264,7 +247,7 @@
                         android:layout_height="48dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        android:text="Pause"
+                        android:text="@string/timer_pause"
                         android:textAllCaps="false"
                         android:textColor="@color/color_accent_100"
                         app:backgroundTint="@color/color_accent_800"
@@ -279,7 +262,7 @@
                         android:layout_marginTop="8dp"
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
-                        android:text="+1 min"
+                        android:text="@string/cook_timer_add_minute"
                         android:textAllCaps="false"
                         android:textColor="@color/color_accent_100"
                         app:backgroundTint="@color/color_accent_800"
@@ -293,7 +276,6 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Fixed footer: Prev + Next/Done, always reachable regardless of step content length. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -307,7 +289,7 @@
             android:layout_height="match_parent"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            android:text="Prev"
+            android:text="@string/action_prev"
             android:textAllCaps="false"
             android:textColor="@color/color_accent_100"
             app:backgroundTint="@color/color_accent_800"
@@ -323,7 +305,7 @@
             android:layout_weight="1"
             android:insetTop="0dp"
             android:insetBottom="0dp"
-            android:text="Next step"
+            android:text="@string/cook_next_action"
             android:textAllCaps="false"
             android:textSize="16sp"
             app:backgroundTint="@color/color_accent"
