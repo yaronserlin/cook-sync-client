@@ -62,7 +62,15 @@
             android:windowSoftInputMode="stateVisible" />
 
         <activity
-            android:name=".ui.profile.ProfileActivity"
+            android:name=".ui.settings.SettingsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.settings.AccountDetailsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".ui.settings.CookingPreferencesActivity"
             android:exported="false" />
 
         <activity

@@ -29,6 +29,7 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.cooksync.app.R;
+import com.cooksync.app.data.local.CookingPreferencesStore;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
@@ -100,8 +101,11 @@ public class CookingModeActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cooking_mode);
 
-        // Cooking mode is meant to stay on screen through long, hands-off cook times.
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        // Cooking mode is meant to stay on screen through long, hands-off cook times, unless the
+        // user turned this off in Cooking preferences.
+        if (CookingPreferencesStore.isScreenAwakeEnabled()) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
 
         recipeId = getIntent().getStringExtra(RecipeDetailActivity.EXTRA_RECIPE_ID);
         if (recipeId == null) {
@@ -398,11 +402,14 @@ public class CookingModeActivity extends BaseActivity {
      * alarm/notification sound, vibrates, and shows a dialog so the cook notices even if the
      * phone is across the kitchen. The sound keeps playing (some default tones loop) until the
      * dialog is dismissed, however that happens — "Got it", tapping outside, or back — so it
-     * never keeps ringing after the user has already acknowledged it.
+     * never keeps ringing after the user has already acknowledged it. Sound and vibration are
+     * skipped if the user turned them off in Cooking preferences; the dialog itself still shows.
      */
     private void notifyTimerFinished() {
-        playTimerFinishedSound();
-        vibrate();
+        if (CookingPreferencesStore.isTimerSoundEnabled()) {
+            playTimerFinishedSound();
+            vibrate();
+        }
 
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle(R.string.dialog_timer_finished_title)

@@ -20,7 +20,7 @@ import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.home.HomeActivity;
-import com.cooksync.app.ui.profile.ProfileActivity;
+import com.cooksync.app.ui.settings.SettingsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.ChipGroup;
@@ -100,8 +100,8 @@ public abstract class RecipeListActivity extends BaseActivity {
                 target = MyRecipesActivity.class;
             } else if (id == R.id.nav_favorites) {
                 target = FavoriteRecipesActivity.class;
-            } else if (id == R.id.nav_profile) {
-                target = ProfileActivity.class;
+            } else if (id == R.id.nav_settings) {
+                target = SettingsActivity.class;
             } else {
                 return false;
             }

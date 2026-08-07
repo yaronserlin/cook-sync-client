@@ -256,6 +256,20 @@ public final class SessionManager {
     }
 
     /**
+     * Returns whether the currently authenticated user has administrative privileges, used to
+     * gate admin-only UI (e.g. the Settings screen's "Admin console" row).
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @return {@code true} if the current user is an admin
+     */
+    public boolean isAdmin() {
+        return TokenStore.isAdmin();
+    }
+
+    /**
      * Caches the authenticated user's email address. {@code AuthResponse} never carries an
      * email field, so this is populated separately from whichever request payload already
      * had it (login, register, or an email-change request), rather than from the response.

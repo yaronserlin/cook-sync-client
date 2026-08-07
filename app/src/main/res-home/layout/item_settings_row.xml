@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Shared icon-circle settings row, one MaterialCardView per row (Favorites, My recipes,
+     Notifications, Cooking preferences, Account details, Admin console) stacked with spacing
+     in activity_settings.xml, matching the design's independent-card-per-row layout. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    app:cardBackgroundColor="@color/color_surface"
+    app:cardCornerRadius="18dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="14dp">
+
+        <FrameLayout
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="@drawable/bg_accent2_circle_100">
+
+            <ImageView
+                android:id="@+id/iv_row_icon"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"
+                app:tint="@color/color_accent_2_800"
+                tools:src="@drawable/ic_heart_filled" />
+
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_row_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/color_text"
+                android:textSize="14.5sp"
+                android:textStyle="bold"
+                tools:text="Favorites" />
+
+            <TextView
+                android:id="@+id/tv_row_sub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:alpha="0.6"
+                android:textColor="@color/color_text"
+                android:textSize="12sp"
+                tools:text="12 saved" />
+
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:alpha="0.4"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_arrow_forward" />
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

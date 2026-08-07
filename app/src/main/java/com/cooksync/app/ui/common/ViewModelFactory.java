@@ -16,13 +16,13 @@ import com.cooksync.app.ui.auth.ForgotPasswordViewModel;
 import com.cooksync.app.ui.auth.LoginViewModel;
 import com.cooksync.app.ui.auth.RegisterViewModel;
 import com.cooksync.app.ui.home.HomeViewModel;
-import com.cooksync.app.ui.profile.ProfileViewModel;
 import com.cooksync.app.ui.recipe.cooking.CookingModeViewModel;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailViewModel;
 import com.cooksync.app.ui.recipe.list.FavoritesViewModel;
 import com.cooksync.app.ui.recipe.list.MyRecipesViewModel;
 import com.cooksync.app.ui.recipe.review.ReviewViewModel;
 import com.cooksync.app.ui.recipe.search.SearchViewModel;
+import com.cooksync.app.ui.settings.SettingsViewModel;
 
 /**
  * Factory for constructing ViewModels with their required repository dependencies, following
@@ -86,8 +86,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new SearchViewModel(recipeRepository, tagRepository);
         } else if (modelClass.isAssignableFrom(RecipeDetailViewModel.class)) {
             return (T) new RecipeDetailViewModel(recipeRepository);
-        } else if (modelClass.isAssignableFrom(ProfileViewModel.class)) {
-            return (T) new ProfileViewModel(authRepository, mediaRepository);
+        } else if (modelClass.isAssignableFrom(SettingsViewModel.class)) {
+            return (T) new SettingsViewModel(authRepository, mediaRepository, recipeRepository);
         } else if (modelClass.isAssignableFrom(CookingModeViewModel.class)) {
             return (T) new CookingModeViewModel(recipeRepository);
         } else if (modelClass.isAssignableFrom(FavoritesViewModel.class)) {

@@ -1,10 +1,11 @@
-package com.cooksync.app.ui.profile;
+package com.cooksync.app.ui.settings;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.data.repository.AuthRepository;
 import com.cooksync.app.data.repository.MediaRepository;
+import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.common.BaseViewModel;
@@ -15,22 +16,27 @@ import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
+import com.dtos.response.recipe.RecipePreviewResponse;
+
+import java.util.List;
 
 /**
- * ViewModel for {@link ProfileActivity}. Validates every field client-side (mirroring the
+ * ViewModel for {@link SettingsActivity}. Validates every field client-side (mirroring the
  * server's Jakarta constraints, exactly like {@link com.cooksync.app.ui.auth.LoginViewModel}
  * and {@link com.cooksync.app.ui.auth.RegisterViewModel}) before delegating to
- * {@link AuthRepository}, and fetches Cloudinary upload signatures via {@link MediaRepository}
- * for avatar changes.
+ * {@link AuthRepository}, fetches Cloudinary upload signatures via {@link MediaRepository} for
+ * avatar changes, and fetches the Favorites/My recipes counts shown as row subtitles via
+ * {@link RecipeRepository}.
  *
  * @author Yaron Serlin
  * @version 1.0
  * @since 04/08/2026
  */
-public class ProfileViewModel extends BaseViewModel {
+public class SettingsViewModel extends BaseViewModel {
 
     private final AuthRepository authRepository;
     private final MediaRepository mediaRepository;
+    private final RecipeRepository recipeRepository;
 
     private final MutableLiveData<ApiResult<Void>> profileResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> avatarResult = new MutableLiveData<>();
@@ -40,6 +46,8 @@ public class ProfileViewModel extends BaseViewModel {
     private final MutableLiveData<ApiResult<Void>> logoutResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<CloudinarySignatureResponse>> signatureResult = new MutableLiveData<>();
     private final MutableLiveData<Event<String>> validationError = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> favoritesResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> myRecipesResult = new MutableLiveData<>();
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
@@ -51,10 +59,13 @@ public class ProfileViewModel extends BaseViewModel {
      *
      * @param authRepository the repository used for profile/password/email/account calls
      * @param mediaRepository the repository used for Cloudinary upload-signature requests
+     * @param recipeRepository the repository used to fetch the Favorites/My recipes counts
      */
-    public ProfileViewModel(AuthRepository authRepository, MediaRepository mediaRepository) {
+    public SettingsViewModel(AuthRepository authRepository, MediaRepository mediaRepository,
+                              RecipeRepository recipeRepository) {
         this.authRepository = authRepository;
         this.mediaRepository = mediaRepository;
+        this.recipeRepository = recipeRepository;
     }
 
     /**
@@ -177,6 +188,30 @@ public class ProfileViewModel extends BaseViewModel {
         authRepository.logout(logoutResult);
     }
 
+    /**
+     * Fetches the current user's favorite recipes, used to derive the count shown as the
+     * "Favorites" row's subtitle.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    public void loadFavoritesCount() {
+        recipeRepository.getFavorites(favoritesResult);
+    }
+
+    /**
+     * Fetches the current user's own recipes, used to derive the count shown as the
+     * "My recipes" row's subtitle.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    public void loadMyRecipesCount() {
+        recipeRepository.getMyRecipes(myRecipesResult);
+    }
+
     /** @return observable result of a name update */
     public LiveData<ApiResult<Void>> getProfileResult() { return profileResult; }
     /** @return observable result of an avatar URL update */
@@ -193,4 +228,8 @@ public class ProfileViewModel extends BaseViewModel {
     public LiveData<ApiResult<CloudinarySignatureResponse>> getSignatureResult() { return signatureResult; }
     /** @return one-shot client-side validation errors, to surface as a Toast */
     public LiveData<Event<String>> getValidationError() { return validationError; }
+    /** @return observable result of the Favorites list fetch, used to derive its row's count */
+    public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() { return favoritesResult; }
+    /** @return observable result of the My recipes list fetch, used to derive its row's count */
+    public LiveData<ApiResult<List<RecipePreviewResponse>>> getMyRecipesResult() { return myRecipesResult; }
 }

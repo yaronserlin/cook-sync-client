@@ -224,31 +224,55 @@
     <!-- Auth -->
     <string name="reset_password_success">Password reset successfully</string>
 
-    <!-- Profile -->
-    <string name="profile_title">Profile</string>
-    <string name="profile_section_account">Account Details</string>
-    <string name="profile_avatar_content_description">Profile avatar</string>
-    <string name="profile_updated">Profile updated</string>
-    <string name="profile_avatar_updated">Avatar updated</string>
-    <string name="profile_password_updated">Password updated</string>
-    <string name="profile_email_updated">Email updated</string>
-    <string name="profile_account_deactivated">Account deactivated</string>
-    <string name="profile_row_edit_name">Edit name</string>
-    <string name="profile_row_change_password">Change password</string>
-    <string name="profile_row_change_email">Change email</string>
-    <string name="profile_dialog_edit_name_title">Edit name</string>
-    <string name="profile_dialog_change_password_title">Change password</string>
-    <string name="profile_dialog_change_email_title">Change email</string>
-    <string name="profile_dialog_logout_title">Sign out?</string>
-    <string name="profile_dialog_logout_message">You\'ll need to sign back in to access your favorites and notes.</string>
-    <string name="profile_action_logout">Sign out</string>
-    <string name="profile_dialog_deactivate_title">Deactivate account?</string>
-    <string name="profile_dialog_deactivate_message">This will permanently delete your account and all your recipes. This cannot be undone.</string>
-    <string name="profile_action_deactivate">Deactivate</string>
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_avatar_content_description">Profile avatar</string>
+    <string name="settings_updated">Profile updated</string>
+    <string name="settings_avatar_updated">Avatar updated</string>
+    <string name="settings_password_updated">Password updated</string>
+    <string name="settings_email_updated">Email updated</string>
+    <string name="settings_account_deactivated">Account deactivated</string>
+    <string name="settings_dialog_edit_name_title">Edit name</string>
+    <string name="settings_dialog_change_password_title">Change password</string>
+    <string name="settings_dialog_change_email_title">Change email</string>
+    <string name="settings_dialog_logout_title">Sign out?</string>
+    <string name="settings_dialog_logout_message">You\'ll need to sign back in to access your favorites and notes.</string>
+    <string name="settings_action_logout">Sign out</string>
+    <string name="settings_dialog_deactivate_title">Deactivate account?</string>
+    <string name="settings_dialog_deactivate_message">This will permanently delete your account and all your recipes. This cannot be undone.</string>
+    <string name="settings_action_deactivate">Deactivate</string>
+
+    <!-- Settings rows -->
+    <string name="settings_row_favorites_label">Favorites</string>
+    <string name="settings_row_favorites_sub_format">%1$d saved</string>
+    <string name="settings_row_my_recipes_label">My recipes</string>
+    <string name="settings_row_my_recipes_sub_format">%1$d published</string>
+    <string name="settings_row_notifications_label">Notifications</string>
+    <string name="settings_row_notifications_sub">Reviews on your recipes</string>
+    <string name="settings_row_cooking_preferences_label">Cooking preferences</string>
+    <string name="settings_row_cooking_preferences_sub_on">Screen awake: On</string>
+    <string name="settings_row_cooking_preferences_sub_off">Screen awake: Off</string>
+    <string name="settings_row_account_details_label">Account details</string>
+    <string name="settings_row_account_details_sub">Name, email, password, avatar</string>
+    <string name="settings_row_admin_console_label">Admin console</string>
+    <string name="settings_row_admin_console_sub">Moderation &amp; management tools</string>
+    <string name="settings_row_coming_soon_format">%1$s — coming soon</string>
+
+    <!-- Account details (placeholder) -->
+    <string name="account_details_title">Account details</string>
+    <string name="account_details_coming_soon_title">Coming soon</string>
+    <string name="account_details_coming_soon_subtitle">We\'re building a dedicated screen for managing your name, email, password, and avatar.</string>
+
+    <!-- Cooking preferences -->
+    <string name="cooking_preferences_title">Cooking preferences</string>
+    <string name="cooking_preferences_screen_awake_label">Keep screen awake</string>
+    <string name="cooking_preferences_screen_awake_sub">Prevents the screen from sleeping while cooking mode is open</string>
+    <string name="cooking_preferences_timer_sound_label">Timer sound &amp; vibration</string>
+    <string name="cooking_preferences_timer_sound_sub">Play a sound and vibrate when a step timer finishes</string>
 
     <!-- Navigation -->
     <string name="nav_home">Home</string>
     <string name="nav_favorites">Favorites</string>
     <string name="nav_my_recipes">My Recipes</string>
-    <string name="nav_profile">Profile</string>
+    <string name="nav_settings">Settings</string>
 </resources>

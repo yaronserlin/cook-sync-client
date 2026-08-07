@@ -17,11 +17,12 @@ import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ViewModelFactory;
-import com.cooksync.app.ui.profile.ProfileActivity;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.cooksync.app.ui.recipe.list.FavoriteRecipesActivity;
 import com.cooksync.app.ui.recipe.list.MyRecipesActivity;
 import com.cooksync.app.ui.recipe.search.SearchActivity;
+import com.cooksync.app.ui.settings.AccountDetailsActivity;
+import com.cooksync.app.ui.settings.SettingsActivity;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.response.tags.TagResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -97,7 +98,7 @@ public class HomeActivity extends BaseActivity {
 
         TextView avatar = findViewById(R.id.tv_profile_avatar);
         avatar.setText(SessionManager.getInstance().getInitials());
-        avatar.setOnClickListener(v -> Navigator.start(this, ProfileActivity.class));
+        avatar.setOnClickListener(v -> Navigator.start(this, AccountDetailsActivity.class));
 
         findViewById(R.id.search_bar_tap_target).setOnClickListener(v ->
                 Navigator.start(this, SearchActivity.newIntentWithFilters(this, viewModel)));
@@ -115,8 +116,8 @@ public class HomeActivity extends BaseActivity {
                 Navigator.start(this, FavoriteRecipesActivity.class);
                 return true;
             }
-            if (id == R.id.nav_profile) {
-                Navigator.start(this, ProfileActivity.class);
+            if (id == R.id.nav_settings) {
+                Navigator.start(this, SettingsActivity.class);
                 return true;
             }
             return false;
