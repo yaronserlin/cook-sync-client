@@ -14,6 +14,7 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.profile.ProfileActivity;
@@ -96,10 +97,10 @@ public class HomeActivity extends BaseActivity {
 
         TextView avatar = findViewById(R.id.tv_profile_avatar);
         avatar.setText(SessionManager.getInstance().getInitials());
-        avatar.setOnClickListener(v -> startActivity(new Intent(this, ProfileActivity.class)));
+        avatar.setOnClickListener(v -> Navigator.start(this, ProfileActivity.class));
 
         findViewById(R.id.search_bar_tap_target).setOnClickListener(v ->
-                startActivity(SearchActivity.newIntentWithFilters(this, viewModel)));
+                Navigator.start(this, SearchActivity.newIntentWithFilters(this, viewModel)));
 
         bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_home);
@@ -107,15 +108,15 @@ public class HomeActivity extends BaseActivity {
             int id = item.getItemId();
             if (id == R.id.nav_home) return true;
             if (id == R.id.nav_my_recipes) {
-                startActivity(new Intent(this, MyRecipesActivity.class));
+                Navigator.start(this, MyRecipesActivity.class);
                 return true;
             }
             if (id == R.id.nav_favorites) {
-                startActivity(new Intent(this, FavoriteRecipesActivity.class));
+                Navigator.start(this, FavoriteRecipesActivity.class);
                 return true;
             }
             if (id == R.id.nav_profile) {
-                startActivity(new Intent(this, ProfileActivity.class));
+                Navigator.start(this, ProfileActivity.class);
                 return true;
             }
             return false;
@@ -127,9 +128,9 @@ public class HomeActivity extends BaseActivity {
         recipeAdapter.setOnRecipeClickListener(new RecipeCardAdapter.OnRecipeClickListener() {
             @Override
             public void onRecipeClick(String recipeId) {
-                Intent intent = new Intent(HomeActivity.this, RecipeDetailActivity.class);
+                Intent intent = new Intent();
                 intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
-                startActivity(intent);
+                Navigator.start(HomeActivity.this, RecipeDetailActivity.class, intent);
             }
 
             @Override

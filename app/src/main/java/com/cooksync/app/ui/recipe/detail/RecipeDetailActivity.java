@@ -20,6 +20,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ReportReviewDialog;
@@ -227,15 +228,15 @@ public class RecipeDetailActivity extends BaseActivity {
         ratingRow.setOnClickListener(v -> scrollView.smoothScrollTo(0, reviewsHeader.getTop() + ((View) reviewsHeader.getParent()).getTop()));
 
         findViewById(R.id.btn_start_cooking).setOnClickListener(v -> {
-            Intent intent = new Intent(this, CookingModeActivity.class);
+            Intent intent = new Intent();
             intent.putExtra(EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
-            startActivity(intent);
+            Navigator.start(this, CookingModeActivity.class, intent);
         });
 
         findViewById(R.id.btn_review).setOnClickListener(v -> {
-            Intent intent = new Intent(this, ReviewActivity.class);
+            Intent intent = new Intent();
             intent.putExtra(ReviewActivity.EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
-            startActivity(intent);
+            Navigator.start(this, ReviewActivity.class, intent);
         });
 
         btnSortReviews.setOnClickListener(v -> {
@@ -372,9 +373,9 @@ public class RecipeDetailActivity extends BaseActivity {
      */
     private void openFullscreenImage(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) return;
-        Intent intent = new Intent(this, FullscreenImageActivity.class);
+        Intent intent = new Intent();
         intent.putExtra(FullscreenImageActivity.EXTRA_IMAGE_URL, imageUrl);
-        startActivity(intent);
+        Navigator.start(this, FullscreenImageActivity.class, intent);
     }
 
     /**

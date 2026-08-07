@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ViewModelFactory;
@@ -76,9 +77,9 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
         adapter.setListener(new RecipeRowCardAdapter.Listener() {
             @Override
             public void onRecipeClick(RecipePreviewResponse recipe) {
-                Intent intent = new Intent(FavoriteRecipesActivity.this, RecipeDetailActivity.class);
+                Intent intent = new Intent();
                 intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipe.id());
-                startActivity(intent);
+                Navigator.start(FavoriteRecipesActivity.this, RecipeDetailActivity.class, intent);
             }
 
             @Override

@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.home.HomeActivity;
 import com.google.android.material.checkbox.MaterialCheckBox;
@@ -179,8 +180,8 @@ public class RegisterActivity extends BaseActivity {
                 )
         );
         findViewById(R.id.btn_have_account).setOnClickListener(v -> {
-            startActivity(new Intent(this, LoginActivity.class));
-            finish();
+            Navigator.start(this, LoginActivity.class);
+            Navigator.finish(this);
         });
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
     }
@@ -237,9 +238,9 @@ public class RegisterActivity extends BaseActivity {
      * Space: O(1)
      */
     private void navigateToMain() {
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+        Intent extras = new Intent();
+        extras.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Navigator.start(this, HomeActivity.class, extras);
+        Navigator.finish(this);
     }
 }

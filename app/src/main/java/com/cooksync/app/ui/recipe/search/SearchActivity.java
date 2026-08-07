@@ -18,6 +18,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.home.TagChipAdapter;
@@ -237,9 +238,9 @@ public class SearchActivity extends BaseActivity {
     private void setupAdapters() {
         recipeAdapter = new SearchResultAdapter();
         recipeAdapter.setOnRecipeClickListener(recipeId -> {
-            Intent intent = new Intent(SearchActivity.this, RecipeDetailActivity.class);
+            Intent intent = new Intent();
             intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
-            startActivity(intent);
+            Navigator.start(SearchActivity.this, RecipeDetailActivity.class, intent);
         });
         rvResults.setAdapter(recipeAdapter);
         rvResults.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));

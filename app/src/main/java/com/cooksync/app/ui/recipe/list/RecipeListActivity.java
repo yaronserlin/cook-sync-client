@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
 import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.home.HomeActivity;
 import com.cooksync.app.ui.profile.ProfileActivity;
@@ -104,10 +105,10 @@ public abstract class RecipeListActivity extends BaseActivity {
             } else {
                 return false;
             }
-            Intent intent = new Intent(this, target);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            finish();
+            Intent extras = new Intent();
+            extras.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            Navigator.start(this, target, extras);
+            Navigator.finish(this);
             return true;
         });
     }

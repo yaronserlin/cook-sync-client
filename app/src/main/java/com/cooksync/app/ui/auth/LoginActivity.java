@@ -13,6 +13,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.data.local.TokenStore;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.home.HomeActivity;
 
@@ -148,10 +149,10 @@ public class LoginActivity extends BaseActivity {
                 viewModel.login(etEmail.getText().toString(), etPassword.getText().toString())
         );
         findViewById(R.id.btn_create_account).setOnClickListener(v ->
-                startActivity(new Intent(this, RegisterActivity.class))
+                Navigator.start(this, RegisterActivity.class)
         );
         findViewById(R.id.tv_forgot_password).setOnClickListener(v ->
-                startActivity(new Intent(this, ForgotPasswordActivity.class))
+                Navigator.start(this, ForgotPasswordActivity.class)
         );
     }
 
@@ -208,9 +209,9 @@ public class LoginActivity extends BaseActivity {
      * Space: O(1)
      */
     private void navigateToMain() {
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
-        finish();
+        Intent extras = new Intent();
+        extras.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Navigator.start(this, HomeActivity.class, extras);
+        Navigator.finish(this);
     }
 }

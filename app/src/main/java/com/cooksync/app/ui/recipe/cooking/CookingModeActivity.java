@@ -32,6 +32,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
@@ -150,10 +151,10 @@ public class CookingModeActivity extends BaseActivity {
         btnPrimaryAction.setOnClickListener(v -> {
             int index = currentIndex();
             if (index >= steps.size() - 1) {
-                Intent intent = new Intent(this, ReviewActivity.class);
+                Intent intent = new Intent();
                 intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
-                startActivity(intent);
-                finish();
+                Navigator.start(this, ReviewActivity.class, intent);
+                Navigator.finish(this);
             } else {
                 viewModel.nextStep(steps);
             }
@@ -315,9 +316,9 @@ public class CookingModeActivity extends BaseActivity {
      * @param imageUrl the step photo's URL
      */
     private void openFullscreenImage(String imageUrl) {
-        Intent intent = new Intent(this, FullscreenImageActivity.class);
+        Intent intent = new Intent();
         intent.putExtra(FullscreenImageActivity.EXTRA_IMAGE_URL, imageUrl);
-        startActivity(intent);
+        Navigator.start(this, FullscreenImageActivity.class, intent);
     }
 
     /**

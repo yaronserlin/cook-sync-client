@@ -95,6 +95,23 @@ public abstract class BaseActivity extends AppCompatActivity {
         OrganicToast.showError(this, anchor, message);
     }
 
+    /**
+     * Finishes this activity and applies the app's standard exit transition via
+     * {@link Navigator#applyCloseTransition}. Centralizing the override here, rather than in
+     * {@link Navigator} alone, means every close in the app — an explicit {@link Navigator#finish},
+     * a screen's own bare {@code finish()} call, or hardware/gesture back — animates consistently,
+     * since every Activity in the app extends this class.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    @Override
+    public void finish() {
+        super.finish();
+        Navigator.applyCloseTransition(this);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();

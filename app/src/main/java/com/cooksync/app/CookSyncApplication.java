@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import com.cooksync.app.data.local.TokenStore;
 import com.cooksync.app.ui.auth.LoginActivity;
 import com.cooksync.app.ui.auth.RegisterActivity;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.util.SessionManager;
 
@@ -123,9 +124,9 @@ public class CookSyncApplication extends Application {
         if (top != null && wasForced) {
             OrganicToast.show(top, null, getString(R.string.error_session_expired));
         }
-        Intent intent = new Intent(this, LoginActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        startActivity(intent);
+        Intent extras = new Intent();
+        extras.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        Navigator.start(this, LoginActivity.class, extras);
     }
 
     /**

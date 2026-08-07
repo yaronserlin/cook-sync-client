@@ -22,6 +22,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
+import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.home.HomeActivity;
@@ -129,9 +130,9 @@ public class ProfileActivity extends BaseActivity {
      * @param imageUrl the avatar's image URL
      */
     private void openFullscreenImage(String imageUrl) {
-        Intent intent = new Intent(this, FullscreenImageActivity.class);
+        Intent intent = new Intent();
         intent.putExtra(FullscreenImageActivity.EXTRA_IMAGE_URL, imageUrl);
-        startActivity(intent);
+        Navigator.start(this, FullscreenImageActivity.class, intent);
     }
 
     private void setupBottomNav() {
@@ -146,10 +147,10 @@ public class ProfileActivity extends BaseActivity {
             else if (id == R.id.nav_favorites) target = FavoriteRecipesActivity.class;
             else return false;
 
-            Intent intent = new Intent(this, target);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            startActivity(intent);
-            finish();
+            Intent extras = new Intent();
+            extras.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            Navigator.start(this, target, extras);
+            Navigator.finish(this);
             return true;
         });
     }
