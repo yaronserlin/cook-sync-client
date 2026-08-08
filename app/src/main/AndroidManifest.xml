@@ -77,6 +77,10 @@
             android:name=".ui.common.FullscreenImageActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.admin.AdminConsoleActivity"
+            android:exported="false" />
+
     </application>
 
 </manifest>

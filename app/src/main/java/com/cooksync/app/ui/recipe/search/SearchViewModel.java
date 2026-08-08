@@ -6,9 +6,11 @@ import androidx.lifecycle.MutableLiveData;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.common.BaseViewModel;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.util.RecipeFilterUtils;
+import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
 
@@ -25,25 +27,34 @@ import java.util.stream.Collectors;
  * Manages the data state for the dedicated {@link SearchActivity}: running a keyword search
  * against the public recipe catalog, applying the same sort/difficulty/tags/rating/time
  * filters as the Home feed (via the shared {@code FiltersBottomSheetDialogFragment}), and
- * surfacing tag suggestions that match the in-progress query.
+ * surfacing tag suggestions that match the in-progress query. Both the keyword search and the
+ * tag-browse mode are paginated server-side, so results are fetched and displayed incrementally
+ * as the results list is scrolled, exactly like {@code HomeViewModel}'s browse feed.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 05/08/2026
  */
 public class SearchViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
 
+    private static final int PAGE_SIZE = 10;
+
     private final RecipeRepository recipeRepository;
     private final TagRepository tagRepository;
 
-    private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> searchResult = new MutableLiveData<>();
+    private final MutableLiveData<FeedState> feedState = new MutableLiveData<>(new FeedState.Idle());
     private final MutableLiveData<ApiResult<List<TagResponse>>> tagsResult = new MutableLiveData<>();
 
-    /** The raw, unfiltered results of the last network search — filters are applied over this. */
-    private List<RecipePreviewResponse> rawResults = new ArrayList<>();
+    /** The raw, unfiltered results accumulated so far for the active query/tag — filters are applied over this. */
+    private final List<RecipePreviewResponse> rawResults = new ArrayList<>();
     private List<TagResponse> allTags = Collections.emptyList();
 
+    private int currentPage = 0;
+    private boolean isLastPage = false;
+
     private String currentQuery = null;
+    /** The tag currently being browsed via {@link #searchByTag}, or {@code null} for a keyword search. */
+    private String browseTagName = null;
     private String currentSort = "Newest";
     private String currentDifficulty = null;
     private Double currentMinRating = null;
@@ -66,7 +77,7 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
         this.tagRepository = tagRepository;
     }
 
-    public LiveData<ApiResult<List<RecipePreviewResponse>>> getSearchResult() { return searchResult; }
+    public LiveData<FeedState> getFeedState() { return feedState; }
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
     public String getCurrentSort() { return currentSort; }
     public String getCurrentDifficulty() { return currentDifficulty; }
@@ -78,30 +89,23 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
     public String getCurrentQuery() { return currentQuery; }
 
     /**
-     * Runs a keyword search against the public recipe catalog. Resets nothing about the active
-     * filters — clearing/re-running a search keeps whatever filters were already active.
+     * Runs a keyword search against the public recipe catalog, resetting pagination. Resets
+     * nothing about the active filters — clearing/re-running a search keeps whatever filters
+     * were already active.
      *
      * @param query the search text
      */
     public void search(String query) {
         if (query == null || query.isBlank()) {
             currentQuery = null;
-            rawResults = new ArrayList<>();
-            searchResult.setValue(new ApiResult.Success<>(rawResults));
+            browseTagName = null;
+            rawResults.clear();
+            feedState.setValue(new FeedState.Success(applyFiltersAndSort(rawResults), false));
             return;
         }
         currentQuery = query;
-        searchResult.setValue(new ApiResult.Loading<>());
-        MutableLiveData<ApiResult<List<RecipePreviewResponse>>> result = new MutableLiveData<>();
-        observeOnce(result, apiResult -> {
-            if (apiResult instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
-                rawResults = success.getData();
-                searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
-            } else {
-                searchResult.setValue(apiResult);
-            }
-        });
-        recipeRepository.searchRecipes(query, result);
+        browseTagName = null;
+        resetAndFetch();
     }
 
     /**
@@ -114,19 +118,59 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
      */
     public void searchByTag(String tagName) {
         currentQuery = null;
+        browseTagName = tagName;
         selectedTags.clear();
         selectedTags.add(tagName);
-        searchResult.setValue(new ApiResult.Loading<>());
-        MutableLiveData<ApiResult<List<RecipePreviewResponse>>> result = new MutableLiveData<>();
+        resetAndFetch();
+    }
+
+    /**
+     * Fetches the next page of results if there are more available and no request is currently
+     * in flight, for whichever mode (keyword search or tag-browse) is currently active.
+     */
+    public void loadNextPage() {
+        if (isLastPage || feedState.getValue() instanceof FeedState.Loading) {
+            return;
+        }
+        currentPage++;
+        fetchPage();
+    }
+
+    /**
+     * Resets pagination and the accumulated results, then fetches the first page for whichever
+     * mode (keyword search or tag-browse) is currently active.
+     */
+    private void resetAndFetch() {
+        currentPage = 0;
+        isLastPage = false;
+        rawResults.clear();
+        fetchPage();
+    }
+
+    /**
+     * Fetches the page at {@link #currentPage} from the endpoint matching the current mode and
+     * merges it into {@link #rawResults}.
+     */
+    private void fetchPage() {
+        feedState.setValue(new FeedState.Loading(currentPage == 0));
+        MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> result = new MutableLiveData<>();
+
         observeOnce(result, apiResult -> {
-            if (apiResult instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
-                rawResults = success.getData();
-                searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
-            } else {
-                searchResult.setValue(apiResult);
+            if (apiResult instanceof ApiResult.Success<PagedResponse<RecipePreviewResponse>> success) {
+                PagedResponse<RecipePreviewResponse> page = success.getData();
+                rawResults.addAll(page.content());
+                isLastPage = page.last();
+                feedState.postValue(new FeedState.Success(applyFiltersAndSort(rawResults), !isLastPage));
+            } else if (apiResult instanceof ApiResult.Error<PagedResponse<RecipePreviewResponse>> error) {
+                feedState.postValue(new FeedState.Error(error.getMessage()));
             }
         });
-        recipeRepository.getRecipesByTag(tagName, result);
+
+        if (browseTagName != null) {
+            recipeRepository.getRecipesByTag(browseTagName, currentPage, PAGE_SIZE, result);
+        } else {
+            recipeRepository.searchRecipes(currentQuery, currentPage, PAGE_SIZE, result);
+        }
     }
 
     /**
@@ -164,7 +208,7 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
 
     /**
      * Applies the sort/difficulty/tags/rating/time chosen in the shared filters sheet, re-
-     * filtering over the last search's raw results rather than issuing a new network call.
+     * filtering over the results accumulated so far rather than issuing a new network call.
      *
      * @param sortBy one of "Newest", "Top Rated", "Shortest Time"
      * @param difficulty one of "Easy", "Medium", "Hard", or {@code null}
@@ -182,7 +226,7 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
         if (tags != null) {
             this.selectedTags.addAll(tags);
         }
-        searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
+        publishFiltered();
     }
 
     /**
@@ -192,7 +236,7 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
      */
     public void removeDifficulty() {
         currentDifficulty = null;
-        searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
+        publishFiltered();
     }
 
     /**
@@ -202,7 +246,7 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
      */
     public void removeTag(String tagName) {
         if (selectedTags.remove(tagName)) {
-            searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
+            publishFiltered();
         }
     }
 
@@ -211,7 +255,7 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
      */
     public void removeMinRating() {
         currentMinRating = null;
-        searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
+        publishFiltered();
     }
 
     /**
@@ -219,7 +263,7 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
      */
     public void removeMaxTotalTime() {
         currentMaxTotalTimeMinutes = null;
-        searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
+        publishFiltered();
     }
 
     /**
@@ -230,7 +274,15 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
         currentMinRating = null;
         currentMaxTotalTimeMinutes = null;
         selectedTags.clear();
-        searchResult.setValue(new ApiResult.Success<>(applyFiltersAndSort(rawResults)));
+        publishFiltered();
+    }
+
+    /**
+     * Republishes {@link #rawResults} through the active filters without issuing a new network
+     * call, preserving whatever {@code hasMore} state the last fetch established.
+     */
+    private void publishFiltered() {
+        feedState.setValue(new FeedState.Success(applyFiltersAndSort(rawResults), !isLastPage));
     }
 
     /**

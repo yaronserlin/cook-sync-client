@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.view.View;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -16,6 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.Navigator;
@@ -244,6 +246,14 @@ public class SearchActivity extends BaseActivity {
         });
         rvResults.setAdapter(recipeAdapter);
         rvResults.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
+        rvResults.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                if (!recyclerView.canScrollVertically(1)) {
+                    viewModel.loadNextPage();
+                }
+            }
+        });
 
         RecyclerView rvMatchingTags = findViewById(R.id.rv_matching_tags);
         matchingTagsAdapter = new TagChipAdapter(false);
@@ -262,17 +272,21 @@ public class SearchActivity extends BaseActivity {
     }
 
     private void setupObservers() {
-        viewModel.getSearchResult().observe(this, result -> {
-            if (result instanceof ApiResult.Loading) {
-                progress.setVisibility(View.VISIBLE);
-                tvEmptyState.setVisibility(View.GONE);
-                noResultsState.setVisibility(View.GONE);
-            } else if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
+        viewModel.getFeedState().observe(this, state -> {
+            if (state instanceof FeedState.Loading loading) {
+                // Only the first page's load hides the results behind the progress spinner;
+                // a "load next page" while scrolling leaves whatever's already shown in place.
+                if (loading.isInitial()) {
+                    progress.setVisibility(View.VISIBLE);
+                    tvEmptyState.setVisibility(View.GONE);
+                    noResultsState.setVisibility(View.GONE);
+                }
+            } else if (state instanceof FeedState.Success success) {
                 progress.setVisibility(View.GONE);
-                List<RecipePreviewResponse> recipes = success.getData();
+                List<RecipePreviewResponse> recipes = success.getRecipes();
                 recipeAdapter.setRecipes(recipes);
                 updateSummaryAndEmptyState(recipes);
-            } else if (result instanceof ApiResult.Error<?> error) {
+            } else if (state instanceof FeedState.Error error) {
                 progress.setVisibility(View.GONE);
                 showError(error.getMessage(), null);
             }

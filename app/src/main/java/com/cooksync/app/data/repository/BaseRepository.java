@@ -4,10 +4,14 @@ import com.cooksync.app.CookSyncApplication;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.dtos.response.ApiResponse;
+import com.dtos.response.PagedResponse;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiFunction;
 
 import retrofit2.Call;
 import retrofit2.Response;
@@ -31,6 +35,15 @@ public abstract class BaseRepository {
 
     /** Shared thread pool for network I/O — keeps the main thread unblocked at all times. */
     protected static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+
+    /**
+     * Page size used by {@link #fetchAllPages}. Every server-paginated endpoint the app
+     * consumes as a complete, non-scrolling client-side collection (favorites, "my recipes",
+     * per-recipe notes, the tag catalog) loops in chunks of this size rather than issuing one
+     * unbounded request, while still assembling the full collection those screens' existing
+     * client-side search/filter/count logic depends on.
+     */
+    protected static final int LOOP_FETCH_PAGE_SIZE = 50;
 
     /**
      * Executes a Retrofit call wrapping any payload type in {@link ApiResponse} and maps the
@@ -57,6 +70,43 @@ public abstract class BaseRepository {
         } catch (IOException e) {
             return new ApiResult.Error<>(CookSyncApplication.getAppContext().getString(R.string.error_network), e);
         }
+    }
+
+    /**
+     * Repeatedly calls a paginated endpoint, starting at page 0 and stopping once the server
+     * reports the last page, concatenating every page's content into one list. Used for
+     * endpoints whose result the client treats as a single complete, non-scrolling collection
+     * (e.g. favorites, "my recipes", per-recipe notes, the tag catalog) so their existing
+     * client-side search/filter/count logic keeps seeing the whole set, while each individual
+     * HTTP request still stays bounded to {@link #LOOP_FETCH_PAGE_SIZE} rather than being
+     * unbounded.
+     *
+     * Complexity:
+     * Time: O(P) network round-trips, where P is the number of pages the collection spans
+     * Space: O(N) where N is the total item count across all pages
+     *
+     * @param <T> the type of items contained within each page
+     * @param callFactory produces the Retrofit call for a given (page, size) pair
+     * @return {@link ApiResult.Success} wrapping the concatenated content of every page, or the
+     *         first {@link ApiResult.Error} encountered
+     */
+    protected <T> ApiResult<List<T>> fetchAllPages(
+            BiFunction<Integer, Integer, Call<ApiResponse<PagedResponse<T>>>> callFactory) {
+        List<T> all = new ArrayList<>();
+        int page = 0;
+        while (true) {
+            ApiResult<PagedResponse<T>> pageResult = executeCall(callFactory.apply(page, LOOP_FETCH_PAGE_SIZE));
+            if (pageResult instanceof ApiResult.Error<PagedResponse<T>> error) {
+                return new ApiResult.Error<>(error.getMessage(), error.getCause());
+            }
+            PagedResponse<T> paged = ((ApiResult.Success<PagedResponse<T>>) pageResult).getData();
+            all.addAll(paged.content());
+            if (paged.last()) {
+                break;
+            }
+            page++;
+        }
+        return new ApiResult.Success<>(all);
     }
 
     /**

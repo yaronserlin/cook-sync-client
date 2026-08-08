@@ -4,6 +4,8 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.cooksync.app.data.repository.AdminRepository;
+import com.cooksync.app.data.repository.AdminRepositoryImpl;
 import com.cooksync.app.data.repository.AuthRepository;
 import com.cooksync.app.data.repository.AuthRepositoryImpl;
 import com.cooksync.app.data.repository.MediaRepository;
@@ -12,6 +14,7 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.TagRepositoryImpl;
+import com.cooksync.app.ui.admin.AdminViewModel;
 import com.cooksync.app.ui.auth.ForgotPasswordViewModel;
 import com.cooksync.app.ui.auth.LoginViewModel;
 import com.cooksync.app.ui.auth.RegisterViewModel;
@@ -42,6 +45,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final RecipeRepository recipeRepository;
     private final TagRepository tagRepository;
     private final MediaRepository mediaRepository;
+    private final AdminRepository adminRepository;
 
     /**
      * Constructs the factory, eagerly creating the shared repository instances it hands out
@@ -56,6 +60,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         this.recipeRepository = new RecipeRepositoryImpl();
         this.tagRepository = new TagRepositoryImpl();
         this.mediaRepository = new MediaRepositoryImpl();
+        this.adminRepository = new AdminRepositoryImpl();
     }
 
     /**
@@ -96,6 +101,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new MyRecipesViewModel(recipeRepository, tagRepository);
         } else if (modelClass.isAssignableFrom(ReviewViewModel.class)) {
             return (T) new ReviewViewModel(recipeRepository);
+        } else if (modelClass.isAssignableFrom(AdminViewModel.class)) {
+            return (T) new AdminViewModel(adminRepository, recipeRepository);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }

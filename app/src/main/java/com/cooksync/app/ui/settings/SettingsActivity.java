@@ -23,6 +23,7 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop;
 import com.cooksync.app.R;
 import com.cooksync.app.data.local.CookingPreferencesStore;
 import com.cooksync.app.domain.ApiResult;
+import com.cooksync.app.ui.admin.AdminConsoleActivity;
 import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
 import com.cooksync.app.ui.common.Navigator;
@@ -212,7 +213,7 @@ public class SettingsActivity extends BaseActivity {
         if (isAdmin) {
             bindRow(R.id.row_admin_console, R.drawable.ic_shield,
                     getString(R.string.settings_row_admin_console_label), getString(R.string.settings_row_admin_console_sub),
-                    v -> showComingSoon(R.string.settings_row_admin_console_label));
+                    v -> Navigator.start(this, AdminConsoleActivity.class));
         }
     }
 

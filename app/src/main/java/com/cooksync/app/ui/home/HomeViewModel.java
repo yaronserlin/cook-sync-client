@@ -181,39 +181,24 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
     }
 
     /**
-     * Resets pagination and re-runs whichever fetch matches the current mode: a single-tag
-     * full fetch (the one case the server can answer without pagination gaps), or the general
-     * paginated browse feed. Multi-tag selections (2+) fall back to the paginated feed with
-     * client-side filtering, since there is no multi-tag server endpoint.
+     * Resets pagination and re-fetches the first page from whichever endpoint matches the
+     * current mode: a single selected tag hits the tag-filtered endpoint, otherwise the general
+     * browse feed. Multi-tag selections (2+) fall back to the paginated feed with client-side
+     * filtering, since there is no multi-tag server endpoint.
      */
     private void refresh() {
         currentPage = 0;
         isLastPage = false;
         currentRecipes.clear();
-
-        if (selectedTags.size() == 1) {
-            runSingleTagFetch(selectedTags.iterator().next());
-        } else {
-            fetchNextPage();
-        }
+        fetchNextPage();
     }
 
-    private void runSingleTagFetch(String tagName) {
-        feedState.setValue(new FeedState.Loading(true));
-        MutableLiveData<ApiResult<List<RecipePreviewResponse>>> result = new MutableLiveData<>();
-        observeOnce(result, apiResult -> {
-            if (apiResult instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
-                currentRecipes.addAll(success.getData());
-                // The tag-filter endpoint is not paginated server-side; it returns every match at once.
-                isLastPage = true;
-                feedState.postValue(new FeedState.Success(applyFiltersAndSort(currentRecipes), false));
-            } else if (apiResult instanceof ApiResult.Error<List<RecipePreviewResponse>> error) {
-                feedState.postValue(new FeedState.Error(error.getMessage()));
-            }
-        });
-        recipeRepository.getRecipesByTag(tagName, result);
-    }
-
+    /**
+     * Fetches the page at {@link #currentPage} from the endpoint matching the current
+     * selection (single-tag filter vs. general feed) and merges it into {@link #currentRecipes}.
+     * Both endpoints return the same {@link PagedResponse} shape, so a single accumulation/
+     * pagination path serves either source.
+     */
     private void fetchNextPage() {
         feedState.setValue(new FeedState.Loading(currentPage == 0));
         MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> result = new MutableLiveData<>();
@@ -229,7 +214,11 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
             }
         });
 
-        recipeRepository.getPublicFeed(currentPage, PAGE_SIZE, result);
+        if (selectedTags.size() == 1) {
+            recipeRepository.getRecipesByTag(selectedTags.iterator().next(), currentPage, PAGE_SIZE, result);
+        } else {
+            recipeRepository.getPublicFeed(currentPage, PAGE_SIZE, result);
+        }
     }
 
     /**

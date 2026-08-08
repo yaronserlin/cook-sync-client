@@ -18,7 +18,10 @@ import java.util.List;
 public interface TagRepository {
 
     /**
-     * Fetches all tags defined in the system.
+     * Fetches the complete set of tags defined in the system. The server paginates this
+     * endpoint, but the client loops through every page internally (see
+     * {@link TagRepositoryImpl}) since callers need the full catalog for the tag chip row and
+     * typeahead tag-name matching, not a scrollable subset.
      *
      * @param resultTarget LiveData target to post the outcome
      */

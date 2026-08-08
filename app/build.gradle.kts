@@ -46,7 +46,8 @@ android {
                 "src/main/res-auth",
                 "src/main/res-home",
                 "src/main/res-recipe",
-                "src/main/res-common"
+                "src/main/res-common",
+                "src/main/res-admin"
             )
         }
     }

@@ -275,4 +275,63 @@
     <string name="nav_favorites">Favorites</string>
     <string name="nav_my_recipes">My Recipes</string>
     <string name="nav_settings">Settings</string>
+
+    <!-- Admin console -->
+    <string name="admin_eyebrow">ADMIN CONTROL</string>
+    <string name="admin_tab_reports">Reports</string>
+    <string name="admin_tab_tags">Tags</string>
+    <string name="admin_tab_users">Users</string>
+    <string name="admin_heading_reports">Reported reviews</string>
+    <string name="admin_heading_tags">Duplicate tags</string>
+    <string name="admin_heading_users">Users</string>
+    <string name="admin_badge_reports">%1$d open</string>
+    <string name="admin_badge_tags">%1$d pairs</string>
+    <string name="admin_badge_users">%1$d total</string>
+
+    <string name="admin_reason_all">All</string>
+    <string name="admin_reason_spam">Spam</string>
+    <string name="admin_reason_abuse">Abuse</string>
+    <string name="admin_reason_off_topic">Off-topic</string>
+    <string name="admin_reports_section_label">Oldest first</string>
+    <string name="admin_reports_empty">No reported reviews right now.</string>
+    <string name="admin_report_on_format">on %1$s</string>
+    <string name="admin_report_note_format">Reporter note: %1$s</string>
+    <string name="action_remove">Remove</string>
+    <string name="action_keep">Keep</string>
+    <string name="admin_ban_user_desc">Suspend this reviewer\'s account</string>
+    <string name="admin_confirm_remove_title">Remove this review?</string>
+    <string name="admin_confirm_remove_message">This deletes the review and dismisses the report. This can\'t be undone.</string>
+    <string name="admin_toast_report_removed">Review removed</string>
+    <string name="admin_toast_report_kept">Report dismissed</string>
+    <string name="admin_toast_user_suspended_format">%1$s suspended</string>
+    <string name="admin_toast_user_reactivated_format">%1$s reactivated</string>
+    <string name="admin_toast_tags_merged_format">Merged into %1$s</string>
+
+    <string name="admin_tags_search_hint">Find a tag</string>
+    <string name="admin_tag_recipe_count_format">%1$d recipes</string>
+    <string name="admin_tags_section_label">Likely duplicates</string>
+    <string name="admin_tags_empty">No duplicate tags found.</string>
+    <string name="admin_merge_action">merge →</string>
+    <string name="admin_merge_dialog_title">Merge these two tags?</string>
+    <string name="admin_merge_dialog_message">Recipes using the removed tag will be moved to the tag you keep. This can\'t be undone.</string>
+    <string name="admin_merge_confirm_format">Merge into %1$s</string>
+    <string name="admin_merge_option_format">%1$s · %2$d recipes</string>
+
+    <string name="admin_users_search_hint">Name or email</string>
+    <string name="admin_email_user_desc">Email this user</string>
+    <string name="admin_users_filter_all">All</string>
+    <string name="admin_users_filter_active">Active</string>
+    <string name="admin_users_filter_deactivated">Deactivated</string>
+    <string name="admin_users_filter_suspended">Suspended</string>
+    <string name="admin_users_empty">No users found.</string>
+    <string name="admin_user_status_active">ACTIVE</string>
+    <string name="admin_user_status_deactivated">DEACTIVATED</string>
+    <string name="admin_user_status_suspended">SUSPENDED</string>
+    <string name="admin_user_admin_tag">ADMIN</string>
+    <string name="action_suspend">Suspend</string>
+    <string name="action_reactivate">Reactivate</string>
+    <string name="action_sort">Sort by join date</string>
+    <string name="admin_users_count_format">%1$d users</string>
+    <string name="admin_confirm_suspend_title">Suspend this account?</string>
+    <string name="admin_confirm_suspend_message">%1$s won\'t be able to sign in until reactivated.</string>
 </resources>

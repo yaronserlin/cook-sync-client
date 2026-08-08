@@ -28,6 +28,6 @@ public class TagRepositoryImpl extends BaseRepository implements TagRepository {
     @Override
     public void getAllTags(MutableLiveData<ApiResult<List<TagResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getAllTags())));
+        EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(apiService::getAllTags)));
     }
 }

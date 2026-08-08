@@ -31,20 +31,24 @@ public interface RecipeRepository {
     void getPublicFeed(int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
 
     /**
-     * Searches for public recipes matching a query.
+     * Searches for a page of public recipes matching a query.
      *
      * @param query search text
+     * @param page page index (0-based)
+     * @param size number of items per page
      * @param resultTarget LiveData target to post the outcome
      */
-    void searchRecipes(String query, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+    void searchRecipes(String query, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
 
     /**
-     * Fetches public recipes filtered by a specific tag.
+     * Fetches a page of public recipes filtered by a specific tag.
      *
      * @param tagName name of the tag
+     * @param page page index (0-based)
+     * @param size number of items per page
      * @param resultTarget LiveData target to post the outcome
      */
-    void getRecipesByTag(String tagName, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+    void getRecipesByTag(String tagName, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget);
 
     /**
      * Fetches full details for a specific recipe.
@@ -55,7 +59,10 @@ public interface RecipeRepository {
     void getRecipeDetail(String recipeId, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
 
     /**
-     * Fetches the user's personal recipes marked as favorites.
+     * Fetches the complete set of the user's personal recipes marked as favorites. The server
+     * paginates this endpoint, but the client loops through every page internally (see
+     * {@link RecipeRepositoryImpl}) since callers rely on the full set for membership checks,
+     * accurate counts, and instant client-side search/filter.
      *
      * @param resultTarget LiveData target to post the outcome
      */
@@ -87,7 +94,9 @@ public interface RecipeRepository {
 
     /**
      * Fetches every private note for a recipe, both the general recipe-wide note and any
-     * notes attached to individual instruction steps.
+     * notes attached to individual instruction steps. The server paginates this endpoint, but
+     * the client loops through every page internally (see {@link RecipeRepositoryImpl}) since
+     * callers build a complete per-step note lookup rather than rendering a scrollable list.
      *
      * @param recipeId recipe ID
      * @param resultTarget LiveData target to post the outcome
@@ -114,7 +123,10 @@ public interface RecipeRepository {
     void deleteNote(String noteId, MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
-     * Fetches every recipe (published or private) authored by the current user.
+     * Fetches every recipe (published or private) authored by the current user. The server
+     * paginates this endpoint, but the client loops through every page internally (see
+     * {@link RecipeRepositoryImpl}) since callers rely on the full set for accurate counts and
+     * instant client-side search/filter.
      *
      * @param resultTarget LiveData target to post the outcome
      */

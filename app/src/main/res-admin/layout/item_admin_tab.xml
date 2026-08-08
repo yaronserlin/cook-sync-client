@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Custom TabLayout tab view: label + count stacked, matching the design's pill tabs. Active
+     vs. inactive fill/text colors are toggled at runtime (setBackgroundTintList/setTextColor)
+     rather than via a state-list drawable, matching the existing CookSync.Button.FilterChip
+     convention (see themes.xml) for the same reason: a MaterialComponents-era background swap
+     can silently fail to repaint on some OEM builds. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="44dp"
+    android:background="@drawable/bg_pill_solid"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tv_admin_tab_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        tools:text="Reports" />
+
+    <TextView
+        android:id="@+id/tv_admin_tab_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.7"
+        android:textSize="10sp"
+        tools:text="3 open" />
+
+</LinearLayout>

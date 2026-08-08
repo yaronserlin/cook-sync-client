@@ -9,9 +9,15 @@ import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
+import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.ApiResponse;
+import com.dtos.response.PagedResponse;
+import com.dtos.response.admin.AdminStatsResponse;
+import com.dtos.response.admin.DuplicateTagGroupResponse;
+import com.dtos.response.admin.ReportedReviewResponse;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
+import com.dtos.response.user.UserResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
@@ -19,6 +25,8 @@ import retrofit2.http.GET;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 /**
  * Retrofit contract for every REST endpoint this module (core networking + authentication)
@@ -169,24 +177,32 @@ public interface ApiService {
      * @param query search text
      * @param author optional author name filter
      * @param ingredient optional ingredient name filter
-     * @return call yielding a list of matching recipe previews
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of matching recipe previews
      */
     @GET("api/recipes/public/search")
-    Call<ApiResponse<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>>> searchRecipes(
+    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> searchRecipes(
             @retrofit2.http.Query("q") String query,
             @retrofit2.http.Query("author") String author,
-            @retrofit2.http.Query("ingredient") String ingredient
+            @retrofit2.http.Query("ingredient") String ingredient,
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
     );
 
     /**
      * Fetches public recipes associated with a specific tag.
      *
      * @param tagName the name of the tag to filter by
-     * @return call yielding a list of recipe previews
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of recipe previews
      */
     @GET("api/recipes/public/tag/{tagName}")
-    Call<ApiResponse<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>>> getRecipesByTag(
-            @retrofit2.http.Path("tagName") String tagName
+    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getRecipesByTag(
+            @retrofit2.http.Path("tagName") String tagName,
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
     );
 
     /**
@@ -204,10 +220,15 @@ public interface ApiService {
      * Fetches every recipe (published or private) authored by the currently authenticated
      * user, for the "My Recipes" screen.
      *
-     * @return call yielding the user's own recipes
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of the user's own recipes
      */
     @GET("api/recipes/mine")
-    Call<ApiResponse<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>>> getMyRecipes();
+    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getMyRecipes(
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
+    );
 
     /**
      * Deletes one of the authenticated user's own recipes.
@@ -235,22 +256,32 @@ public interface ApiService {
     // ── Tags ───────────────────────────────────────────────────────
 
     /**
-     * Fetches all available tags for the horizontal filter bar.
+     * Fetches a page of available tags for the horizontal filter bar.
      *
-     * @return call yielding the list of all tags
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of tags
      */
     @GET("api/tags")
-    Call<ApiResponse<java.util.List<com.dtos.response.tags.TagResponse>>> getAllTags();
+    Call<ApiResponse<PagedResponse<com.dtos.response.tags.TagResponse>>> getAllTags(
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
+    );
 
     // ── Favorites ──────────────────────────────────────────────────
 
     /**
-     * Fetches the list of recipes favorited by the currently authenticated user.
+     * Fetches a page of recipes favorited by the currently authenticated user.
      *
-     * @return call yielding the list of user's favorites
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of the user's favorites
      */
     @GET("api/favorites")
-    Call<ApiResponse<java.util.List<com.dtos.response.recipe.RecipePreviewResponse>>> getFavorites();
+    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getFavorites(
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
+    );
 
     /**
      * Adds a recipe to the user's favorites list.
@@ -290,11 +321,15 @@ public interface ApiService {
      * non-null). Used by Cooking Mode to show the right note alongside each step.
      *
      * @param recipeId the ID of the recipe
-     * @return call yielding every note (general + per-step) for the recipe
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of every note (general + per-step) for the recipe
      */
     @GET("api/notes/recipe/{recipeId}/all")
-    Call<ApiResponse<java.util.List<com.dtos.response.note.NoteResponse>>> getAllPersonalNotes(
-            @retrofit2.http.Path("recipeId") String recipeId
+    Call<ApiResponse<PagedResponse<com.dtos.response.note.NoteResponse>>> getAllPersonalNotes(
+            @retrofit2.http.Path("recipeId") String recipeId,
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
     );
 
     /**
@@ -352,4 +387,101 @@ public interface ApiService {
             @retrofit2.http.Path("reviewId") String reviewId,
             @Body com.dtos.request.review.ReportReviewRequestDTO request
     );
+
+    // ── Admin ─────────────────────────────────────────────────────
+
+    /**
+     * Fetches system-wide moderation/content statistics for the Admin Console header.
+     *
+     * @return call yielding the admin dashboard stats
+     */
+    @GET("api/admin/stats")
+    Call<ApiResponse<AdminStatsResponse>> getAdminStats();
+
+    /**
+     * Fetches a paginated, searchable, sortable list of every registered user, for the Admin
+     * Console's Users tab.
+     *
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @param q optional search text matched against name/email, or {@code null}
+     * @param enabled optional filter by account status, or {@code null} for both
+     * @param sortBy one of "firstName", "lastName", "email", "createdAt"
+     * @param direction "asc" or "desc"
+     * @return call yielding a paged collection of user summaries
+     */
+    @GET("api/admin/users")
+    Call<ApiResponse<PagedResponse<UserResponse>>> getAdminUsers(
+            @Query("page") int page,
+            @Query("size") int size,
+            @Query("q") String q,
+            @Query("enabled") Boolean enabled,
+            @Query("sortBy") String sortBy,
+            @Query("direction") String direction
+    );
+
+    /**
+     * Fetches a paginated page of reviews currently flagged for moderation, for the Admin
+     * Console's Reports tab.
+     *
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of reported reviews
+     */
+    @GET("api/admin/reviews/reported")
+    Call<ApiResponse<PagedResponse<ReportedReviewResponse>>> getReportedReviews(
+            @Query("page") int page,
+            @Query("size") int size
+    );
+
+    /**
+     * Dismisses a review's report(s) without deleting the review itself (the "Keep" action).
+     *
+     * @param reviewId the ID of the reported review
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/admin/reviews/{id}/dismiss")
+    Call<ApiResponse<Void>> dismissReport(@Path("id") String reviewId);
+
+    /**
+     * Re-enables a previously disabled user account.
+     *
+     * @param userId the ID of the user to enable
+     * @return call yielding an empty acknowledgement
+     */
+    @PATCH("api/admin/users/{id}/enable")
+    Call<ApiResponse<Void>> enableUser(@Path("id") String userId);
+
+    /**
+     * Disables a user account, blocking sign-in (the "ban user" action).
+     *
+     * @param userId the ID of the user to disable
+     * @return call yielding an empty acknowledgement
+     */
+    @PATCH("api/admin/users/{id}/disable")
+    Call<ApiResponse<Void>> disableUser(@Path("id") String userId);
+
+    /**
+     * Fetches a paginated page of tags that appear to be duplicates of one another, for the
+     * Admin Console's Tags tab.
+     *
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of duplicate tag groups
+     */
+    @GET("api/admin/tags/duplicates")
+    Call<ApiResponse<PagedResponse<DuplicateTagGroupResponse>>> getDuplicateTagGroups(
+            @Query("page") int page,
+            @Query("size") int size
+    );
+
+    /**
+     * Merges a duplicate tag into a canonical target tag, repointing every recipe that used
+     * the source tag and deleting the source tag row.
+     *
+     * @param request the source/target tag id pair
+     * @return call yielding an empty acknowledgement
+     */
+    @POST("api/admin/tags/merge")
+    Call<ApiResponse<Void>> mergeTags(@Body TagMergeRequestDTO request);
 }

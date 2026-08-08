@@ -37,15 +37,15 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
     }
 
     @Override
-    public void searchRecipes(String query, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
+    public void searchRecipes(String query, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.searchRecipes(query, null, null))));
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.searchRecipes(query, null, null, page, size))));
     }
 
     @Override
-    public void getRecipesByTag(String tagName, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
+    public void getRecipesByTag(String tagName, int page, int size, MutableLiveData<ApiResult<PagedResponse<RecipePreviewResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getRecipesByTag(tagName))));
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getRecipesByTag(tagName, page, size))));
     }
 
     @Override
@@ -57,7 +57,7 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
     @Override
     public void getFavorites(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getFavorites())));
+        EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(apiService::getFavorites)));
     }
 
     @Override
@@ -81,7 +81,8 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
     @Override
     public void getAllPersonalNotes(String recipeId, MutableLiveData<ApiResult<List<NoteResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getAllPersonalNotes(recipeId))));
+        EXECUTOR.execute(() -> resultTarget.postValue(
+                fetchAllPages((page, size) -> apiService.getAllPersonalNotes(recipeId, page, size))));
     }
 
     @Override
@@ -102,7 +103,7 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
     @Override
     public void getMyRecipes(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getMyRecipes())));
+        EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(apiService::getMyRecipes)));
     }
 
     @Override

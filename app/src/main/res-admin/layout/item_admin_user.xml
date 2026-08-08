@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/bg_card_outline"
+    android:orientation="vertical"
+    android:padding="13dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.cooksync.app.ui.common.AvatarView
+            android:id="@+id/user_avatar"
+            android:layout_width="36dp"
+            android:layout_height="36dp" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_user_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:ellipsize="end"
+                    android:textColor="@color/color_text"
+                    android:textSize="13.5sp"
+                    android:textStyle="bold"
+                    tools:text="Dana Cohen" />
+
+                <TextView
+                    android:id="@+id/tv_user_admin_tag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:background="@drawable/bg_pill_solid"
+                    android:backgroundTint="@color/color_neutral_900"
+                    android:paddingHorizontal="7dp"
+                    android:paddingVertical="2dp"
+                    android:textColor="@color/color_neutral_100"
+                    android:textSize="9sp"
+                    android:textStyle="bold"
+                    android:visibility="gone"
+                    tools:text="ADMIN"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_user_email"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:alpha="0.6"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/color_text"
+                android:textSize="11.5sp"
+                tools:text="dana.cohen@example.com" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_user_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_pill_solid"
+            android:paddingHorizontal="9dp"
+            android:paddingVertical="3dp"
+            android:textSize="9.5sp"
+            android:textStyle="bold"
+            tools:backgroundTint="@color/color_accent_2_200"
+            tools:text="ACTIVE"
+            tools:textColor="@color/color_accent_2_800" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_user_toggle_enabled"
+            style="@style/CookSync.Button.Secondary"
+            android:layout_width="0dp"
+            android:layout_height="36dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minHeight="0dp"
+            android:textSize="12sp"
+            app:cornerRadius="18dp"
+            app:strokeWidth="1.5dp"
+            tools:strokeColor="@color/color_danger"
+            tools:text="Suspend"
+            tools:textColor="@color/color_danger" />
+
+        <ImageButton
+            android:id="@+id/btn_user_email"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_marginStart="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/admin_email_user_desc"
+            android:padding="8dp"
+            android:src="@drawable/ic_mail"
+            app:tint="@color/color_text" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bordered content card matching the design's stat-card / report-card / tag-group-card
+     spec: light surface, a thin neutral outline, 16dp (-radius-md) corners. Shared by the
+     Admin Console's Reports stat cards, report cards, and Tags duplicate-group cards rather
+     than duplicating the same shape per screen. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/color_bg" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/color_neutral_400" />
+    <corners android:radius="16dp" />
+</shape>
