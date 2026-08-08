@@ -12,11 +12,14 @@ import com.cooksync.app.ui.common.BaseViewModel;
 import com.cooksync.app.util.InputValidator;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
+import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
+import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.response.auth.AuthResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
+import com.dtos.response.user.UserResponse;
 
 import java.util.List;
 
@@ -43,11 +46,14 @@ public class SettingsViewModel extends BaseViewModel {
     private final MutableLiveData<ApiResult<Void>> passwordResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<AuthResponse>> emailResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> deactivateResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<Void>> privacyResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<Void>> deleteAccountResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<Void>> logoutResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<CloudinarySignatureResponse>> signatureResult = new MutableLiveData<>();
     private final MutableLiveData<Event<String>> validationError = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> favoritesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> myRecipesResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<UserResponse>> accountDetailsResult = new MutableLiveData<>();
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
@@ -69,16 +75,19 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
-     * Validates and submits an updated first/last name.
+     * Validates and submits an updated first/last name, city, and bio. City and bio are
+     * optional free text, so they are trimmed and passed through as-is (empty becomes null).
      *
      * Complexity:
-     * Time: O(n) where n is the combined length of both names
+     * Time: O(n) where n is the combined length of all four fields
      * Space: O(1)
      *
      * @param rawFirstName raw text from the first-name field
      * @param rawLastName  raw text from the last-name field
+     * @param rawCity      raw text from the city field, may be blank
+     * @param rawBio       raw text from the bio field, may be blank
      */
-    public void updateProfile(String rawFirstName, String rawLastName) {
+    public void updateProfile(String rawFirstName, String rawLastName, String rawCity, String rawBio) {
         InputValidator.ValidationResult firstRes = InputValidator.validateName(rawFirstName, "First name");
         if (!firstRes.isValid) {
             validationError.setValue(new Event<>(firstRes.errorMessage));
@@ -89,7 +98,21 @@ public class SettingsViewModel extends BaseViewModel {
             validationError.setValue(new Event<>(lastRes.errorMessage));
             return;
         }
-        authRepository.updateProfile(new ProfileUpdateRequestDTO(rawFirstName.trim(), rawLastName.trim()), profileResult);
+        String city = rawCity == null || rawCity.trim().isEmpty() ? null : rawCity.trim();
+        String bio = rawBio == null || rawBio.trim().isEmpty() ? null : rawBio.trim();
+        authRepository.updateProfile(new ProfileUpdateRequestDTO(rawFirstName.trim(), rawLastName.trim(), city, bio), profileResult);
+    }
+
+    /**
+     * Fetches the current user's full profile, including city, bio, and privacy preferences,
+     * to pre-fill the Account Details screen.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    public void loadAccountDetails() {
+        authRepository.getCurrentUserProfile(accountDetailsResult);
     }
 
     /**
@@ -178,6 +201,39 @@ public class SettingsViewModel extends BaseViewModel {
     }
 
     /**
+     * Submits updated public-profile privacy preferences.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param showRecipesPublicly   whether published recipes appear on the public profile
+     * @param showFavoritesPublicly whether favorited recipes are visible to other users
+     */
+    public void updatePrivacySettings(boolean showRecipesPublicly, boolean showFavoritesPublicly) {
+        authRepository.updatePrivacySettings(
+                new PrivacySettingsUpdateRequestDTO(showRecipesPublicly, showFavoritesPublicly), privacyResult);
+    }
+
+    /**
+     * Validates and submits an account-deletion request, starting the 30-day grace period.
+     *
+     * Complexity:
+     * Time: O(n) where n is the password length
+     * Space: O(1)
+     *
+     * @param rawCurrentPassword raw text from the current-password confirmation field
+     */
+    public void deleteAccount(String rawCurrentPassword) {
+        InputValidator.ValidationResult passwordRes = InputValidator.validateLoginPassword(rawCurrentPassword);
+        if (!passwordRes.isValid) {
+            validationError.setValue(new Event<>(passwordRes.errorMessage));
+            return;
+        }
+        authRepository.requestAccountDeletion(new DeleteAccountRequestDTO(rawCurrentPassword), deleteAccountResult);
+    }
+
+    /**
      * Logs the current user out.
      *
      * Complexity:
@@ -222,6 +278,10 @@ public class SettingsViewModel extends BaseViewModel {
     public LiveData<ApiResult<AuthResponse>> getEmailResult() { return emailResult; }
     /** @return observable result of an account deactivation */
     public LiveData<ApiResult<Void>> getDeactivateResult() { return deactivateResult; }
+    /** @return observable result of a privacy settings update */
+    public LiveData<ApiResult<Void>> getPrivacyResult() { return privacyResult; }
+    /** @return observable result of an account-deletion request */
+    public LiveData<ApiResult<Void>> getDeleteAccountResult() { return deleteAccountResult; }
     /** @return observable result of a logout */
     public LiveData<ApiResult<Void>> getLogoutResult() { return logoutResult; }
     /** @return observable result of a Cloudinary upload-signature request */
@@ -232,4 +292,6 @@ public class SettingsViewModel extends BaseViewModel {
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getFavoritesResult() { return favoritesResult; }
     /** @return observable result of the My recipes list fetch, used to derive its row's count */
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getMyRecipesResult() { return myRecipesResult; }
+    /** @return observable result of the current user's full profile fetch */
+    public LiveData<ApiResult<UserResponse>> getAccountDetailsResult() { return accountDetailsResult; }
 }

@@ -1,11 +1,17 @@
 package com.cooksync.app.ui.common;
 
 import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
 import com.cooksync.app.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
+import java.util.function.Consumer;
 
 /**
  * Shared confirm/cancel dialog for CookSync: a rounded card with a ghost cancel button and a
@@ -42,6 +48,35 @@ public final class OrganicConfirmDialog {
                 .setTitle(title)
                 .setMessage(message)
                 .setPositiveButton(confirmLabel, (dialog, which) -> onConfirm.run())
+                .setNegativeButton(cancelLabel, null)
+                .show();
+    }
+
+    /**
+     * Shows a danger confirm dialog that also collects a password re-entry, for destructive
+     * actions that require re-authentication (e.g. account deletion). Always styled as danger,
+     * since re-authentication is only ever asked for destructive actions.
+     *
+     * @param context the hosting screen's context
+     * @param title dialog title
+     * @param message dialog body text, shown above the password field
+     * @param confirmLabel the confirm button's label, e.g. "Delete everything"
+     * @param cancelLabel the cancel button's label, e.g. "Cancel"
+     * @param onConfirm invoked with the entered password when the user taps confirm; never
+     *                  called on cancel
+     */
+    public static void showWithPasswordConfirm(@NonNull Context context, @NonNull String title,
+                                                 @NonNull String message, @NonNull String confirmLabel,
+                                                 @NonNull String cancelLabel,
+                                                 @NonNull Consumer<String> onConfirm) {
+        View view = LayoutInflater.from(context).inflate(R.layout.dialog_confirm_with_password, null);
+        ((TextView) view.findViewById(R.id.tv_message)).setText(message);
+        EditText etPassword = view.findViewById(R.id.et_password);
+
+        new MaterialAlertDialogBuilder(context, R.style.ThemeOverlay_CookSync_Dialog_Danger)
+                .setTitle(title)
+                .setView(view)
+                .setPositiveButton(confirmLabel, (dialog, which) -> onConfirm.accept(etPassword.getText().toString()))
                 .setNegativeButton(cancelLabel, null)
                 .show();
     }

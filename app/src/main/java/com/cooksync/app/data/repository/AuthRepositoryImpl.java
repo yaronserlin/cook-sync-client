@@ -9,15 +9,18 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
+import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
+import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.user.UserResponse;
 
 import java.io.IOException;
 
@@ -186,6 +189,43 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
             ApiResult<Void> result = executeCall(apiService.deactivateAccount());
+            if (result instanceof ApiResult.Success) {
+                SessionManager.getInstance().logout();
+            }
+            resultTarget.postValue(result);
+        });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getCurrentUserProfile(MutableLiveData<ApiResult<UserResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getCurrentUser())));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updatePrivacySettings(PrivacySettingsUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.updatePrivacySettings(request))));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>On success the local session is also cleared, matching {@link #deactivateAccount}: the
+     * account is disabled server-side for the duration of the 30-day grace period, so the user
+     * is signed out immediately and must log back in to cancel the deletion.</p>
+     */
+    @Override
+    public void requestAccountDeletion(DeleteAccountRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> {
+            ApiResult<Void> result = executeCall(apiService.requestAccountDeletion(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().logout();
             }

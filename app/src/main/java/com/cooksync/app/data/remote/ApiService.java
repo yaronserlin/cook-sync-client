@@ -2,9 +2,11 @@ package com.cooksync.app.data.remote;
 
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
+import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
+import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
@@ -22,6 +24,7 @@ import com.dtos.response.user.UserResponse;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.HTTP;
 import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
@@ -78,6 +81,16 @@ public interface ApiService {
     Call<ApiResponse<AuthResponse>> validateToken();
 
     /**
+     * Fetches the authenticated user's full profile, including fields not carried by
+     * {@link AuthResponse} (city, bio, privacy preferences). Used to pre-fill the Account
+     * Details screen.
+     *
+     * @return call yielding the current user's full profile
+     */
+    @GET("api/auth/me")
+    Call<ApiResponse<UserResponse>> getCurrentUser();
+
+    /**
      * Invalidates the current refresh token session on the server.
      *
      * @return call yielding an empty acknowledgement
@@ -128,6 +141,26 @@ public interface ApiService {
      */
     @PATCH("api/auth/deactivate")
     Call<ApiResponse<Void>> deactivateAccount();
+
+    /**
+     * Updates the authenticated user's public-profile privacy preferences.
+     *
+     * @param request privacy settings update payload
+     * @return call yielding an empty acknowledgement
+     */
+    @PUT("api/auth/privacy")
+    Call<ApiResponse<Void>> updatePrivacySettings(@Body PrivacySettingsUpdateRequestDTO request);
+
+    /**
+     * Starts the 30-day self-service account-deletion grace period for the authenticated user.
+     * The account is restored automatically if the user logs back in before the grace period
+     * lapses; otherwise it is permanently purged by a server-side scheduled job.
+     *
+     * @param request delete-account payload carrying the current password for verification
+     * @return call yielding an empty acknowledgement
+     */
+    @HTTP(method = "DELETE", path = "api/auth/account", hasBody = true)
+    Call<ApiResponse<Void>> requestAccountDeletion(@Body DeleteAccountRequestDTO request);
 
     /**
      * Requests a password-reset email for the given account, if it exists.

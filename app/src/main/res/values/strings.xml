@@ -231,16 +231,9 @@
     <string name="settings_avatar_updated">Avatar updated</string>
     <string name="settings_password_updated">Password updated</string>
     <string name="settings_email_updated">Email updated</string>
-    <string name="settings_account_deactivated">Account deactivated</string>
-    <string name="settings_dialog_edit_name_title">Edit name</string>
-    <string name="settings_dialog_change_password_title">Change password</string>
-    <string name="settings_dialog_change_email_title">Change email</string>
     <string name="settings_dialog_logout_title">Sign out?</string>
     <string name="settings_dialog_logout_message">You\'ll need to sign back in to access your favorites and notes.</string>
     <string name="settings_action_logout">Sign out</string>
-    <string name="settings_dialog_deactivate_title">Deactivate account?</string>
-    <string name="settings_dialog_deactivate_message">This will permanently delete your account and all your recipes. This cannot be undone.</string>
-    <string name="settings_action_deactivate">Deactivate</string>
 
     <!-- Settings rows -->
     <string name="settings_row_favorites_label">Favorites</string>
@@ -258,10 +251,32 @@
     <string name="settings_row_admin_console_sub">Moderation &amp; management tools</string>
     <string name="settings_row_coming_soon_format">%1$s — coming soon</string>
 
-    <!-- Account details (placeholder) -->
+    <!-- Account details -->
     <string name="account_details_title">Account details</string>
-    <string name="account_details_coming_soon_title">Coming soon</string>
-    <string name="account_details_coming_soon_subtitle">We\'re building a dedicated screen for managing your name, email, password, and avatar.</string>
+    <string name="account_details_upload_photo">Upload photo</string>
+    <string name="account_details_use_initials">Use initials instead</string>
+    <string name="label_city">City (shown on your profile)</string>
+    <string name="label_bio">About you</string>
+    <string name="account_details_email_helper">Changing this sends a confirmation link to the new address.</string>
+    <string name="account_details_password_section">Password</string>
+    <string name="label_repeat_new_password">Repeat new password</string>
+    <string name="account_details_password_mismatch">New passwords don\'t match.</string>
+    <string name="account_details_privacy_section">Privacy</string>
+    <string name="account_details_privacy_recipes">Show my published recipes on my public profile.</string>
+    <string name="account_details_privacy_favorites">Let other people see which recipes I favorited. Private notes always stay hidden.</string>
+    <string name="account_details_delete_account">Delete my account</string>
+    <string name="account_details_save">Save changes</string>
+    <string name="account_details_dialog_delete_title">Delete your account?</string>
+    <string name="account_details_dialog_delete_message">Your recipes and reviews will be hidden immediately. Your account is permanently deleted after 30 days unless you log back in.</string>
+    <string name="account_details_dialog_delete_password_hint">Enter your password to confirm</string>
+    <string name="account_details_action_delete">Delete everything</string>
+    <string name="account_details_deletion_requested">Account scheduled for deletion. Log back in within 30 days to cancel.</string>
+    <string name="account_details_avatar_pending">Photo selected — tap Save changes to apply it.</string>
+    <string name="account_details_avatar_cleared_pending">Avatar cleared — tap Save changes to apply it.</string>
+    <string name="account_details_discard_title">Discard changes?</string>
+    <string name="account_details_discard_message">Your changes have not been saved.</string>
+    <string name="account_details_discard_confirm">Discard</string>
+    <string name="account_details_discard_keep_editing">Keep editing</string>
 
     <!-- Cooking preferences -->
     <string name="cooking_preferences_title">Cooking preferences</string>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Same fill/stroke as bg_input, but with the design's smaller "radius-lg" token (16dp) corners
+     instead of the pill (999dp) shape — a pill radius on a multi-line box eats visibly into the
+     top/bottom of the text area, making its content look vertically off. Matches the design's
+     ed-bio textarea, which explicitly overrides to the smaller radius token. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/color_surface" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/color_divider" />
+    <corners android:radius="16dp" />
+</shape>

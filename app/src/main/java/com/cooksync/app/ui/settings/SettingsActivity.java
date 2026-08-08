@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -38,27 +37,24 @@ import com.cooksync.app.util.SessionManager;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.util.List;
 import java.util.Objects;
 
 /**
  * The "Settings" tab: a hub of navigational rows (Favorites, My recipes, Notifications, Cooking
- * preferences, Account details, and, for admins, Admin console), plus the avatar header, log out,
- * and account deactivation. Uses the same shared {@link com.dtos.response.auth.AuthResponse}-backed
- * session cache ({@link SessionManager}) that every other screen reads for the avatar chip's
- * initials, so a successful edit here is immediately reflected everywhere else on the next visit.
+ * preferences, Account details, and, for admins, Admin console), plus the avatar header and log
+ * out. Uses the same shared {@link com.dtos.response.auth.AuthResponse}-backed session cache
+ * ({@link SessionManager}) that every other screen reads for the avatar chip's initials, so a
+ * successful edit here is immediately reflected everywhere else on the next visit.
  *
  * <p>Avatar uploads go directly from this device to Cloudinary using a short-lived signature
  * fetched from the server (see {@link com.cooksync.app.data.repository.MediaRepository}), and
  * only the resulting URL is sent to CookSync's own server — the binary image never passes
  * through the application backend.</p>
  *
- * <p>The name/password/email edit dialogs below are not reachable from any row in this screen
- * (their dedicated "Account details" row currently points at {@link AccountDetailsActivity}, a
- * placeholder), but are kept in place for reuse once that screen's real implementation is
- * scoped.</p>
+ * <p>Name/city/bio/email/password/privacy editing and account deletion now live on the
+ * dedicated {@link AccountDetailsActivity} screen, reached via the "Account details" row.</p>
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -103,7 +99,6 @@ public class SettingsActivity extends BaseActivity {
 
         findViewById(R.id.btn_edit_avatar).setOnClickListener(v -> pickAvatarLauncher.launch("image/*"));
         findViewById(R.id.btn_logout).setOnClickListener(v -> confirmLogout());
-        findViewById(R.id.btn_deactivate).setOnClickListener(v -> confirmDeactivate());
 
         viewModel.loadFavoritesCount();
         viewModel.loadMyRecipesCount();
@@ -316,14 +311,6 @@ public class SettingsActivity extends BaseActivity {
             }
         });
 
-        viewModel.getDeactivateResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success) {
-                showSuccess(getString(R.string.settings_account_deactivated), bottomNav);
-            } else if (result instanceof ApiResult.Error<?> error) {
-                showError(error.getMessage(), bottomNav);
-            }
-        });
-
         viewModel.getFavoritesResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
                 tvFavoritesSub.setText(getString(R.string.settings_row_favorites_sub_format, success.getData().size()));
@@ -342,60 +329,10 @@ public class SettingsActivity extends BaseActivity {
         findViewById(R.id.btn_edit_avatar).setEnabled(!uploading);
     }
 
-    private void showEditNameDialog() {
-        View view = getLayoutInflater().inflate(R.layout.dialog_edit_name, null);
-        EditText etFirst = view.findViewById(R.id.et_first_name);
-        EditText etLast = view.findViewById(R.id.et_last_name);
-        etFirst.setText(SessionManager.getInstance().getFirstName());
-        etLast.setText(SessionManager.getInstance().getLastName());
-
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
-                .setTitle(R.string.settings_dialog_edit_name_title)
-                .setView(view)
-                .setPositiveButton(R.string.action_save, (dialog, which) ->
-                        viewModel.updateProfile(etFirst.getText().toString(), etLast.getText().toString()))
-                .setNegativeButton(R.string.action_cancel, null)
-                .show();
-    }
-
-    private void showChangePasswordDialog() {
-        View view = getLayoutInflater().inflate(R.layout.dialog_change_password, null);
-        EditText etCurrent = view.findViewById(R.id.et_current_password);
-        EditText etNew = view.findViewById(R.id.et_new_password);
-
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
-                .setTitle(R.string.settings_dialog_change_password_title)
-                .setView(view)
-                .setPositiveButton(R.string.action_save, (dialog, which) ->
-                        viewModel.changePassword(etCurrent.getText().toString(), etNew.getText().toString()))
-                .setNegativeButton(R.string.action_cancel, null)
-                .show();
-    }
-
-    private void showChangeEmailDialog() {
-        View view = getLayoutInflater().inflate(R.layout.dialog_change_email, null);
-        EditText etEmail = view.findViewById(R.id.et_new_email);
-        EditText etPassword = view.findViewById(R.id.et_current_password);
-
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
-                .setTitle(R.string.settings_dialog_change_email_title)
-                .setView(view)
-                .setPositiveButton(R.string.action_save, (dialog, which) ->
-                        viewModel.updateEmail(etEmail.getText().toString(), etPassword.getText().toString()))
-                .setNegativeButton(R.string.action_cancel, null)
-                .show();
-    }
-
     private void confirmLogout() {
         OrganicConfirmDialog.show(this, getString(R.string.settings_dialog_logout_title),
                 getString(R.string.settings_dialog_logout_message), getString(R.string.settings_action_logout),
                 getString(R.string.action_cancel), false, viewModel::logout);
-    }
-
-    private void confirmDeactivate() {
-        OrganicConfirmDialog.show(this, getString(R.string.settings_dialog_deactivate_title),
-                getString(R.string.settings_dialog_deactivate_message), getString(R.string.settings_action_deactivate),
-                getString(R.string.action_cancel), true, viewModel::deactivateAccount);
     }
 
     private static String nullToEmpty(String value) {

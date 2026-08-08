@@ -490,7 +490,8 @@ public class AdminViewModel extends BaseViewModel {
             UserResponse u = currentUsers.get(i);
             if (u.id().equals(userId)) {
                 currentUsers.set(i, new UserResponse(u.id(), u.firstName(), u.lastName(), u.email(),
-                        u.isAdmin(), u.avatarUrl(), u.createdAt(), u.updatedAt(), enabled, status));
+                        u.isAdmin(), u.avatarUrl(), u.createdAt(), u.updatedAt(), enabled, status,
+                        u.city(), u.bio(), u.showRecipesPublicly(), u.showFavoritesPublicly()));
                 break;
             }
         }

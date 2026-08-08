@@ -9,6 +9,7 @@
     android:orientation="vertical"
     tools:context=".ui.settings.AccountDetailsActivity">
 
+    <!-- ── App bar ───────────────────────────────────────────────────────── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,47 +40,323 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <!-- ── Form ──────────────────────────────────────────────────────────── -->
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:paddingHorizontal="32dp">
+        android:clipToPadding="false">
 
-        <FrameLayout
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:background="@drawable/bg_accent2_circle_100">
-
-            <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="center"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_user_cog"
-                app:tint="@color/color_accent_2_700" />
-
-        </FrameLayout>
-
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
-            android:fontFamily="@font/caprasimo"
-            android:text="@string/account_details_coming_soon_title"
-            android:textColor="@color/color_text"
-            android:textSize="22sp" />
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="12dp"
+            android:paddingBottom="24dp">
 
-        <TextView
-            android:layout_width="wrap_content"
+            <!-- Avatar -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal">
+
+                <ImageView
+                    android:id="@+id/iv_avatar"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:background="@drawable/bg_avatar_circle"
+                    android:contentDescription="@string/settings_avatar_content_description"
+                    android:scaleType="centerCrop" />
+
+                <TextView
+                    android:id="@+id/tv_avatar_initials"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:layout_gravity="center"
+                    android:fontFamily="@font/caprasimo"
+                    android:gravity="center"
+                    android:textColor="@color/color_accent_800"
+                    android:textSize="26sp"
+                    tools:text="YS" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_edit_avatar"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="bottom|end"
+                    android:background="@drawable/bg_white_circle"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:padding="0dp"
+                    app:icon="@drawable/ic_edit"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="15dp"
+                    app:iconTint="@color/color_accent" />
+
+                <ProgressBar
+                    android:id="@+id/avatar_progress"
+                    android:layout_width="88dp"
+                    android:layout_height="88dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+            </FrameLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_upload_photo"
+                style="@style/CookSync.Button.Secondary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="@string/account_details_upload_photo" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_use_initials"
+                style="@style/CookSync.Button.Ghost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/account_details_use_initials" />
+
+            <!-- First / Last name -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/CookSync.FieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_first_name" />
+
+                    <EditText
+                        android:id="@+id/et_first_name"
+                        style="@style/CookSync.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/CookSync.FieldLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_last_name" />
+
+                    <EditText
+                        android:id="@+id/et_last_name"
+                        style="@style/CookSync.Input"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Email -->
+            <TextView
+                style="@style/CookSync.FieldLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/label_email" />
+
+            <EditText
+                android:id="@+id/et_email"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:alpha="0.6"
+                android:text="@string/account_details_email_helper"
+                android:textColor="@color/color_text"
+                android:textSize="12sp" />
+
+            <!-- City -->
+            <TextView
+                style="@style/CookSync.FieldLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/label_city" />
+
+            <EditText
+                android:id="@+id/et_city"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text" />
+
+            <!-- Bio -->
+            <TextView
+                style="@style/CookSync.FieldLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/label_bio" />
+
+            <EditText
+                android:id="@+id/et_bio"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input_multiline"
+                android:gravity="top|start"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp"
+                android:inputType="textMultiLine"
+                android:minLines="3" />
+
+            <!-- Password -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/account_details_password_section"
+                android:textColor="@color/color_text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                style="@style/CookSync.FieldLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="@string/label_current_password" />
+
+            <EditText
+                android:id="@+id/et_current_password"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+
+            <TextView
+                style="@style/CookSync.FieldLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/label_new_password" />
+
+            <EditText
+                android:id="@+id/et_new_password"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+
+            <TextView
+                style="@style/CookSync.FieldLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="@string/label_repeat_new_password" />
+
+            <EditText
+                android:id="@+id/et_repeat_new_password"
+                style="@style/CookSync.Input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword" />
+
+            <!-- Privacy -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/account_details_privacy_section"
+                android:textColor="@color/color_text"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cb_show_recipes_publicly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:text="@string/account_details_privacy_recipes"
+                android:textColor="@color/color_text"
+                android:textSize="13.5sp"
+                app:buttonTint="@color/color_accent" />
+
+            <com.google.android.material.checkbox.MaterialCheckBox
+                android:id="@+id/cb_show_favorites_publicly"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="@string/account_details_privacy_favorites"
+                android:textColor="@color/color_text"
+                android:textSize="13.5sp"
+                app:buttonTint="@color/color_accent" />
+
+            <!-- Delete account -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_delete_account"
+                style="@style/CookSync.Button.Ghost"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/account_details_delete_account"
+                android:textColor="@color/color_accent_700" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- ── Fixed footer ──────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:id="@+id/footer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/color_surface"
+        android:elevation="8dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel"
+            style="@style/CookSync.Button.Secondary"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:alpha="0.72"
-            android:gravity="center"
-            android:text="@string/account_details_coming_soon_subtitle"
-            android:textColor="@color/color_text"
-            android:textSize="14sp" />
+            android:layout_weight="1"
+            android:text="@string/action_cancel" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_save"
+            style="@style/CookSync.Button.Primary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:text="@string/account_details_save" />
 
     </LinearLayout>
 

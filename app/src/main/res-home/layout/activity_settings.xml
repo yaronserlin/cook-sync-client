@@ -164,15 +164,6 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/settings_action_logout" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_deactivate"
-                style="@style/CookSync.Button.Ghost"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/settings_action_deactivate"
-                android:textColor="@color/color_accent_700" />
-
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

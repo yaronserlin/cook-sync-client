@@ -67,7 +67,8 @@
 
         <activity
             android:name=".ui.settings.AccountDetailsActivity"
-            android:exported="false" />
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".ui.settings.CookingPreferencesActivity"

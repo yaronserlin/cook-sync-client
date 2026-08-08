@@ -5,13 +5,16 @@ import androidx.lifecycle.MutableLiveData;
 import com.cooksync.app.domain.ApiResult;
 import com.dtos.request.auth.AvatarUpdateRequestDTO;
 import com.dtos.request.auth.ChangePasswordRequestDTO;
+import com.dtos.request.auth.DeleteAccountRequestDTO;
 import com.dtos.request.auth.EmailUpdateRequestDTO;
 import com.dtos.request.auth.ForgotPasswordRequestDTO;
 import com.dtos.request.auth.LoginRequestDTO;
+import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.user.UserResponse;
 
 /**
  * Declares the contract for all authentication-related data operations available to
@@ -97,6 +100,22 @@ public interface AuthRepository {
     void deactivateAccount(MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
+     * Updates the authenticated user's public-profile privacy preferences.
+     *
+     * @param request     privacy settings update payload
+     * @param resultTarget live data target the result will be posted to
+     */
+    void updatePrivacySettings(PrivacySettingsUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
+     * Starts the 30-day self-service account-deletion grace period for the authenticated user.
+     *
+     * @param request     delete-account payload carrying the current password for verification
+     * @param resultTarget live data target the result will be posted to
+     */
+    void requestAccountDeletion(DeleteAccountRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
      * Validates the stored access token against the server. Used on app startup to
      * silently re-authenticate the user when a previous session exists, avoiding the
      * need to show the login form again.
@@ -104,6 +123,15 @@ public interface AuthRepository {
      * @param resultTarget live data target the result will be posted to
      */
     void validateToken(MutableLiveData<ApiResult<AuthResponse>> resultTarget);
+
+    /**
+     * Fetches the authenticated user's full profile, including fields not carried by
+     * {@link AuthResponse} (city, bio, privacy preferences). Used to pre-fill the Account
+     * Details screen.
+     *
+     * @param resultTarget live data target the result will be posted to
+     */
+    void getCurrentUserProfile(MutableLiveData<ApiResult<UserResponse>> resultTarget);
 
     /**
      * Requests a password-reset email for the given account, if one exists. Always succeeds
