@@ -71,6 +71,7 @@ public class SettingsActivity extends BaseActivity {
     private TextView tvEmail;
     private TextView tvFavoritesSub;
     private TextView tvMyRecipesSub;
+    private TextView tvCookingSub;
 
     private ActivityResultLauncher<String> pickAvatarLauncher;
     private Uri pendingAvatarUri;
@@ -102,6 +103,12 @@ public class SettingsActivity extends BaseActivity {
 
         viewModel.loadFavoritesCount();
         viewModel.loadMyRecipesCount();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        refreshCookingPreferencesSub();
     }
 
     private void bindViews() {
@@ -191,12 +198,10 @@ public class SettingsActivity extends BaseActivity {
                 getString(R.string.settings_row_notifications_label), getString(R.string.settings_row_notifications_sub),
                 v -> showComingSoon(R.string.settings_row_notifications_label));
 
-        TextView tvCookingSub = bindRow(R.id.row_cooking_preferences, R.drawable.ic_smartphone,
+        tvCookingSub = bindRow(R.id.row_cooking_preferences, R.drawable.ic_smartphone,
                 getString(R.string.settings_row_cooking_preferences_label), null,
                 v -> Navigator.start(this, CookingPreferencesActivity.class));
-        tvCookingSub.setText(CookingPreferencesStore.isScreenAwakeEnabled()
-                ? R.string.settings_row_cooking_preferences_sub_on
-                : R.string.settings_row_cooking_preferences_sub_off);
+        refreshCookingPreferencesSub();
 
         bindRow(R.id.row_account_details, R.drawable.ic_user_cog,
                 getString(R.string.settings_row_account_details_label), getString(R.string.settings_row_account_details_sub),
@@ -238,6 +243,21 @@ public class SettingsActivity extends BaseActivity {
         }
         row.setOnClickListener(onClick);
         return tvSub;
+    }
+
+    /**
+     * Re-reads {@link CookingPreferencesStore} and updates the "Cooking preferences" row's
+     * subtitle to match, since the toggles it summarizes are edited on
+     * {@link CookingPreferencesActivity} and only reflected here once the user navigates back.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    private void refreshCookingPreferencesSub() {
+        tvCookingSub.setText(CookingPreferencesStore.isScreenAwakeEnabled()
+                ? R.string.settings_row_cooking_preferences_sub_on
+                : R.string.settings_row_cooking_preferences_sub_off);
     }
 
     private void showComingSoon(@StringRes int rowLabelRes) {

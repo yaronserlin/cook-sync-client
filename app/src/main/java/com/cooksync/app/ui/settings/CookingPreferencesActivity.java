@@ -5,7 +5,7 @@ import android.os.Bundle;
 import com.cooksync.app.R;
 import com.cooksync.app.data.local.CookingPreferencesStore;
 import com.cooksync.app.ui.common.BaseActivity;
-import com.google.android.material.materialswitch.MaterialSwitch;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 /**
  * Device-level cooking preferences: whether cooking mode keeps the screen awake, and whether a
@@ -26,12 +26,12 @@ public class CookingPreferencesActivity extends BaseActivity {
 
         findViewById(R.id.btn_back).setOnClickListener(v -> finish());
 
-        MaterialSwitch switchScreenAwake = findViewById(R.id.switch_screen_awake);
+        SwitchMaterial switchScreenAwake = findViewById(R.id.switch_screen_awake);
         switchScreenAwake.setChecked(CookingPreferencesStore.isScreenAwakeEnabled());
         switchScreenAwake.setOnCheckedChangeListener((button, checked) ->
                 CookingPreferencesStore.setScreenAwakeEnabled(checked));
 
-        MaterialSwitch switchTimerSound = findViewById(R.id.switch_timer_sound);
+        SwitchMaterial switchTimerSound = findViewById(R.id.switch_timer_sound);
         switchTimerSound.setChecked(CookingPreferencesStore.isTimerSoundEnabled());
         switchTimerSound.setOnCheckedChangeListener((button, checked) ->
                 CookingPreferencesStore.setTimerSoundEnabled(checked));
