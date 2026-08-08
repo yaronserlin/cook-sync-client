@@ -1,0 +1,2 @@
+# Copy this file to cook-sync-client/local.properties and set sdk.dir to your Android SDK location.
+sdk.dir=/path/to/android/sdk
