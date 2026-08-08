@@ -3,6 +3,8 @@
     <string name="app_name">CookSync</string>
     <string name="hint_email">you@example.com</string>
     <string name="hint_password">••••••••</string>
+    <string name="password_toggle_show_desc">Show password</string>
+    <string name="password_toggle_hide_desc">Hide password</string>
     <string name="hint_first_name">Jane</string>
     <string name="hint_last_name">Smith</string>
     <string name="hint_reset_token">Reset token&#8230;</string>

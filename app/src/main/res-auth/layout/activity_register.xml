@@ -142,13 +142,12 @@
                 android:text="@string/label_password"
                 style="@style/CookSync.FieldLabel" />
 
-            <EditText
+            <com.cooksync.app.ui.common.PasswordEditText
                 android:id="@+id/et_password"
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_password"
-                android:inputType="textPassword"
                 android:imeOptions="actionNext"
                 android:maxLength="100"
                 android:autofillHints="newPassword"
@@ -168,13 +167,12 @@
                 android:text="@string/label_repeat_password"
                 style="@style/CookSync.FieldLabel" />
 
-            <EditText
+            <com.cooksync.app.ui.common.PasswordEditText
                 android:id="@+id/et_repeat_password"
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:hint="@string/hint_password"
-                android:inputType="textPassword"
                 android:imeOptions="actionDone"
                 android:maxLength="100"
                 android:autofillHints="newPassword"

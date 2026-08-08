@@ -251,12 +251,11 @@
                 android:layout_marginTop="12dp"
                 android:text="@string/label_current_password" />
 
-            <EditText
+            <com.cooksync.app.ui.common.PasswordEditText
                 android:id="@+id/et_current_password"
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword" />
+                android:layout_height="wrap_content" />
 
             <TextView
                 style="@style/CookSync.FieldLabel"
@@ -265,12 +264,11 @@
                 android:layout_marginTop="14dp"
                 android:text="@string/label_new_password" />
 
-            <EditText
+            <com.cooksync.app.ui.common.PasswordEditText
                 android:id="@+id/et_new_password"
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword" />
+                android:layout_height="wrap_content" />
 
             <TextView
                 style="@style/CookSync.FieldLabel"
@@ -279,12 +277,11 @@
                 android:layout_marginTop="14dp"
                 android:text="@string/label_repeat_new_password" />
 
-            <EditText
+            <com.cooksync.app.ui.common.PasswordEditText
                 android:id="@+id/et_repeat_new_password"
                 style="@style/CookSync.Input"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword" />
+                android:layout_height="wrap_content" />
 
             <!-- Privacy -->
             <TextView
