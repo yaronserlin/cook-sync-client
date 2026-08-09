@@ -93,6 +93,15 @@ public class AddRecipeViewModel extends BaseViewModel {
         draft = stored != null ? stored : new RecipeDraft();
     }
 
+    /**
+     * Seeds the ViewModel with an existing recipe to edit.
+     *
+     * @param recipe the recipe to edit
+     */
+    public void startEditRecipe(RecipeResponse recipe) {
+        this.draft = RecipeDraft.fromRecipeResponse(recipe);
+    }
+
     /** @return the draft currently being authored */
     public RecipeDraft getDraft() {
         return draft;

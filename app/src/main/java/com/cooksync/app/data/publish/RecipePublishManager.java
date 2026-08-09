@@ -182,17 +182,20 @@ public class RecipePublishManager {
                     }
                 }
 
-                // 3. Post recipe creation DTO to server
-                publishState.postValue(PublishState.publishing("Publishing recipe..."));
+                // 3. Post recipe creation or update DTO to server
+                boolean isEditing = draft.editingRecipeId != null;
+                publishState.postValue(PublishState.publishing(isEditing ? "Updating recipe..." : "Publishing recipe..."));
                 RecipeCreateRequestDTO dto = com.cooksync.app.ui.recipe.wizard.RecipeDraftMapper.toDto(draft);
-                RecipeResponse response = createRecipeSync(dto);
+                RecipeResponse response = isEditing
+                        ? updateRecipeSync(draft.editingRecipeId, dto)
+                        : createRecipeSync(dto);
 
                 if (response != null) {
                     RecipeDraftStore.clear();
                     publishState.postValue(PublishState.success(response));
                     recipePublishedEvent.postValue(new Event<>(response));
                 } else {
-                    publishState.postValue(PublishState.error("Failed to publish recipe to server"));
+                    publishState.postValue(PublishState.error(isEditing ? "Failed to update recipe on server" : "Failed to publish recipe to server"));
                 }
 
             } catch (Exception e) {
@@ -278,6 +281,25 @@ public class RecipePublishManager {
         }));
 
         recipeRepository.createRecipe(dto, target);
+        latch.await();
+        return result.get();
+    }
+
+    private RecipeResponse updateRecipeSync(String recipeId, RecipeCreateRequestDTO dto) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<RecipeResponse> result = new AtomicReference<>();
+        MutableLiveData<ApiResult<RecipeResponse>> target = new MutableLiveData<>();
+
+        mainHandler.post(() -> target.observeForever(res -> {
+            if (res instanceof ApiResult.Success<RecipeResponse> s) {
+                result.set(s.getData());
+                latch.countDown();
+            } else if (res instanceof ApiResult.Error) {
+                latch.countDown();
+            }
+        }));
+
+        recipeRepository.updateRecipe(recipeId, dto, target);
         latch.await();
         return result.get();
     }

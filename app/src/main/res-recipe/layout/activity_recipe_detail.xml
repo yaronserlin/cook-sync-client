@@ -602,6 +602,20 @@
         android:padding="16dp">
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_edit_recipe"
+            style="@style/CookSync.Button.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="54dp"
+            android:layout_marginEnd="12dp"
+            android:paddingHorizontal="20dp"
+            android:text="Edit"
+            android:visibility="gone"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_edit"
+            app:iconGravity="textStart"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_start_cooking"
             android:layout_width="0dp"
             android:layout_height="54dp"

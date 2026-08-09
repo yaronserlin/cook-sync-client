@@ -348,6 +348,18 @@ public class MyRecipesActivity extends RecipeListActivity {
 
         popup.setOnMenuItemClickListener(item -> {
             int id = item.getItemId();
+            if (id == R.id.action_edit_recipe) {
+                androidx.lifecycle.MutableLiveData<ApiResult<RecipeResponse>> target = new androidx.lifecycle.MutableLiveData<>();
+                target.observe(this, res -> {
+                    if (res instanceof ApiResult.Success<RecipeResponse> s) {
+                        AddRecipeWizardActivity.startEdit(MyRecipesActivity.this, s.getData());
+                    } else if (res instanceof ApiResult.Error<RecipeResponse> err) {
+                        showError(err.getMessage(), bottomNav);
+                    }
+                });
+                viewModel.fetchRecipeDetail(recipe.id(), target);
+                return true;
+            }
             if (id == R.id.action_toggle_visibility) {
                 viewModel.toggleVisibility(recipe);
                 String message = getString(isPublic ? R.string.recipe_now_private : R.string.recipe_now_public);

@@ -87,6 +87,10 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getRecipesResult() { return recipesResult; }
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
 
+    public void fetchRecipeDetail(String recipeId, MutableLiveData<ApiResult<RecipeResponse>> resultTarget) {
+        repository.getRecipeDetail(recipeId, resultTarget);
+    }
+
     /**
      * Fires only when a deferred delete actually reaches the server and fails (see
      * {@link #deleteRecipe}) — a successful delete needs no signal here since the list already

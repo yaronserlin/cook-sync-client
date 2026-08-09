@@ -28,7 +28,9 @@ import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.home.TagChipAdapter;
 import com.cooksync.app.ui.recipe.cooking.CookingModeActivity;
 import com.cooksync.app.ui.recipe.review.ReviewActivity;
+import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
 import com.cooksync.app.util.SessionManager;
+import com.google.android.material.button.MaterialButton;
 import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -106,6 +108,7 @@ public class RecipeDetailActivity extends BaseActivity {
      *  editor opens. */
     private boolean noteEditCommitted = false;
 
+    private MaterialButton btnEditRecipe;
     private boolean isFavorite = false;
     private final List<ReviewResponse> allReviews = new ArrayList<>();
     /** The review last optimistically removed by {@link #confirmDeleteReview}, restored if the
@@ -185,6 +188,7 @@ public class RecipeDetailActivity extends BaseActivity {
         reviewsHeader = findViewById(R.id.detail_reviews_header);
         ratingRow = findViewById(R.id.detail_rating_row);
         btnFavorite = findViewById(R.id.btn_favorite);
+        btnEditRecipe = findViewById(R.id.btn_edit_recipe);
         groupNoteView = findViewById(R.id.group_detail_note_view);
         tvNote = findViewById(R.id.tv_detail_note);
         groupNoteEdit = findViewById(R.id.group_detail_note_edit);
@@ -516,6 +520,13 @@ public class RecipeDetailActivity extends BaseActivity {
         cookTime.setText(getString(R.string.time_format_short, recipe.cookTimeMinutes()));
         servings.setText(String.valueOf(recipe.servings()));
         ingredientsHeader.setText(getString(R.string.ingredients_header_format, recipe.servings()));
+
+        String currentUserId = SessionManager.getInstance().getUserId();
+        boolean isMine = recipe.createdBy() != null && Objects.equals(recipe.createdBy().id(), currentUserId);
+        if (btnEditRecipe != null) {
+            btnEditRecipe.setVisibility(isMine ? View.VISIBLE : View.GONE);
+            btnEditRecipe.setOnClickListener(v -> AddRecipeWizardActivity.startEdit(this, recipe));
+        }
 
         Glide.with(this).load(recipe.primaryImageUrl()).placeholder(R.color.color_neutral_300).centerCrop().into(heroImage);
         heroImage.setOnClickListener(v -> openFullscreenImage(recipe.primaryImageUrl()));

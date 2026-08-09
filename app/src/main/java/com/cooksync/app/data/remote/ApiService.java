@@ -261,6 +261,19 @@ public interface ApiService {
     );
 
     /**
+     * Updates an existing recipe owned by the currently authenticated user.
+     *
+     * @param id the unique identifier of the recipe to update
+     * @param request the complete updated recipe payload
+     * @return call yielding the updated recipe response
+     */
+    @PUT("api/recipes/{id}")
+    Call<ApiResponse<com.dtos.response.recipe.RecipeResponse>> updateRecipe(
+            @retrofit2.http.Path("id") String id,
+            @Body com.dtos.request.recipe.RecipeCreateRequestDTO request
+    );
+
+    /**
      * Fetches every recipe (published or private) authored by the currently authenticated
      * user, for the "My Recipes" screen.
      *

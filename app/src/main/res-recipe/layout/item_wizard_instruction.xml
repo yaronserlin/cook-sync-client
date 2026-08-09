@@ -91,17 +91,18 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             app:chipSpacingHorizontal="6dp"
+            app:chipSpacingVertical="4dp"
             app:singleLine="false">
 
             <TextView
                 android:id="@+id/tv_instruction_timer_pill"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="28dp"
                 android:background="@drawable/bg_tag_neutral"
                 android:clickable="true"
                 android:focusable="true"
+                android:gravity="center"
                 android:paddingHorizontal="11dp"
-                android:paddingVertical="6dp"
                 android:textColor="@color/color_text"
                 android:textSize="11.5sp"
                 tools:text="⏱ no timer" />
@@ -109,12 +110,12 @@
             <TextView
                 android:id="@+id/tv_instruction_add_ingredient_pill"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="28dp"
                 android:background="@drawable/bg_tag_outline"
                 android:clickable="true"
                 android:focusable="true"
+                android:gravity="center"
                 android:paddingHorizontal="11dp"
-                android:paddingVertical="6dp"
                 android:text="@string/wizard_instruction_add_ingredient_pill"
                 android:textColor="@color/color_accent"
                 android:textSize="11.5sp" />

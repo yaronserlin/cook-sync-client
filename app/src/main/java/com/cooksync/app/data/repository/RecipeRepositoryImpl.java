@@ -62,6 +62,12 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
     }
 
     @Override
+    public void updateRecipe(String recipeId, RecipeCreateRequestDTO request, MutableLiveData<ApiResult<RecipeResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.updateRecipe(recipeId, request))));
+    }
+
+    @Override
     public void getFavorites(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(apiService::getFavorites)));

@@ -8,5 +8,14 @@
     android:checkable="false"
     android:clickable="false"
     android:focusable="false"
+    android:fontFamily="@font/figtree"
+    android:textColor="@color/color_accent_800"
+    android:textSize="11.5sp"
+    app:chipBackgroundColor="@color/color_accent_200"
+    app:chipCornerRadius="14dp"
+    app:chipMinHeight="28dp"
     app:closeIconEnabled="true"
-    app:closeIconVisible="true" />
+    app:closeIconSize="16dp"
+    app:closeIconTint="@color/color_accent_800"
+    app:closeIconVisible="true"
+    app:ensureMinTouchTargetSize="false" />

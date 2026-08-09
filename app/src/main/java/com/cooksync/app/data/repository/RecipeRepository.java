@@ -68,6 +68,15 @@ public interface RecipeRepository {
     void createRecipe(RecipeCreateRequestDTO request, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
 
     /**
+     * Updates an existing recipe authored by the current user.
+     *
+     * @param recipeId target recipe unique identifier
+     * @param request the complete updated recipe payload
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void updateRecipe(String recipeId, RecipeCreateRequestDTO request, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
+
+    /**
      * Fetches the complete set of the user's personal recipes marked as favorites. The server
      * paginates this endpoint, but the client loops through every page internally (see
      * {@link RecipeRepositoryImpl}) since callers rely on the full set for membership checks,

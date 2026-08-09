@@ -49,13 +49,35 @@ public class AddRecipeWizardActivity extends BaseActivity {
     private MaterialButton btnDraft;
     private MaterialButton btnNext;
 
+    public static final String EXTRA_EDIT_RECIPE_JSON = "extra_edit_recipe_json";
+
+    /**
+     * Launches the wizard pre-populated with an existing recipe for editing.
+     *
+     * @param context hosting screen context
+     * @param recipe the recipe response model to edit
+     */
+    public static void startEdit(android.content.Context context, RecipeResponse recipe) {
+        android.content.Intent intent = new android.content.Intent(context, AddRecipeWizardActivity.class);
+        intent.putExtra(EXTRA_EDIT_RECIPE_JSON, new com.google.gson.Gson().toJson(recipe));
+        com.cooksync.app.ui.common.Navigator.start(context, AddRecipeWizardActivity.class, intent);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_recipe_wizard);
 
         viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(AddRecipeViewModel.class);
-        viewModel.loadDraftIfPresent();
+
+        if (getIntent() != null && getIntent().hasExtra(EXTRA_EDIT_RECIPE_JSON)) {
+            String json = getIntent().getStringExtra(EXTRA_EDIT_RECIPE_JSON);
+            RecipeResponse recipe = new com.google.gson.Gson().fromJson(json, RecipeResponse.class);
+            viewModel.startEditRecipe(recipe);
+        } else {
+            viewModel.loadDraftIfPresent();
+        }
+
         viewModel.loadTags();
         viewModel.loadUnits();
 
@@ -84,9 +106,19 @@ public class AddRecipeWizardActivity extends BaseActivity {
 
         btnClose.setOnClickListener(v -> confirmDiscard());
         View.OnClickListener saveDraft = v -> {
-            viewModel.saveDraftLocally();
-            showSuccess(getString(R.string.wizard_draft_saved_toast), null);
-            finish();
+            if (com.cooksync.app.data.local.RecipeDraftStore.hasDraft()) {
+                OrganicConfirmDialog.show(this, "Overwrite saved draft?",
+                        "Saving this recipe as a draft will overwrite your existing saved draft. Do you want to continue?",
+                        "Overwrite draft", "Keep editing", true, () -> {
+                            viewModel.saveDraftLocally();
+                            showSuccess(getString(R.string.wizard_draft_saved_toast), null);
+                            finish();
+                        });
+            } else {
+                viewModel.saveDraftLocally();
+                showSuccess(getString(R.string.wizard_draft_saved_toast), null);
+                finish();
+            }
         };
         tvSaveDraft.setOnClickListener(saveDraft);
         btnDraft.setOnClickListener(saveDraft);
