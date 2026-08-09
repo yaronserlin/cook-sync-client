@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.common.DurationPickerDialog;
 import com.cooksync.app.ui.common.ViewModelFactory;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 import com.dtos.response.tags.TagResponse;
@@ -217,12 +216,10 @@ public class WizardBasicsFragment extends Fragment {
     }
 
     private void renderDuration(EditText field, Integer totalMinutes) {
-        if (totalMinutes == null) {
+        if (totalMinutes == null || totalMinutes <= 0) {
             field.setText("");
-        } else if (totalMinutes >= 60) {
-            field.setText(getString(R.string.wizard_duration_format, totalMinutes / 60, totalMinutes % 60));
         } else {
-            field.setText(getString(R.string.wizard_duration_minutes_only_format, totalMinutes));
+            field.setText(com.cooksync.app.util.DurationFormatter.formatMinutes(totalMinutes));
         }
     }
 
@@ -230,12 +227,12 @@ public class WizardBasicsFragment extends Fragment {
         etTitle.addTextChangedListener(onChanged(viewModel::setTitle));
         etServings.addTextChangedListener(onChanged(text -> viewModel.setServings(parseIntOrNull(text))));
 
-        etPrepTime.setOnClickListener(v -> DurationPickerDialog.show(requireContext(), R.string.wizard_prep_time_dialog_title,
+        etPrepTime.setOnClickListener(v -> com.cooksync.app.ui.common.TimePickerDialog.showMinutes(requireContext(), R.string.wizard_prep_time_dialog_title,
                 viewModel.getDraft().prepTimeMinutes == null ? 0 : viewModel.getDraft().prepTimeMinutes, minutes -> {
                     viewModel.setPrepTimeMinutes(minutes);
                     renderDuration(etPrepTime, minutes);
                 }));
-        etCookTime.setOnClickListener(v -> DurationPickerDialog.show(requireContext(), R.string.wizard_cook_time_dialog_title,
+        etCookTime.setOnClickListener(v -> com.cooksync.app.ui.common.TimePickerDialog.showMinutes(requireContext(), R.string.wizard_cook_time_dialog_title,
                 viewModel.getDraft().cookTimeMinutes == null ? 0 : viewModel.getDraft().cookTimeMinutes, minutes -> {
                     viewModel.setCookTimeMinutes(minutes);
                     renderDuration(etCookTime, minutes);

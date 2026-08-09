@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
-import com.cooksync.app.ui.common.TimerPickerDialog;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
@@ -166,7 +165,7 @@ public class WizardInstructionAdapter extends RecyclerView.Adapter<WizardInstruc
 
         private void bindTimerPill(Context context, RecipeDraft.DraftInstruction instruction) {
             if (instruction.hasTimer && instruction.timeSeconds != null && instruction.timeSeconds > 0) {
-                tvTimerPill.setText(context.getString(R.string.wizard_instruction_timer_pill_format, instruction.timeSeconds / 60));
+                tvTimerPill.setText("⏱ " + com.cooksync.app.util.DurationFormatter.format(instruction.timeSeconds));
                 tvTimerPill.setBackgroundResource(R.drawable.bg_tag_accent);
                 tvTimerPill.setTextColor(context.getColor(R.color.color_accent_800));
             } else {
@@ -225,7 +224,8 @@ public class WizardInstructionAdapter extends RecyclerView.Adapter<WizardInstruc
 
         private void showTimerDialog(Context context, RecipeDraft.DraftInstruction instruction) {
             int initialSeconds = instruction.hasTimer && instruction.timeSeconds != null ? instruction.timeSeconds : 0;
-            TimerPickerDialog.show(context, initialSeconds, totalSeconds -> {
+            com.cooksync.app.ui.common.TimePickerDialog.show(context, R.string.wizard_instruction_set_timer_title, initialSeconds,
+                    com.cooksync.app.ui.common.TimePickerDialog.Mode.HH_MM_SS, totalSeconds -> {
                 if (totalSeconds > 0) {
                     instruction.hasTimer = true;
                     instruction.timeSeconds = totalSeconds;

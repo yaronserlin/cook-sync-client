@@ -200,6 +200,70 @@ public class MyRecipesActivity extends RecipeListActivity {
                 showError(error.getMessage(), bottomNav);
             }
         });
+
+        setupPublishProgressObserver();
+    }
+
+    private void setupPublishProgressObserver() {
+        com.cooksync.app.data.publish.RecipePublishManager.getInstance().getPublishState().observe(this, state -> {
+            if (state == null || state.status == com.cooksync.app.data.publish.RecipePublishManager.PublishState.Status.IDLE) {
+                View card = findViewById(R.id.card_publish_progress);
+                if (card != null) card.setVisibility(View.GONE);
+                return;
+            }
+
+            View card = findViewById(R.id.card_publish_progress);
+            if (card == null) return;
+            card.setVisibility(View.VISIBLE);
+
+            android.widget.ProgressBar spinner = card.findViewById(R.id.pb_publish_spinner);
+            android.widget.ImageView checkIcon = card.findViewById(R.id.iv_publish_success_icon);
+            TextView tvTitle = card.findViewById(R.id.tv_publish_title);
+            TextView tvSubtitle = card.findViewById(R.id.tv_publish_subtitle);
+            TextView tvPercent = card.findViewById(R.id.tv_publish_percent);
+            com.google.android.material.progressindicator.LinearProgressIndicator bar = card.findViewById(R.id.pb_publish_bar);
+
+            switch (state.status) {
+                case UPLOADING -> {
+                    spinner.setVisibility(View.VISIBLE);
+                    checkIcon.setVisibility(View.GONE);
+                    tvTitle.setText("Publishing recipe...");
+                    tvSubtitle.setText(state.message != null ? state.message : "Uploading media...");
+                    tvPercent.setText(state.progress + "%");
+                    bar.setProgress(state.progress);
+                }
+                case PUBLISHING -> {
+                    spinner.setVisibility(View.VISIBLE);
+                    checkIcon.setVisibility(View.GONE);
+                    tvTitle.setText("Publishing recipe...");
+                    tvSubtitle.setText(state.message != null ? state.message : "Processing recipe details...");
+                    tvPercent.setText(state.progress + "%");
+                    bar.setProgress(state.progress);
+                }
+                case SUCCESS -> {
+                    spinner.setVisibility(View.GONE);
+                    checkIcon.setVisibility(View.VISIBLE);
+                    tvTitle.setText("Recipe published!");
+                    tvSubtitle.setText("Available in My Recipes");
+                    tvPercent.setText("100%");
+                    bar.setProgress(100);
+
+                    viewModel.loadMyRecipes();
+                    new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                        card.setVisibility(View.GONE);
+                        com.cooksync.app.data.publish.RecipePublishManager.getInstance().resetState();
+                    }, 3000);
+                }
+                case ERROR -> {
+                    spinner.setVisibility(View.GONE);
+                    checkIcon.setVisibility(View.GONE);
+                    tvTitle.setText("Publishing failed");
+                    tvSubtitle.setText(state.error != null ? state.error : "Failed to publish recipe");
+                    tvPercent.setText("");
+                    bar.setProgress(0);
+                }
+            }
+        });
     }
 
     private void selectVisibility(String visibility) {

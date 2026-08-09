@@ -134,47 +134,9 @@ public class AddRecipeWizardActivity extends BaseActivity {
      * inherently {@link android.content.Context}-dependent.
      */
     private void startPublishFlow() {
-        btnNext.setEnabled(false);
-        btnNext.setAlpha(0.5f);
-        List<AddRecipeViewModel.PendingImageUpload> pending = viewModel.collectPendingImageUploads();
-        if (pending.isEmpty()) {
-            viewModel.publish();
-            return;
-        }
-        MutableLiveData<ApiResult<CloudinarySignatureResponse>> signatureResult = new MutableLiveData<>();
-        signatureResult.observe(this, result -> {
-            if (result instanceof ApiResult.Loading) return;
-            if (result instanceof ApiResult.Success<CloudinarySignatureResponse> success) {
-                uploadPendingImages(pending, 0, success.getData());
-            } else if (result instanceof ApiResult.Error<CloudinarySignatureResponse> error) {
-                updateStepUi(viewPager.getCurrentItem());
-                showError(error.getMessage(), null);
-            }
-        });
-        viewModel.requestUploadSignature(signatureResult);
-    }
-
-    /** Uploads {@code pending} one at a time against the same signature, then calls {@link AddRecipeViewModel#publish()}. */
-    private void uploadPendingImages(List<AddRecipeViewModel.PendingImageUpload> pending, int index,
-                                      CloudinarySignatureResponse signature) {
-        if (index >= pending.size()) {
-            viewModel.publish();
-            return;
-        }
-        AddRecipeViewModel.PendingImageUpload current = pending.get(index);
-        CloudinaryUploader.upload(this, Uri.parse(current.getLocalUri()), signature, new CloudinaryUploader.Callback() {
-            @Override
-            public void onSuccess(@NonNull String secureUrl) {
-                viewModel.resolvePendingImageUpload(current, secureUrl);
-                uploadPendingImages(pending, index + 1, signature);
-            }
-
-            @Override
-            public void onError(@NonNull String message) {
-                updateStepUi(viewPager.getCurrentItem());
-                showError(message, null);
-            }
-        });
+        com.cooksync.app.data.publish.RecipePublishManager.getInstance().startPublish(viewModel.getDraft());
+        com.cooksync.app.ui.common.Navigator.start(this, com.cooksync.app.ui.recipe.list.MyRecipesActivity.class);
+        finish();
     }
 
     private void goToStep(int step) {

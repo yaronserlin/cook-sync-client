@@ -372,7 +372,8 @@ public class CookingModeActivity extends BaseActivity {
     private void showSetTimerDialog() {
         Integer remaining = viewModel.getTimerRemainingSeconds().getValue();
         int current = remaining == null ? 0 : remaining;
-        com.cooksync.app.ui.common.TimerPickerDialog.show(this, current, totalSeconds -> {
+        com.cooksync.app.ui.common.TimePickerDialog.show(this, R.string.dialog_set_timer_title, current,
+                com.cooksync.app.ui.common.TimePickerDialog.Mode.HH_MM_SS, totalSeconds -> {
             currentStepTimerTotalSeconds = Math.max(totalSeconds, 1);
             viewModel.setTimerSeconds(currentStepTimerTotalSeconds);
         });

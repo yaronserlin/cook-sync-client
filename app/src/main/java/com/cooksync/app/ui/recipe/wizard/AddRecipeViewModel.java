@@ -342,74 +342,12 @@ public class AddRecipeViewModel extends BaseViewModel {
      * owns the upload loop itself and calls {@link #resolvePendingImageUpload} as each finishes;
      * this ViewModel only tracks *where* each pending image lives in the draft.
      */
-    public static final class PendingImageUpload {
-        private enum Kind { COVER, DESCRIPTION_BLOCK, INSTRUCTION }
-
-        private final Kind kind;
-        private final String localUri;
-        private final DescriptionBlockDTO descriptionBlock;
-        private final RecipeDraft.DraftInstruction instruction;
-
-        private PendingImageUpload(Kind kind, String localUri, DescriptionBlockDTO descriptionBlock,
-                                    RecipeDraft.DraftInstruction instruction) {
-            this.kind = kind;
-            this.localUri = localUri;
-            this.descriptionBlock = descriptionBlock;
-            this.instruction = instruction;
-        }
-
-        /** @return the picked image's local (file://) URI, as a string */
-        public String getLocalUri() {
-            return localUri;
-        }
+    public List<RecipeDraftMediaHelper.PendingImageUpload> collectPendingImageUploads() {
+        return RecipeDraftMediaHelper.collectPendingImageUploads(draft);
     }
 
-    /**
-     * @return every description/cover/instruction image still referenced by a local
-     *         local URI, i.e. not yet uploaded — empty once nothing is pending
-     */
-    public List<PendingImageUpload> collectPendingImageUploads() {
-        List<PendingImageUpload> pending = new java.util.ArrayList<>();
-        java.util.Set<String> seen = new java.util.HashSet<>();
-        for (DescriptionBlockDTO block : draft.descriptionBlocks) {
-            if ("IMAGE".equals(block.type()) && isLocalUri(block.imageUrl())) {
-                pending.add(new PendingImageUpload(PendingImageUpload.Kind.DESCRIPTION_BLOCK, block.imageUrl(), block, null));
-                seen.add(block.imageUrl());
-            }
-        }
-        if (isLocalUri(draft.primaryImageUrl) && !seen.contains(draft.primaryImageUrl)) {
-            pending.add(new PendingImageUpload(PendingImageUpload.Kind.COVER, draft.primaryImageUrl, null, null));
-        }
-        for (RecipeDraft.DraftInstruction instruction : draft.instructions) {
-            if (isLocalUri(instruction.imageUrl)) {
-                pending.add(new PendingImageUpload(PendingImageUpload.Kind.INSTRUCTION, instruction.imageUrl, null, instruction));
-            }
-        }
-        return pending;
-    }
-
-    private static boolean isLocalUri(String value) {
-        return value != null && (value.startsWith("content://") || value.startsWith("file://"));
-    }
-
-    /**
-     * Writes a just-uploaded image's secure URL back into the draft, replacing whichever local
-     * URI {@code pending} referenced (including the cover photo, if it happened to be the same
-     * local URI via the description-photo cover fallback).
-     *
-     * @param pending the resolved upload, as returned by {@link #collectPendingImageUploads()}
-     * @param uploadedUrl the secure HTTPS URL Cloudinary returned
-     */
-    public void resolvePendingImageUpload(PendingImageUpload pending, String uploadedUrl) {
-        if (Objects.equals(draft.primaryImageUrl, pending.localUri)) {
-            draft.primaryImageUrl = uploadedUrl;
-        }
-        switch (pending.kind) {
-            case DESCRIPTION_BLOCK -> replaceDescriptionBlock(pending.descriptionBlock, new DescriptionBlockDTO(
-                    pending.descriptionBlock.type(), pending.descriptionBlock.text(), uploadedUrl, pending.descriptionBlock.caption()));
-            case INSTRUCTION -> pending.instruction.imageUrl = uploadedUrl;
-            case COVER -> { /* already handled by the primaryImageUrl check above */ }
-        }
+    public void resolvePendingImageUpload(RecipeDraftMediaHelper.PendingImageUpload pending, String uploadedUrl) {
+        RecipeDraftMediaHelper.resolvePendingImageUpload(draft, pending, uploadedUrl);
     }
 
     /**

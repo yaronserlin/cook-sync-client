@@ -77,6 +77,11 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
     public MyRecipesViewModel(RecipeRepository repository, TagRepository tagRepository) {
         this.repository = repository;
         this.tagRepository = tagRepository;
+        com.cooksync.app.data.publish.RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(event -> {
+            if (event != null && event.getContentIfNotHandled() != null) {
+                loadMyRecipes();
+            }
+        });
     }
 
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getRecipesResult() { return recipesResult; }

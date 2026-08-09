@@ -82,6 +82,11 @@
 
     </HorizontalScrollView>
 
+    <!-- Live background publish progress feedback card -->
+    <include
+        android:id="@+id/card_publish_progress"
+        layout="@layout/layout_publish_progress_card" />
+
     <!-- Resumable local draft, pinned above the published/private list — My Recipes only (see
          RecipeListActivity/MyRecipesActivity, which populate and show this; this layout is
          shared with Favorites, which never has a draft to show). -->

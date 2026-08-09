@@ -75,6 +75,11 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
     public HomeViewModel(RecipeRepository recipeRepository, TagRepository tagRepository) {
         this.recipeRepository = recipeRepository;
         this.tagRepository = tagRepository;
+        com.cooksync.app.data.publish.RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(event -> {
+            if (event != null && event.getContentIfNotHandled() != null) {
+                loadInitialFeed();
+            }
+        });
     }
 
     public LiveData<FeedState> getFeedState() { return feedState; }
