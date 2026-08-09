@@ -82,6 +82,18 @@
 
     </HorizontalScrollView>
 
+    <!-- Resumable local draft, pinned above the published/private list — My Recipes only (see
+         RecipeListActivity/MyRecipesActivity, which populate and show this; this layout is
+         shared with Favorites, which never has a draft to show). -->
+    <include
+        android:id="@+id/draft_card"
+        layout="@layout/item_recipe_draft_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="12dp"
+        android:visibility="gone" />
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -140,6 +152,21 @@
         </LinearLayout>
 
         <include layout="@layout/layout_no_results_state" />
+
+        <!-- "Create recipe" entry point — My Recipes only (see RecipeListActivity, which hides
+             this on Favorites since this layout is shared by both screens). -->
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/fab_add_recipe"
+            style="@style/Widget.CookSync.Fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/wizard_title"
+            android:src="@drawable/ic_add"
+            android:visibility="gone"
+            tools:visibility="visible" />
 
     </FrameLayout>
 

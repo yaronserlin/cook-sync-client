@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Pinned "resumable draft" card on My Recipes, distinct from item_recipe_row_card since a
+     local draft's data shape (title only, no reviews/rating/views) and behavior (tap resumes
+     the wizard rather than opening recipe detail) are genuinely different from a server-backed
+     RecipePreviewResponse row. Uses a plain View (not MaterialCardView) since MaterialCardView's
+     stroke can't be dashed — the dashed look comes from bg_dashed_draft_card.xml instead. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_dashed_draft_card"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="12dp">
+
+    <FrameLayout
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:background="@drawable/bg_accent_circle_200">
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_edit"
+            app:tint="@color/color_accent_700" />
+
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tv_draft_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/caprasimo"
+            android:maxLines="1"
+            android:textColor="@color/color_accent_800"
+            android:textSize="15sp"
+            tools:text="Shakshuka with feta" />
+
+        <TextView
+            android:id="@+id/tv_draft_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/color_accent_700"
+            android:textSize="12sp"
+            tools:text="Draft · step 2 of 4 · saved 2 days ago" />
+
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_resume_draft"
+        style="@style/CookSync.Button.Primary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp"
+        android:text="@string/wizard_action_resume"
+        android:textSize="12.5sp" />
+
+</LinearLayout>

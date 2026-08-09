@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.cooksync.app.data.remote.ApiService;
 import com.cooksync.app.data.remote.RetrofitClient;
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.recipe.RecipeCreateRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
@@ -52,6 +53,12 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
     public void getRecipeDetail(String recipeId, MutableLiveData<ApiResult<RecipeResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getRecipeDetail(recipeId))));
+    }
+
+    @Override
+    public void createRecipe(RecipeCreateRequestDTO request, MutableLiveData<ApiResult<RecipeResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.createRecipe(request))));
     }
 
     @Override

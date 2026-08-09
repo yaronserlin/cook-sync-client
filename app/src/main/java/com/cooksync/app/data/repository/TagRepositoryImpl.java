@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.cooksync.app.data.remote.ApiService;
 import com.cooksync.app.data.remote.RetrofitClient;
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.tags.TagRequestDTO;
 import com.dtos.response.tags.TagResponse;
 
 import java.util.List;
@@ -29,5 +30,12 @@ public class TagRepositoryImpl extends BaseRepository implements TagRepository {
     public void getAllTags(MutableLiveData<ApiResult<List<TagResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(apiService::getAllTags)));
+    }
+
+    @Override
+    public void createTag(String name, MutableLiveData<ApiResult<TagResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        TagRequestDTO request = new TagRequestDTO(name);
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.createCustomTag(request))));
     }
 }

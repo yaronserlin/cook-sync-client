@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dashed-border "add row" background, matching the design's add-ingredient/add-step cards.
+     Dashed shape-drawable strokes don't render under hardware acceleration on some Android
+     versions, so any view using this must call setLayerType(LAYER_TYPE_SOFTWARE, null). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <stroke
+        android:width="1.5dp"
+        android:color="@color/color_neutral_400"
+        android:dashGap="4dp"
+        android:dashWidth="6dp" />
+    <corners android:radius="16dp" />
+    <solid android:color="@android:color/transparent" />
+</shape>

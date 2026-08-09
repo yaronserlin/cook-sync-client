@@ -15,7 +15,6 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.NumberPicker;
 import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
@@ -371,30 +370,12 @@ public class CookingModeActivity extends BaseActivity {
      * with whatever time is currently showing on the clock.
      */
     private void showSetTimerDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_set_timer, null);
-        NumberPicker npHours = dialogView.findViewById(R.id.np_hours);
-        NumberPicker npMinutes = dialogView.findViewById(R.id.np_minutes);
-        NumberPicker npSeconds = dialogView.findViewById(R.id.np_seconds);
-        npHours.setMinValue(0); npHours.setMaxValue(23);
-        npMinutes.setMinValue(0); npMinutes.setMaxValue(59);
-        npSeconds.setMinValue(0); npSeconds.setMaxValue(59);
-
         Integer remaining = viewModel.getTimerRemainingSeconds().getValue();
         int current = remaining == null ? 0 : remaining;
-        npHours.setValue(current / 3600);
-        npMinutes.setValue((current % 3600) / 60);
-        npSeconds.setValue(current % 60);
-
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
-                .setTitle(R.string.dialog_set_timer_title)
-                .setView(dialogView)
-                .setPositiveButton(R.string.action_set, (dialog, which) -> {
-                    int totalSeconds = npHours.getValue() * 3600 + npMinutes.getValue() * 60 + npSeconds.getValue();
-                    currentStepTimerTotalSeconds = Math.max(totalSeconds, 1);
-                    viewModel.setTimerSeconds(currentStepTimerTotalSeconds);
-                })
-                .setNegativeButton(R.string.action_cancel, null)
-                .show();
+        com.cooksync.app.ui.common.TimerPickerDialog.show(this, current, totalSeconds -> {
+            currentStepTimerTotalSeconds = Math.max(totalSeconds, 1);
+            viewModel.setTimerSeconds(currentStepTimerTotalSeconds);
+        });
     }
 
     /**

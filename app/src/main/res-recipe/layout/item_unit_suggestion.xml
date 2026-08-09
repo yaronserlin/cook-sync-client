@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One row in the ingredient unit-picker dropdown popup, styled the same as
+     item_tag_suggestion.xml so every autocomplete popup in the wizard matches. -->
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackground"
+    android:minHeight="46dp"
+    android:gravity="center_vertical"
+    android:paddingHorizontal="14dp"
+    android:paddingVertical="10dp"
+    android:textColor="@color/color_text"
+    android:textSize="13.5sp" />

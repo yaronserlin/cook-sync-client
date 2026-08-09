@@ -202,6 +202,19 @@
         <item name="labelVisibilityMode">labeled</item>
     </style>
 
+    <!-- "Create recipe" floating action button, shown above the bottom nav on Home, My Recipes,
+         and Settings. No FAB exists elsewhere in the app to match, so this is styled from the
+         same accent-fill/pill conventions as the rest of the design system rather than stock
+         Material FAB defaults. -->
+    <style name="Widget.CookSync.Fab" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="backgroundTint">@color/color_accent</item>
+        <item name="tint">@color/color_bg</item>
+        <item name="fabCustomSize">60dp</item>
+        <item name="maxImageSize">26dp</item>
+        <item name="elevation">6dp</item>
+        <item name="rippleColor">@color/color_accent_700</item>
+    </style>
+
     <!-- Re-themes a bare android.widget.NumberPicker to match the Organic palette: the
          picker has no public Material styling surface, so this overrides the theme attrs its
          internal views actually read — colorControlNormal for the up/down arrows and

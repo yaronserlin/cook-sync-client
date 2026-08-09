@@ -103,6 +103,9 @@ public class HomeActivity extends BaseActivity {
         findViewById(R.id.search_bar_tap_target).setOnClickListener(v ->
                 Navigator.start(this, SearchActivity.newIntentWithFilters(this, viewModel)));
 
+        findViewById(R.id.fab_add_recipe).setOnClickListener(v ->
+                Navigator.start(this, com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity.class));
+
         bottomNav = findViewById(R.id.bottom_nav);
         bottomNav.setSelectedItemId(R.id.nav_home);
         bottomNav.setOnItemSelectedListener(item -> {

@@ -11,6 +11,7 @@ import androidx.annotation.IdRes;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.cooksync.app.R;
+import com.cooksync.app.data.local.RecipeDraftStore;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.common.Navigator;
@@ -19,6 +20,8 @@ import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ViewModelFactory;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
+import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
+import com.cooksync.app.ui.recipe.wizard.RecipeDraft;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
@@ -63,6 +66,44 @@ public class MyRecipesActivity extends RecipeListActivity {
         showSkeleton(true);
         viewModel.loadMyRecipes();
         viewModel.loadTags();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        showResumableDraftIfAny();
+    }
+
+    /**
+     * Shows the pinned "resumable draft" card when a local, unpublished draft exists (see
+     * {@link RecipeDraftStore}), matching the design's singular "Resumable draft pinned above
+     * published recipes." Re-checked on every {@link #onResume()} since the draft can be
+     * created, resumed, or discarded from {@link AddRecipeWizardActivity} in between visits.
+     */
+    private void showResumableDraftIfAny() {
+        View draftCard = findViewById(R.id.draft_card);
+        if (!RecipeDraftStore.hasDraft()) {
+            draftCard.setVisibility(View.GONE);
+            return;
+        }
+        // Dashed shape-drawable strokes don't reliably render under hardware acceleration.
+        draftCard.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+        RecipeDraft draft = RecipeDraftStore.load();
+        String title = draft.title == null || draft.title.trim().isEmpty()
+                ? getString(R.string.my_recipes_draft_untitled) : draft.title;
+        ((TextView) draftCard.findViewById(R.id.tv_draft_title)).setText(title);
+
+        CharSequence savedAgo = draft.savedAtMillis > 0
+                ? android.text.format.DateUtils.getRelativeTimeSpanString(draft.savedAtMillis)
+                : "";
+        ((TextView) draftCard.findViewById(R.id.tv_draft_subtitle)).setText(
+                getString(R.string.wizard_draft_step_of_format, draft.lastReachedStep + 1, savedAgo));
+
+        View.OnClickListener resume = v -> Navigator.start(this, AddRecipeWizardActivity.class);
+        draftCard.setOnClickListener(resume);
+        draftCard.findViewById(R.id.btn_resume_draft).setOnClickListener(resume);
+        draftCard.setVisibility(View.VISIBLE);
     }
 
     private void initViews() {

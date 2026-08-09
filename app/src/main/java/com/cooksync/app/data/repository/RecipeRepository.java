@@ -3,6 +3,7 @@ package com.cooksync.app.data.repository;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.recipe.RecipeCreateRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -57,6 +58,14 @@ public interface RecipeRepository {
      * @param resultTarget LiveData target to post the outcome
      */
     void getRecipeDetail(String recipeId, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
+
+    /**
+     * Creates a new recipe authored by the current user.
+     *
+     * @param request the complete recipe payload
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void createRecipe(RecipeCreateRequestDTO request, MutableLiveData<ApiResult<RecipeResponse>> resultTarget);
 
     /**
      * Fetches the complete set of the user's personal recipes marked as favorites. The server

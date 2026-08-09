@@ -14,6 +14,8 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.RecipeRepositoryImpl;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.TagRepositoryImpl;
+import com.cooksync.app.data.repository.UnitRepository;
+import com.cooksync.app.data.repository.UnitRepositoryImpl;
 import com.cooksync.app.ui.admin.AdminViewModel;
 import com.cooksync.app.ui.auth.ForgotPasswordViewModel;
 import com.cooksync.app.ui.auth.LoginViewModel;
@@ -25,6 +27,7 @@ import com.cooksync.app.ui.recipe.list.FavoritesViewModel;
 import com.cooksync.app.ui.recipe.list.MyRecipesViewModel;
 import com.cooksync.app.ui.recipe.review.ReviewViewModel;
 import com.cooksync.app.ui.recipe.search.SearchViewModel;
+import com.cooksync.app.ui.recipe.wizard.AddRecipeViewModel;
 import com.cooksync.app.ui.settings.SettingsViewModel;
 
 /**
@@ -46,6 +49,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
     private final TagRepository tagRepository;
     private final MediaRepository mediaRepository;
     private final AdminRepository adminRepository;
+    private final UnitRepository unitRepository;
 
     /**
      * Constructs the factory, eagerly creating the shared repository instances it hands out
@@ -61,6 +65,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         this.tagRepository = new TagRepositoryImpl();
         this.mediaRepository = new MediaRepositoryImpl();
         this.adminRepository = new AdminRepositoryImpl();
+        this.unitRepository = new UnitRepositoryImpl();
     }
 
     /**
@@ -103,6 +108,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new ReviewViewModel(recipeRepository);
         } else if (modelClass.isAssignableFrom(AdminViewModel.class)) {
             return (T) new AdminViewModel(adminRepository, recipeRepository);
+        } else if (modelClass.isAssignableFrom(AddRecipeViewModel.class)) {
+            return (T) new AddRecipeViewModel(recipeRepository, tagRepository, unitRepository, mediaRepository);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }

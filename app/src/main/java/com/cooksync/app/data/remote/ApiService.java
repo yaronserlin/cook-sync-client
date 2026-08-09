@@ -250,6 +250,17 @@ public interface ApiService {
     );
 
     /**
+     * Creates a new recipe authored by the currently authenticated user.
+     *
+     * @param request the complete recipe payload (metadata, ingredients, instructions, tags)
+     * @return call yielding the newly created recipe
+     */
+    @POST("api/recipes")
+    Call<ApiResponse<com.dtos.response.recipe.RecipeResponse>> createRecipe(
+            @Body com.dtos.request.recipe.RecipeCreateRequestDTO request
+    );
+
+    /**
      * Fetches every recipe (published or private) authored by the currently authenticated
      * user, for the "My Recipes" screen.
      *
@@ -297,6 +308,33 @@ public interface ApiService {
      */
     @GET("api/tags")
     Call<ApiResponse<PagedResponse<com.dtos.response.tags.TagResponse>>> getAllTags(
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
+    );
+
+    /**
+     * Creates a new custom tag, or returns the existing one if a tag with the same name
+     * (case-insensitive) already exists.
+     *
+     * @param request the tag name payload
+     * @return call yielding the created (or matched) tag
+     */
+    @POST("api/tags/custom")
+    Call<ApiResponse<com.dtos.response.tags.TagResponse>> createCustomTag(
+            @Body com.dtos.request.tags.TagRequestDTO request
+    );
+
+    // ── Units ──────────────────────────────────────────────────────
+
+    /**
+     * Fetches a page of measurement units available for recipe ingredients.
+     *
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of units
+     */
+    @GET("api/units")
+    Call<ApiResponse<PagedResponse<com.dtos.response.unit.UnitResponse>>> getUnits(
             @retrofit2.http.Query("page") int page,
             @retrofit2.http.Query("size") int size
     );

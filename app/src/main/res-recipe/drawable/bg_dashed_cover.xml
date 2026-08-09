@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dashed 16:9 cover-photo placeholder background, matching the design's "add cover photo"
+     slot. See bg_dashed_add_row.xml for the software-layer-type rendering note. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <stroke
+        android:width="1.5dp"
+        android:color="@color/color_neutral_400"
+        android:dashGap="4dp"
+        android:dashWidth="6dp" />
+    <corners android:radius="20dp" />
+    <solid android:color="@color/color_neutral_300" />
+</shape>

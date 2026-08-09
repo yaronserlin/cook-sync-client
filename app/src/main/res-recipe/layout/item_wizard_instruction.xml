@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- One instruction step card in the Create Recipe wizard's Instructions step: numbered badge,
+     description, and a row of tappable pills for the timer and linked ingredients. -->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardBackgroundColor="@color/color_surface"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:strokeWidth="0dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_instruction_step_number"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:background="@drawable/bg_step_number_circle"
+                android:fontFamily="@font/caprasimo"
+                android:gravity="center"
+                android:textColor="@color/color_bg"
+                android:textSize="12sp"
+                tools:text="1" />
+
+            <TextView
+                android:id="@+id/tv_instruction_step_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:alpha="0.5"
+                android:letterSpacing="0.1"
+                android:textColor="@color/color_text"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                tools:text="STEP 1" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <ImageView
+                android:id="@+id/iv_instruction_drag_handle"
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:alpha="0.35"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_drag_handle"
+                app:tint="@color/color_text" />
+
+            <ImageButton
+                android:id="@+id/btn_remove_instruction"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/wizard_action_remove_step"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_delete"
+                app:tint="@color/color_accent_700" />
+
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/et_instruction_description"
+            style="@style/CookSync.Input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="top|start"
+            android:hint="@string/wizard_instruction_description_hint"
+            android:inputType="textCapSentences|textMultiLine"
+            android:minLines="2" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:id="@+id/cg_instruction_pills"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:chipSpacingHorizontal="6dp"
+            app:singleLine="false">
+
+            <TextView
+                android:id="@+id/tv_instruction_timer_pill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_tag_neutral"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="11dp"
+                android:paddingVertical="6dp"
+                android:textColor="@color/color_text"
+                android:textSize="11.5sp"
+                tools:text="⏱ no timer" />
+
+            <TextView
+                android:id="@+id/tv_instruction_add_ingredient_pill"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_tag_outline"
+                android:clickable="true"
+                android:focusable="true"
+                android:paddingHorizontal="11dp"
+                android:paddingVertical="6dp"
+                android:text="@string/wizard_instruction_add_ingredient_pill"
+                android:textColor="@color/color_accent"
+                android:textSize="11.5sp" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_instruction_photo"
+                style="@style/CookSync.Button.Ghost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="0dp"
+                android:paddingHorizontal="0dp"
+                android:text="@string/wizard_action_add_step_photo"
+                app:icon="@drawable/ic_add"
+                app:iconGravity="textStart"
+                app:iconSize="16dp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_instruction_photo_preview"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_marginStart="10dp"
+                android:visibility="gone"
+                app:cardCornerRadius="10dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp"
+                tools:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/iv_instruction_photo_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    tools:src="@tools:sample/backgrounds/scenic" />
+
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

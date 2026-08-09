@@ -100,6 +100,8 @@ public class SettingsActivity extends BaseActivity {
 
         findViewById(R.id.btn_edit_avatar).setOnClickListener(v -> pickAvatarLauncher.launch("image/*"));
         findViewById(R.id.btn_logout).setOnClickListener(v -> confirmLogout());
+        findViewById(R.id.fab_add_recipe).setOnClickListener(v ->
+                Navigator.start(this, com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity.class));
 
         viewModel.loadFavoritesCount();
         viewModel.loadMyRecipesCount();

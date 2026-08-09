@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Accent-tinted pill background, matching the design system's ".tag-accent" (used for an
+     instruction step's active timer pill, e.g. "⏱ 8 min"). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/color_accent_100" />
+    <corners android:radius="12dp" />
+</shape>

@@ -20,10 +20,12 @@ import com.cooksync.app.ui.common.BaseActivity;
 import com.cooksync.app.ui.common.Navigator;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.home.HomeActivity;
+import com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity;
 import com.cooksync.app.ui.settings.SettingsActivity;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.ChipGroup;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.List;
 import java.util.function.Consumer;
@@ -56,6 +58,7 @@ public abstract class RecipeListActivity extends BaseActivity {
     protected BottomNavigationView bottomNav;
     private ChipGroup cgRemovableConstraints;
     private View btnClearAll;
+    private FloatingActionButton fabAddRecipe;
 
     /** Which bottom-nav item corresponds to this screen. */
     @IdRes
@@ -83,6 +86,18 @@ public abstract class RecipeListActivity extends BaseActivity {
         setupSkeleton(R.id.skeleton_view);
 
         setupBottomNav();
+        setupCreateRecipeFab();
+    }
+
+    /**
+     * Shows the "Create recipe" FAB — present on every tabbed screen per the design (Home, My
+     * Recipes, Favorites, Profile all show it via the shared bottom-nav chrome), so this layout
+     * (shared by My Recipes and Favorites) always shows and wires it up.
+     */
+    private void setupCreateRecipeFab() {
+        fabAddRecipe = findViewById(R.id.fab_add_recipe);
+        fabAddRecipe.setVisibility(View.VISIBLE);
+        fabAddRecipe.setOnClickListener(v -> Navigator.start(this, AddRecipeWizardActivity.class));
     }
 
     private void setupBottomNav() {

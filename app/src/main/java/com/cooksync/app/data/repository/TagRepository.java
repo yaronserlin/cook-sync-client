@@ -26,4 +26,14 @@ public interface TagRepository {
      * @param resultTarget LiveData target to post the outcome
      */
     void getAllTags(MutableLiveData<ApiResult<List<TagResponse>>> resultTarget);
+
+    /**
+     * Creates a new custom tag, or returns the existing one if a tag with the same name
+     * (case-insensitive) already exists. Used by the "Create tag" action in the recipe
+     * creation wizard's tag autocomplete.
+     *
+     * @param name the tag's display name
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void createTag(String name, MutableLiveData<ApiResult<TagResponse>> resultTarget);
 }

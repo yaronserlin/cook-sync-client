@@ -351,4 +351,108 @@
     <string name="admin_users_count_format">%1$d users</string>
     <string name="admin_confirm_suspend_title">Suspend this account?</string>
     <string name="admin_confirm_suspend_message">%1$s won\'t be able to sign in until reactivated.</string>
+
+    <!-- Create Recipe wizard -->
+    <string name="wizard_title">New recipe</string>
+    <string name="wizard_step1_of4">STEP 1 OF 4</string>
+    <string name="wizard_step2_of4">STEP 2 OF 4</string>
+    <string name="wizard_step3_of4">STEP 3 OF 4</string>
+    <string name="wizard_step4_of4">STEP 4 OF 4</string>
+    <string name="wizard_step1_heading">The basics</string>
+    <string name="wizard_step2_heading">Ingredients</string>
+    <string name="wizard_step2_helper">Drag to reorder. Quantities show per serving in cooking mode.</string>
+    <string name="wizard_step3_heading">Instructions</string>
+    <string name="wizard_step3_helper">One action per step. Add a timer and the cooking screen will count it down.</string>
+    <string name="wizard_step4_heading">Check and publish</string>
+    <string name="wizard_ingredients_tip">Write quantities as \"800 g\" or \"3 tbsp\" — cooking mode will show each ingredient beside the step that uses it.</string>
+    <string name="wizard_popular_tags_label">POPULAR TAGS</string>
+    <string-array name="wizard_popular_tag_names">
+        <item>Quick</item>
+        <item>Baking</item>
+        <item>Vegan</item>
+        <item>Gluten free</item>
+        <item>One pan</item>
+    </string-array>
+    <string name="wizard_next_ingredients">Ingredients</string>
+    <string name="wizard_next_instructions">Instructions</string>
+    <string name="wizard_next_review">Review</string>
+    <string name="wizard_action_draft">Draft</string>
+    <string name="wizard_error_title_required">Required</string>
+    <string name="wizard_error_difficulty_required">Choose a difficulty</string>
+    <string name="wizard_checklist_ingredients_format">%1$d ingredients with quantities</string>
+    <string name="wizard_checklist_ingredients_missing">Add at least one ingredient with a quantity</string>
+    <string name="wizard_checklist_steps_format">%1$d steps, %2$d with timers</string>
+    <string name="wizard_checklist_steps_missing">Add at least one instruction step</string>
+    <string name="wizard_checklist_tags_format">%1$d tags · %2$s</string>
+    <string name="wizard_checklist_tags_none">No tags added yet</string>
+    <string name="wizard_checklist_cover_missing">No cover photo yet — recipes with photos get more views</string>
+    <string name="wizard_checklist_cover_added">Cover photo added</string>
+    <string name="wizard_draft_step_of_format">Draft · step %1$d of 4 · saved %2$s</string>
+    <string name="wizard_action_resume">Resume</string>
+    <string name="wizard_instruction_set_timer_title">Set a timer for this step</string>
+    <string name="wizard_instruction_no_timer_pill">⏱ no timer</string>
+    <string name="wizard_instruction_timer_pill_format">⏱ %1$d min</string>
+    <string name="wizard_instruction_add_ingredient_pill">+ ingredient</string>
+    <string name="wizard_instruction_link_ingredients_title">Which ingredients does this step use?</string>
+    <string name="wizard_photo_caption_label">Caption</string>
+    <string name="wizard_photo_caption_title">Add a caption</string>
+    <string name="wizard_prep_time_dialog_title">Prep time</string>
+    <string name="wizard_cook_time_dialog_title">Cook time</string>
+    <string name="wizard_duration_format">%1$dh %2$dm</string>
+    <string name="wizard_duration_minutes_only_format">%1$d min</string>
+    <string name="wizard_duration_hint">0h 0m</string>
+    <string name="wizard_action_save_draft">Save draft</string>
+    <string name="wizard_action_next">Next</string>
+    <string name="wizard_discard_title">Discard this recipe?</string>
+    <string name="wizard_discard_message">Your progress will be lost unless you save it as a draft first.</string>
+    <string name="wizard_action_discard">Discard</string>
+    <string name="wizard_action_keep_editing">Keep editing</string>
+    <string name="wizard_draft_saved_toast">Draft saved</string>
+    <string name="wizard_published_toast">Recipe published</string>
+
+    <string name="wizard_basics_title_label">Recipe title</string>
+    <string name="wizard_basics_title_hint">e.g. Shakshuka with feta</string>
+    <string name="wizard_basics_description_label">Description</string>
+    <string name="wizard_basics_description_hint">A short description of your recipe&#8230;</string>
+    <string name="wizard_basics_description_helper">Drag a photo\'s handle to move it between paragraphs. Photos sit inline where you place them; the first one becomes the cover if you don\'t set one.</string>
+    <string name="wizard_basics_cover_label">Cover photo</string>
+    <string name="wizard_action_add_cover_photo">Add photo</string>
+    <string name="wizard_basics_description_photos_label">Description photos (optional)</string>
+    <string name="wizard_action_add_description_photo">Add photo</string>
+    <string name="wizard_basics_difficulty_label">Difficulty</string>
+    <string name="wizard_basics_tags_label">Tags</string>
+    <string name="wizard_basics_tags_hint">Add a tag&#8230;</string>
+    <string name="wizard_action_add_tag">Add tag</string>
+
+    <string name="wizard_ingredients_label">Ingredients</string>
+    <string name="wizard_ingredient_name_hint">Ingredient name</string>
+    <string name="wizard_ingredient_quantity_hint">Qty</string>
+    <string name="wizard_ingredient_unit_hint">Unit</string>
+    <string name="wizard_action_remove_ingredient">Remove ingredient</string>
+    <string name="wizard_action_add_ingredient">Add ingredient</string>
+
+    <string name="wizard_action_remove_step">Remove step</string>
+    <string name="wizard_step_number_format">Step %1$d</string>
+    <string name="wizard_instruction_description_hint">Describe this step&#8230;</string>
+    <string name="wizard_instruction_has_timer_label">Timer</string>
+    <string name="wizard_instruction_timer_seconds_hint">Seconds</string>
+    <string name="wizard_instruction_uses_ingredients_label">USES INGREDIENTS</string>
+    <string name="wizard_action_add_step_photo">Add photo</string>
+    <string name="wizard_action_add_step">Add step</string>
+
+    <string name="wizard_review_checklist_label">Before you publish</string>
+    <string name="wizard_checklist_title_missing">Recipe title is required</string>
+    <string name="wizard_checklist_difficulty_missing">Choose a difficulty</string>
+    <string name="wizard_checklist_times_format">%1$d min prep · %2$d min cook</string>
+    <string name="wizard_checklist_times_missing">Prep and cook time are required</string>
+    <string name="wizard_checklist_servings_format">Serves %1$d</string>
+    <string name="wizard_checklist_servings_missing">Servings is required</string>
+    <string name="wizard_review_visibility_label">Visibility</string>
+    <string name="wizard_review_untitled">Untitled recipe</string>
+    <string name="wizard_review_meta_format">%1$s · %2$d min prep · %3$d min cook · Serves %4$d</string>
+    <string name="wizard_action_publish">Publish</string>
+
+    <string name="wizard_resume_draft_subtitle">Tap to resume</string>
+    <string name="wizard_draft_badge">Draft</string>
+    <string name="my_recipes_draft_untitled">Untitled draft</string>
 </resources>
