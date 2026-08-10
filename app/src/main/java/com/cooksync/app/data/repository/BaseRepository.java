@@ -13,6 +13,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 
+import androidx.lifecycle.MutableLiveData;
+
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -35,6 +37,9 @@ public abstract class BaseRepository {
 
     /** Shared thread pool for network I/O — keeps the main thread unblocked at all times. */
     protected static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
+
+    /** Matches {@code OrganicToast}'s auto-dismiss duration. Shared across ViewModels for undo timing. */
+    public static final long UNDO_WINDOW_MS = 3200;
 
     /**
      * Page size used by {@link #fetchAllPages}. Every server-paginated endpoint the app
@@ -70,6 +75,32 @@ public abstract class BaseRepository {
         } catch (IOException e) {
             return new ApiResult.Error<>(CookSyncApplication.getAppContext().getString(R.string.error_network), e);
         }
+    }
+
+    /**
+     * Executes a Retrofit call on a background thread and posts the result to the given LiveData.
+     *
+     * @param <T> the type of the successful payload
+     * @param call the Retrofit call to execute
+     * @param resultTarget the LiveData to post the result to
+     */
+    protected <T> void executeAsync(Call<ApiResponse<T>> call, MutableLiveData<ApiResult<T>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(call)));
+    }
+
+    /**
+     * Repeatedly calls a paginated endpoint on a background thread and posts the concatenated
+     * result to the given LiveData.
+     *
+     * @param <T> the type of items contained within each page
+     * @param callFactory produces the Retrofit call for a given (page, size) pair
+     * @param resultTarget the LiveData to post the result to
+     */
+    protected <T> void fetchAsync(BiFunction<Integer, Integer, Call<ApiResponse<PagedResponse<T>>>> callFactory,
+                                   MutableLiveData<ApiResult<List<T>>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(callFactory)));
     }
 
     /**

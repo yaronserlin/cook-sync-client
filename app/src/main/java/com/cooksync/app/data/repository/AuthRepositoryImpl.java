@@ -107,8 +107,8 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
         EXECUTOR.execute(() -> {
             try {
                 apiService.logout().execute();
-            } catch (IOException ignored) {
-                // Best-effort: even if the server call fails we still clear locally.
+            } catch (IOException e) {
+                android.util.Log.w("AuthRepositoryImpl", "Server logout request failed", e);
             }
             SessionManager.getInstance().logout();
             resultTarget.postValue(new ApiResult.Success<>(null));

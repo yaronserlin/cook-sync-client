@@ -409,8 +409,8 @@ public class CookingModeActivity extends BaseActivity {
             if (soundUri == null) soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             activeRingtone = RingtoneManager.getRingtone(this, soundUri);
             if (activeRingtone != null) activeRingtone.play();
-        } catch (Exception ignored) {
-            // Best-effort: a missing/unreadable system sound shouldn't block the alert dialog.
+        } catch (Exception e) {
+            android.util.Log.w("CookingModeActivity", "Failed to play timer finished sound", e);
         }
     }
 

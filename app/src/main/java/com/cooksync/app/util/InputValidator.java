@@ -5,6 +5,9 @@ import android.util.Patterns;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.cooksync.app.CookSyncApplication;
+import com.cooksync.app.R;
+
 import java.util.regex.Pattern;
 
 /**
@@ -124,13 +127,13 @@ public final class InputValidator {
     public static ValidationResult validateEmail(@Nullable String raw) {
         String value = InputSanitizer.trim(raw);
         if (value.isEmpty()) {
-            return ValidationResult.invalid("Email cannot be blank");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_email_blank));
         }
         if (InputSanitizer.containsDangerousContent(value)) {
-            return ValidationResult.invalid("Email contains invalid characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_email_dangerous));
         }
         if (!Patterns.EMAIL_ADDRESS.matcher(value).matches()) {
-            return ValidationResult.invalid("Please enter a valid email address");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_email_invalid));
         }
         return ValidationResult.valid();
     }
@@ -157,16 +160,16 @@ public final class InputValidator {
     public static ValidationResult validateLoginPassword(@Nullable String raw) {
         String value = InputSanitizer.trim(raw);
         if (value.isEmpty()) {
-            return ValidationResult.invalid("Password cannot be blank");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_blank));
         }
         if (InputSanitizer.containsDangerousContent(value)) {
-            return ValidationResult.invalid("Password contains invalid characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_dangerous));
         }
         if (value.length() < PASSWORD_MIN) {
-            return ValidationResult.invalid("Password must be at least " + PASSWORD_MIN + " characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_too_short, PASSWORD_MIN));
         }
         if (value.length() > PASSWORD_MAX) {
-            return ValidationResult.invalid("Password must not exceed " + PASSWORD_MAX + " characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_too_long, PASSWORD_MAX));
         }
         return ValidationResult.valid();
     }
@@ -193,20 +196,19 @@ public final class InputValidator {
     public static ValidationResult validateNewPassword(@Nullable String raw) {
         String value = InputSanitizer.trim(raw);
         if (value.isEmpty()) {
-            return ValidationResult.invalid("Password cannot be blank");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_blank));
         }
         if (InputSanitizer.containsDangerousContent(value)) {
-            return ValidationResult.invalid("Password contains invalid characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_dangerous));
         }
         if (value.length() < PASSWORD_MIN) {
-            return ValidationResult.invalid("Password must be at least " + PASSWORD_MIN + " characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_too_short, PASSWORD_MIN));
         }
         if (value.length() > PASSWORD_MAX) {
-            return ValidationResult.invalid("Password must not exceed " + PASSWORD_MAX + " characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_too_long, PASSWORD_MAX));
         }
         if (!PASSWORD_POLICY.matcher(value).matches()) {
-            return ValidationResult.invalid(
-                    "Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_password_policy));
         }
         return ValidationResult.valid();
     }
@@ -234,19 +236,19 @@ public final class InputValidator {
     public static ValidationResult validateName(@Nullable String raw, @NonNull String fieldName) {
         String value = InputSanitizer.trim(raw);
         if (value.isEmpty()) {
-            return ValidationResult.invalid(fieldName + " cannot be blank");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_name_blank, fieldName));
         }
         if (InputSanitizer.containsDangerousContent(value)) {
-            return ValidationResult.invalid(fieldName + " contains invalid characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_name_dangerous, fieldName));
         }
         if (!InputSanitizer.isValidNameCharset(value)) {
-            return ValidationResult.invalid(fieldName + " may only contain letters, spaces, hyphens, and apostrophes");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_name_invalid_charset, fieldName));
         }
         if (value.length() < NAME_MIN) {
-            return ValidationResult.invalid(fieldName + " must be at least " + NAME_MIN + " characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_name_too_short, fieldName, NAME_MIN));
         }
         if (value.length() > NAME_MAX) {
-            return ValidationResult.invalid(fieldName + " must not exceed " + NAME_MAX + " characters");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_name_too_long, fieldName, NAME_MAX));
         }
         return ValidationResult.valid();
     }
@@ -266,7 +268,7 @@ public final class InputValidator {
     public static ValidationResult validatePasswordsMatch(@Nullable String password,
                                                           @Nullable String repeatPassword) {
         if (password == null || !password.equals(repeatPassword)) {
-            return ValidationResult.invalid("Passwords do not match");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_passwords_mismatch));
         }
         return ValidationResult.valid();
     }
@@ -289,7 +291,7 @@ public final class InputValidator {
     @NonNull
     public static ValidationResult validateTermsAccepted(boolean accepted) {
         if (!accepted) {
-            return ValidationResult.invalid("You must accept the Terms of Use to continue");
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_terms_required));
         }
         return ValidationResult.valid();
     }

@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.data.repository.AdminRepository;
+import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Manages the data state for {@link AdminConsoleActivity} and its three tabs: dashboard
@@ -31,7 +33,7 @@ import java.util.Map;
  * <p>Every moderator action (remove/keep a report, suspend a reviewer, merge tags, suspend/
  * reactivate a user) follows the app's "act now, send later" undo pattern (see
  * {@link com.cooksync.app.ui.home.HomeViewModel#toggleFavorite}): the visible effect happens
- * immediately, the real network call is deferred by {@link #UNDO_WINDOW_MS} via
+ * immediately, the real network call is deferred by {@link BaseRepository#UNDO_WINDOW_MS} via
  * {@link #pendingActions}, and a matching {@code undo*} method cancels it before it's ever
  * sent. The hosting fragment is responsible for showing the undo-capable toast and wiring its
  * "Undo" tap to the matching {@code undo*} call.</p>
@@ -48,9 +50,6 @@ public class AdminViewModel extends BaseViewModel {
     private static final int USERS_PAGE_SIZE = 20;
     private static final int REPORTS_PAGE_SIZE = 20;
     private static final int TAG_GROUPS_PAGE_SIZE = 20;
-
-    /** Matches {@code HomeViewModel}'s undo window / {@code OrganicToast}'s auto-dismiss duration. */
-    private static final long UNDO_WINDOW_MS = 3200;
 
     private final AdminRepository adminRepository;
     private final RecipeRepository recipeRepository;
@@ -106,7 +105,6 @@ public class AdminViewModel extends BaseViewModel {
     public LiveData<ApiResult<List<UserResponse>>> getUsersResult() { return usersResult; }
     public LiveData<Event<ApiResult<Void>>> getUserActionResult() { return userActionResult; }
     public String getReasonFilter() { return reasonFilter; }
-    public boolean isUsersLastPage() { return usersLastPage; }
     public long getUsersTotalElements() { return usersTotalElements; }
 
     /** Fetches the moderation/content stats shown in the header badge and Reports stat card. */
@@ -175,22 +173,23 @@ public class AdminViewModel extends BaseViewModel {
     }
 
     private void applyReasonFilter() {
-        if (REASON_ALL.equals(reasonFilter)) {
-            filteredReports.postValue(new ArrayList<>(allReports));
-        } else {
-            List<ReportedReviewResponse> filtered = new ArrayList<>();
-            for (ReportedReviewResponse report : allReports) {
-                if (reasonFilter.equals(report.reason())) {
-                    filtered.add(report);
+        switch (reasonFilter) {
+            case REASON_ALL -> filteredReports.postValue(new ArrayList<>(allReports));
+            default -> {
+                List<ReportedReviewResponse> filtered = new ArrayList<>();
+                for (ReportedReviewResponse report : allReports) {
+                    if (Objects.equals(reasonFilter, report.reason())) {
+                        filtered.add(report);
+                    }
                 }
+                filteredReports.postValue(filtered);
             }
-            filteredReports.postValue(filtered);
         }
     }
 
     /**
      * The "Remove" action: hides the report immediately, then — unless undone within
-     * {@link #UNDO_WINDOW_MS} — deletes the underlying review. Deleting the review already
+     * {@link BaseRepository#UNDO_WINDOW_MS} — deletes the underlying review. Deleting the review already
      * takes it out of the reported-reviews query server-side, so no separate dismiss call is
      * needed (and none is made — a dismiss on an already-deleted review 404s).
      *
@@ -199,7 +198,7 @@ public class AdminViewModel extends BaseViewModel {
     public void removeReport(ReportedReviewResponse report) {
         allReports.remove(report);
         applyReasonFilter();
-        pendingActions.schedule(removeReportKey(report), UNDO_WINDOW_MS, () -> {
+        pendingActions.schedule(removeReportKey(report), BaseRepository.UNDO_WINDOW_MS, () -> {
             MutableLiveData<ApiResult<Void>> deleteResult = new MutableLiveData<>();
             observeOnce(deleteResult, result -> {
                 if (result instanceof ApiResult.Error<Void> error) {
@@ -232,7 +231,7 @@ public class AdminViewModel extends BaseViewModel {
     public void keepReport(ReportedReviewResponse report) {
         allReports.remove(report);
         applyReasonFilter();
-        pendingActions.schedule(keepReportKey(report), UNDO_WINDOW_MS, () -> {
+        pendingActions.schedule(keepReportKey(report), BaseRepository.UNDO_WINDOW_MS, () -> {
             MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
             observeOnce(result, apiResult -> {
                 if (apiResult instanceof ApiResult.Error<Void> error) {
@@ -268,12 +267,12 @@ public class AdminViewModel extends BaseViewModel {
 
     /**
      * The report card's ban-user icon action: suspends the reviewer's account, unless undone
-     * within {@link #UNDO_WINDOW_MS}.
+     * within {@link BaseRepository#UNDO_WINDOW_MS}.
      *
      * @param report the queued report whose author should be suspended
      */
     public void banReporter(ReportedReviewResponse report) {
-        pendingActions.schedule(banReporterKey(report), UNDO_WINDOW_MS, () -> {
+        pendingActions.schedule(banReporterKey(report), BaseRepository.UNDO_WINDOW_MS, () -> {
             MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
             observeOnce(result, apiResult -> {
                 if (apiResult instanceof ApiResult.Error<Void> error) {
@@ -345,11 +344,11 @@ public class AdminViewModel extends BaseViewModel {
 
         List<String> sourceIds = new ArrayList<>();
         for (String id : groupVariantIds) {
-            if (!id.equals(keepTagId)) {
+            if (!Objects.equals(id, keepTagId)) {
                 sourceIds.add(id);
             }
         }
-        pendingActions.schedule(mergeGroupKey(group), UNDO_WINDOW_MS,
+        pendingActions.schedule(mergeGroupKey(group), BaseRepository.UNDO_WINDOW_MS,
                 () -> mergeNextInGroup(group, sourceIds, keepTagId, 0));
     }
 
@@ -453,7 +452,7 @@ public class AdminViewModel extends BaseViewModel {
      */
     public void setUserEnabled(UserResponse user, boolean enabled) {
         patchUserEnabled(user.id(), enabled, enabled ? "ACTIVE" : "SUSPENDED");
-        pendingActions.schedule(userStatusKey(user), UNDO_WINDOW_MS, () -> {
+        pendingActions.schedule(userStatusKey(user), BaseRepository.UNDO_WINDOW_MS, () -> {
             MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
             observeOnce(result, apiResult -> {
                 if (apiResult instanceof ApiResult.Error<Void> error) {
@@ -488,7 +487,7 @@ public class AdminViewModel extends BaseViewModel {
     private void patchUserEnabled(String userId, boolean enabled, String status) {
         for (int i = 0; i < currentUsers.size(); i++) {
             UserResponse u = currentUsers.get(i);
-            if (u.id().equals(userId)) {
+            if (Objects.equals(u.id(), userId)) {
                 currentUsers.set(i, new UserResponse(u.id(), u.firstName(), u.lastName(), u.email(),
                         u.isAdmin(), u.avatarUrl(), u.createdAt(), u.updatedAt(), enabled, status,
                         u.city(), u.bio(), u.showRecipesPublicly(), u.showFavoritesPublicly()));

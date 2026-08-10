@@ -33,6 +33,8 @@ public final class RetrofitClient {
     private static volatile ApiService apiService;
     private static volatile ApiService bareApiService;
 
+    private static final Gson GSON = new GsonBuilder().setLenient().create();
+
     private RetrofitClient() {
     }
 
@@ -145,11 +147,10 @@ public final class RetrofitClient {
      * @return a fully built Retrofit instance
      */
     private static Retrofit buildRetrofit(OkHttpClient client) {
-        Gson gson = new GsonBuilder().setLenient().create();
         return new Retrofit.Builder()
                 .baseUrl(BuildConfig.BASE_URL)
                 .client(client)
-                .addConverterFactory(GsonConverterFactory.create(gson))
+                .addConverterFactory(GsonConverterFactory.create(GSON))
                 .build();
     }
 }

@@ -3,6 +3,7 @@ package com.cooksync.app.ui.home;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.domain.ApiResult;
@@ -35,13 +36,6 @@ import java.util.Set;
 public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
 
     private static final int PAGE_SIZE = 10;
-
-    /**
-     * How long an "add to favorites" waits before actually reaching the server, giving the
-     * "Undo" toast action a window to cancel it. Matches {@code OrganicToast}'s auto-dismiss
-     * duration, since the undo action stops being reachable once the toast itself is gone.
-     */
-    private static final long UNDO_WINDOW_MS = 3200;
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
     private final RecipeRepository recipeRepository;
@@ -242,7 +236,7 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
 
     /**
      * Optimistically toggles a recipe's favorite state in {@link #favoritesResult}. Adding a
-     * favorite is sent immediately; removing one is deferred by {@link #UNDO_WINDOW_MS}
+     * favorite is sent immediately; removing one is deferred by {@link BaseRepository#UNDO_WINDOW_MS}
      * instead, so a tap on the toast's "Undo" action (see {@link #undoRemoveFavorite}) can
      * cancel it before it's ever sent. If an add is requested while its matching remove is
      * still pending, the pending remove is simply cancelled rather than sending an add for
@@ -264,7 +258,7 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
             withoutRecipe.removeIf(r -> r.id().equals(recipeId));
             favoritesResult.setValue(new ApiResult.Success<>(withoutRecipe));
 
-            pendingActions.schedule(recipeId, UNDO_WINDOW_MS, () -> {
+            pendingActions.schedule(recipeId, BaseRepository.UNDO_WINDOW_MS, () -> {
                 MutableLiveData<ApiResult<Void>> writeResult = new MutableLiveData<>();
                 observeOnce(writeResult, result -> {
                     if (result instanceof ApiResult.Error<Void> error) {
