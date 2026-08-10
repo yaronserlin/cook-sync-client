@@ -1,4 +1,8 @@
 package com.cooksync.app.ui.recipe.search;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -7,7 +11,7 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
-import com.cooksync.app.ui.common.BaseViewModel;
+import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.PagedResponse;
@@ -63,7 +67,7 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
-     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
      * Complexity:
      * Time: O(1)

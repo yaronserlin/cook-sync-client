@@ -1,4 +1,12 @@
 package com.cooksync.app.ui.recipe.wizard;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
+import com.cooksync.app.data.model.recipe.RecipeDraft;
+import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
+import com.cooksync.app.data.model.recipe.RecipeDraftValidator;
+import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -15,7 +23,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.common.ViewModelFactory;
+import com.cooksync.app.ui.base.ViewModelFactory;
 import com.dtos.response.unit.UnitResponse;
 
 import java.util.Collections;

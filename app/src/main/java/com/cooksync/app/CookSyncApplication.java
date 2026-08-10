@@ -9,10 +9,10 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.cooksync.app.data.local.TokenStore;
+import com.cooksync.app.data.datasource.local.TokenStore;
 import com.cooksync.app.ui.auth.LoginActivity;
 import com.cooksync.app.ui.auth.RegisterActivity;
-import com.cooksync.app.ui.common.Navigator;
+import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.util.SessionManager;
 

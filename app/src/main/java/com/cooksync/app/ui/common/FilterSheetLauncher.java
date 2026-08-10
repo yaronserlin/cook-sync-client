@@ -1,8 +1,12 @@
 package com.cooksync.app.ui.common;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
 
 import androidx.fragment.app.FragmentManager;
 
-import com.cooksync.app.ui.recipe.FiltersBottomSheetDialogFragment;
+import com.cooksync.app.ui.recipe.common.FiltersBottomSheetDialogFragment;
 
 import java.util.List;
 import java.util.Set;

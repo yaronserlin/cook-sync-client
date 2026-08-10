@@ -26,7 +26,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Pointing to the specific backend server address provided.
-        buildConfigField("String", "BASE_URL", "\"http://10.110.226.54:8080/\"")
+        buildConfigField("String", "BASE_URL", "\"http://192.168.0.223:8080/\"")
     }
 
     buildTypes {
@@ -43,11 +43,15 @@ android {
         getByName("main") {
             res.srcDirs(
                 "src/main/res",
-                "src/main/res-auth",
-                "src/main/res-home",
-                "src/main/res-recipe",
-                "src/main/res-common",
-                "src/main/res-admin"
+                "src/main/res-features/auth",
+                "src/main/res-features/home",
+                "src/main/res-features/recipe-add",
+                "src/main/res-features/recipe-favorites",
+                "src/main/res-features/recipe-myrecipes",
+                "src/main/res-features/recipe-common",
+                "src/main/res-features/common",
+                "src/main/res-features/admin",
+                "src/main/res-features/settings"
             )
         }
     }

@@ -1,4 +1,8 @@
 package com.cooksync.app.ui.home;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -9,7 +13,7 @@ import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.domain.FeedState;
-import com.cooksync.app.ui.common.BaseViewModel;
+import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.RecipeFilterUtils;
@@ -57,7 +61,7 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
-     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
      * Complexity:
      * Time: O(1)
@@ -69,7 +73,7 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
     public HomeViewModel(RecipeRepository recipeRepository, TagRepository tagRepository) {
         this.recipeRepository = recipeRepository;
         this.tagRepository = tagRepository;
-        com.cooksync.app.data.publish.RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(event -> {
+        com.cooksync.app.data.service.RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(event -> {
             if (event != null && event.getContentIfNotHandled() != null) {
                 loadInitialFeed();
             }

@@ -49,11 +49,11 @@
             android:exported="false" />
 
         <activity
-            android:name=".ui.recipe.list.MyRecipesActivity"
+            android:name=".ui.recipe.myrecipes.MyRecipesActivity"
             android:exported="false" />
 
         <activity
-            android:name=".ui.recipe.list.FavoriteRecipesActivity"
+            android:name=".ui.recipe.favorites.FavoriteRecipesActivity"
             android:exported="false" />
 
         <activity

@@ -1,11 +1,15 @@
 package com.cooksync.app.ui.recipe.detail;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.common.BaseViewModel;
+import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -44,7 +48,7 @@ public class RecipeDetailViewModel extends BaseViewModel {
 
     /**
      * Constructs the ViewModel with the given {@link RecipeRepository}, injected by
-     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
      * Complexity:
      * Time: O(1)

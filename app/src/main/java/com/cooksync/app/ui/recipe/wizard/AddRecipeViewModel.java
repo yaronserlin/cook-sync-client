@@ -1,16 +1,24 @@
 package com.cooksync.app.ui.recipe.wizard;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
+import com.cooksync.app.data.model.recipe.RecipeDraft;
+import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
+import com.cooksync.app.data.model.recipe.RecipeDraftValidator;
+import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.cooksync.app.data.local.RecipeDraftStore;
+import com.cooksync.app.data.datasource.local.RecipeDraftStore;
 import com.cooksync.app.data.repository.MediaRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.UnitRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
-import com.cooksync.app.ui.common.BaseViewModel;
+import com.cooksync.app.ui.base.BaseViewModel;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 import com.dtos.response.recipe.RecipeResponse;
@@ -46,7 +54,7 @@ public class AddRecipeViewModel extends BaseViewModel {
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
-     * {@link com.cooksync.app.ui.common.ViewModelFactory}.
+     * {@link com.cooksync.app.ui.base.ViewModelFactory}.
      *
      * Complexity:
      * Time: O(1)

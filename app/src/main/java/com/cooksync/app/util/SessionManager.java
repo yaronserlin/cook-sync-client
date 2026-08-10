@@ -4,7 +4,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
-import com.cooksync.app.data.local.TokenStore;
+import com.cooksync.app.data.datasource.local.TokenStore;
 import com.dtos.response.auth.AuthResponse;
 
 /**
@@ -13,7 +13,7 @@ import com.dtos.response.auth.AuthResponse;
  * (e.g. a base activity watching for forced logout) can react immediately when the
  * session starts or ends, without polling shared preferences.
  *
- * <p>{@link com.cooksync.app.data.remote.TokenAuthenticator} calls {@link #forceLogout()}
+ * <p>{@link com.cooksync.app.data.datasource.remote.TokenAuthenticator} calls {@link #forceLogout()}
  * when a refresh-token attempt fails, which is the single place a session is invalidated
  * outside of an explicit user-initiated logout.</p>
  *

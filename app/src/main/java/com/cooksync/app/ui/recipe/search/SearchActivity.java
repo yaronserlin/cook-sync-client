@@ -1,4 +1,8 @@
 package com.cooksync.app.ui.recipe.search;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,11 +22,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
-import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
-import com.cooksync.app.ui.common.Navigator;
+import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
-import com.cooksync.app.ui.common.ViewModelFactory;
+import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.ui.home.TagChipAdapter;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -36,7 +40,7 @@ import java.util.stream.Collectors;
  * Dedicated recipe search screen, reached by tapping the search field on {@link
  * com.cooksync.app.ui.home.HomeActivity}. Runs a keyword search against the public recipe
  * catalog, surfaces matching tag suggestions while typing, supports the same sort/difficulty/
- * tags/rating/time filters as Home via the shared {@link com.cooksync.app.ui.recipe.FiltersBottomSheetDialogFragment},
+ * tags/rating/time filters as Home via the shared {@link com.cooksync.app.ui.recipe.common.FiltersBottomSheetDialogFragment},
  * and displays results in the design's compact row format.
  *
  * @author Yaron Serlin

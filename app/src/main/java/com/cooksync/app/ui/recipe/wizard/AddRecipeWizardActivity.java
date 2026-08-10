@@ -1,4 +1,12 @@
 package com.cooksync.app.ui.recipe.wizard;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
+import com.cooksync.app.data.model.recipe.RecipeDraft;
+import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
+import com.cooksync.app.data.model.recipe.RecipeDraftValidator;
+import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 
 import android.net.Uri;
 import android.os.Bundle;
@@ -15,9 +23,9 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
-import com.cooksync.app.ui.common.ViewModelFactory;
+import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.util.CloudinaryUploader;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -32,7 +40,7 @@ import java.util.List;
  * can move freely forward and backward, and every required-field check happens once, on the
  * Review step's checklist and its Publish button. Owns the progress bar and app bar: the close
  * (X) action asks for discard confirmation, and "Save draft" persists the in-progress
- * {@link RecipeDraft} locally via {@link com.cooksync.app.data.local.RecipeDraftStore}. On
+ * {@link RecipeDraft} locally via {@link com.cooksync.app.data.datasource.local.RecipeDraftStore}. On
  * launch, resumes a previously saved draft if one exists.
  *
  * @author Yaron Serlin
@@ -60,7 +68,7 @@ public class AddRecipeWizardActivity extends BaseActivity {
     public static void startEdit(android.content.Context context, RecipeResponse recipe) {
         android.content.Intent intent = new android.content.Intent(context, AddRecipeWizardActivity.class);
         intent.putExtra(EXTRA_EDIT_RECIPE_JSON, new com.google.gson.Gson().toJson(recipe));
-        com.cooksync.app.ui.common.Navigator.start(context, AddRecipeWizardActivity.class, intent);
+        com.cooksync.app.ui.base.Navigator.start(context, AddRecipeWizardActivity.class, intent);
     }
 
     @Override
@@ -106,7 +114,7 @@ public class AddRecipeWizardActivity extends BaseActivity {
 
         btnClose.setOnClickListener(v -> confirmDiscard());
         View.OnClickListener saveDraft = v -> {
-            if (com.cooksync.app.data.local.RecipeDraftStore.hasDraft()) {
+            if (com.cooksync.app.data.datasource.local.RecipeDraftStore.hasDraft()) {
                 OrganicConfirmDialog.show(this, "Overwrite saved draft?",
                         "Saving this recipe as a draft will overwrite your existing saved draft. Do you want to continue?",
                         "Overwrite draft", "Keep editing", true, () -> {
@@ -166,8 +174,8 @@ public class AddRecipeWizardActivity extends BaseActivity {
      * inherently {@link android.content.Context}-dependent.
      */
     private void startPublishFlow() {
-        com.cooksync.app.data.publish.RecipePublishManager.getInstance().startPublish(viewModel.getDraft());
-        com.cooksync.app.ui.common.Navigator.start(this, com.cooksync.app.ui.recipe.list.MyRecipesActivity.class);
+        com.cooksync.app.data.service.RecipePublishManager.getInstance().startPublish(viewModel.getDraft());
+        com.cooksync.app.ui.base.Navigator.start(this, com.cooksync.app.ui.recipe.myrecipes.MyRecipesActivity.class);
         finish();
     }
 

@@ -1,10 +1,14 @@
 package com.cooksync.app.ui.settings;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.os.Bundle;
 
 import com.cooksync.app.R;
-import com.cooksync.app.data.local.CookingPreferencesStore;
-import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.data.datasource.local.CookingPreferencesStore;
+import com.cooksync.app.ui.base.BaseActivity;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
 /**

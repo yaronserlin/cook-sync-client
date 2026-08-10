@@ -1,4 +1,8 @@
 package com.cooksync.app.ui.recipe.detail;
+import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.base.BaseViewModel;
+import com.cooksync.app.ui.base.Navigator;
+import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.content.Intent;
 import android.os.Build;
@@ -18,13 +22,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.common.BaseActivity;
+import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.common.FullscreenImageActivity;
-import com.cooksync.app.ui.common.Navigator;
+import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.common.ReportReviewDialog;
-import com.cooksync.app.ui.common.ViewModelFactory;
+import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.ui.home.TagChipAdapter;
 import com.cooksync.app.ui.recipe.cooking.CookingModeActivity;
 import com.cooksync.app.ui.recipe.review.ReviewActivity;
@@ -384,7 +388,7 @@ public class RecipeDetailActivity extends BaseActivity {
 
     /**
      * Shows a confirm dialog before deleting a review the current user authored, matching the
-     * style of {@link com.cooksync.app.ui.recipe.list.MyRecipesActivity}'s recipe delete confirm.
+     * style of {@link com.cooksync.app.ui.recipe.myrecipes.MyRecipesActivity}'s recipe delete confirm.
      *
      * @param review the review to delete
      */
