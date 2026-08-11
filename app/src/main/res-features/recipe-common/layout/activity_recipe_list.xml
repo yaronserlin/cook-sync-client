@@ -87,17 +87,17 @@
         android:id="@+id/card_publish_progress"
         layout="@layout/layout_publish_progress_card" />
 
-    <!-- Resumable local draft, pinned above the published/private list — My Recipes only (see
-         RecipeListActivity/MyRecipesActivity, which populate and show this; this layout is
-         shared with Favorites, which never has a draft to show). -->
-    <include
-        android:id="@+id/draft_card"
-        layout="@layout/item_recipe_draft_card"
+    <!-- Resumable local drafts (any number), pinned above the published/private list — My
+         Recipes only (see RecipeListActivity/MyRecipesActivity, which populate this by
+         inflating item_recipe_draft_card.xml once per draft; this layout is shared with
+         Favorites, which never has a draft to show and leaves this container empty). -->
+    <LinearLayout
+        android:id="@+id/drafts_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
-        android:visibility="gone" />
+        android:orientation="vertical" />
 
     <FrameLayout
         android:layout_width="match_parent"

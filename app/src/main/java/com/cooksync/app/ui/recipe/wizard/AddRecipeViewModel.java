@@ -49,6 +49,7 @@ public class AddRecipeViewModel extends BaseViewModel {
     private RecipeDraft draft = new RecipeDraft();
 
     private final MutableLiveData<ApiResult<List<TagResponse>>> tagsResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<List<TagResponse>>> popularTagsResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<UnitResponse>>> unitsResult = new MutableLiveData<>();
     private final MutableLiveData<Event<ApiResult<RecipeResponse>>> publishResult = new MutableLiveData<>();
 
@@ -76,28 +77,45 @@ public class AddRecipeViewModel extends BaseViewModel {
     // ── Draft lifecycle ──────────────────────────────────────────────
 
     /**
-     * Returns whether a locally saved draft exists to resume, without loading it.
+     * Returns whether at least one locally saved draft exists to resume, without loading any of
+     * them.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
      *
-     * @return {@code true} if a resumable draft is stored on-device
+     * @return {@code true} if any resumable draft is stored on-device
      */
     public boolean hasResumableDraft() {
         return RecipeDraftStore.hasDraft();
     }
 
     /**
-     * Loads the stored draft into this ViewModel if one exists, otherwise starts a fresh one.
-     * Called once, when {@link AddRecipeWizardActivity} first launches.
+     * Starts a brand-new, empty draft. Called when {@link AddRecipeWizardActivity} launches for
+     * "Create recipe" (as opposed to resuming a specific saved draft or editing an existing
+     * recipe), so an arbitrary number of drafts can coexist without one silently reusing another.
      *
      * Complexity:
-     * Time: O(n) where n is the serialized draft size
-     * Space: O(n)
+     * Time: O(1)
+     * Space: O(1)
      */
-    public void loadDraftIfPresent() {
-        RecipeDraft stored = RecipeDraftStore.load();
+    public void startNewDraft() {
+        draft = new RecipeDraft();
+    }
+
+    /**
+     * Loads one specific stored draft by id into this ViewModel, or starts a fresh draft if it
+     * can no longer be found (e.g. already published/discarded elsewhere).
+     *
+     * Complexity:
+     * Time: O(n) where n is the number of stored drafts
+     * Space: O(n)
+     *
+     * @param draftId the draft's client-generated id, as passed to
+     *                 {@link AddRecipeWizardActivity#startResumeDraft}
+     */
+    public void loadDraft(String draftId) {
+        RecipeDraft stored = RecipeDraftStore.load(draftId);
         draft = stored != null ? stored : new RecipeDraft();
     }
 
@@ -130,9 +148,9 @@ public class AddRecipeViewModel extends BaseViewModel {
         RecipeDraftStore.save(draft);
     }
 
-    /** Discards the current draft, both in-memory and on-device. */
+    /** Discards the current draft, both in-memory and on-device. Other saved drafts are unaffected. */
     public void discardDraft() {
-        RecipeDraftStore.clear();
+        RecipeDraftStore.remove(draft.draftId);
         draft = new RecipeDraft();
     }
 
@@ -284,6 +302,15 @@ public class AddRecipeViewModel extends BaseViewModel {
     }
 
     /**
+     * Loads the most-used tags across all recipes for the "Popular tags" suggestion row.
+     *
+     * @param limit maximum number of popular tags to request
+     */
+    public void loadPopularTags(int limit) {
+        tagRepository.getPopularTags(limit, popularTagsResult);
+    }
+
+    /**
      * Marks a not-yet-existing tag name as selected, purely locally — matching the rest of the
      * wizard's "nothing hits the server before Publish" rule. The tag is only actually created
      * (via {@link TagRepository#createTag}) as part of {@link #publish()}.
@@ -306,6 +333,8 @@ public class AddRecipeViewModel extends BaseViewModel {
     }
 
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
+
+    public LiveData<ApiResult<List<TagResponse>>> getPopularTagsResult() { return popularTagsResult; }
 
     // ── Ingredients (step 2) ─────────────────────────────────────────
 
@@ -434,7 +463,7 @@ public class AddRecipeViewModel extends BaseViewModel {
         MutableLiveData<ApiResult<RecipeResponse>> result = new MutableLiveData<>();
         observeOnce(result, apiResult -> {
             if (apiResult instanceof ApiResult.Success<RecipeResponse>) {
-                RecipeDraftStore.clear();
+                RecipeDraftStore.remove(draft.draftId);
             }
             publishResult.setValue(new Event<>(apiResult));
         });

@@ -46,6 +46,9 @@ public final class RecipeDraftMapper {
 
         List<IngredientRequestDTO> ingredients = new ArrayList<>();
         for (RecipeDraft.DraftIngredient ingredient : draft.ingredients) {
+            if (RecipeDraftValidator.isIngredientBlank(ingredient)) {
+                continue;
+            }
             Double quantity = RecipeDraftValidator.parsePositiveQuantity(ingredient.quantity);
             ingredients.add(new IngredientRequestDTO(
                     ingredient.tmpId,
@@ -56,14 +59,17 @@ public final class RecipeDraftMapper {
         }
 
         List<InstructionRequestDTO> instructions = new ArrayList<>();
-        for (int i = 0; i < draft.instructions.size(); i++) {
-            RecipeDraft.DraftInstruction instruction = draft.instructions.get(i);
+        int stepNumber = 1;
+        for (RecipeDraft.DraftInstruction instruction : draft.instructions) {
+            if (RecipeDraftValidator.isInstructionBlank(instruction)) {
+                continue;
+            }
             List<UUID> ingredientIds = new ArrayList<>();
             for (String tmpId : instruction.linkedIngredientTmpIds) {
                 ingredientIds.add(UUID.fromString(tmpId));
             }
             instructions.add(new InstructionRequestDTO(
-                    i + 1,
+                    stepNumber++,
                     instruction.description.trim(),
                     instruction.hasTimer,
                     instruction.hasTimer ? instruction.timeSeconds : null,

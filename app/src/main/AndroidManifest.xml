@@ -80,6 +80,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.settings.LegalDocumentActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.common.FullscreenImageActivity"
             android:exported="false" />
 

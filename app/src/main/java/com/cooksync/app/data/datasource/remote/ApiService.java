@@ -339,6 +339,17 @@ public interface ApiService {
     );
 
     /**
+     * Fetches the most-used tags across all recipes, ranked by descending recipe count.
+     *
+     * @param limit maximum number of popular tags to return
+     * @return call yielding the popular tags ordered by descending usage
+     */
+    @GET("api/tags/popular")
+    Call<ApiResponse<java.util.List<com.dtos.response.tags.TagResponse>>> getPopularTags(
+            @retrofit2.http.Query("limit") int limit
+    );
+
+    /**
      * Creates a new custom tag, or returns the existing one if a tag with the same name
      * (case-insensitive) already exists.
      *

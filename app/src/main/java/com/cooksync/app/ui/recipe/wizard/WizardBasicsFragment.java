@@ -53,6 +53,9 @@ import java.util.function.Consumer;
  */
 public class WizardBasicsFragment extends Fragment {
 
+    /** How many popular tags to request from the server / show in the suggestion row. */
+    private static final int POPULAR_TAGS_LIMIT = 5;
+
     private AddRecipeViewModel viewModel;
     private RecipeImagePicker imagePicker;
     private TagAutocompleteController tagController;
@@ -69,6 +72,7 @@ public class WizardBasicsFragment extends Fragment {
     private TextView chipMedium;
     private TextView chipHard;
     private ChipGroup cgSelectedTags;
+    private ChipGroup cgPopularTags;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -96,15 +100,34 @@ public class WizardBasicsFragment extends Fragment {
         renderFromDraft();
         setupListeners(view);
         observeViewModel();
-        renderPopularTags(view);
 
         viewModel.loadTags();
+        viewModel.loadPopularTags(POPULAR_TAGS_LIMIT);
     }
 
-    /** Populates the static "Popular tags" suggestion row (design-provided examples). */
-    private void renderPopularTags(View view) {
-        ChipGroup cgPopularTags = view.findViewById(R.id.cg_popular_tags);
-        for (String name : getResources().getStringArray(R.array.wizard_popular_tag_names)) {
+    /**
+     * Renders the "Popular tags" suggestion row from real, server-ranked tag names. If the
+     * server has fewer than {@link #POPULAR_TAGS_LIMIT} tags with any usage yet (e.g. a fresh
+     * catalog), the row is padded with names from the static fallback list
+     * ({@code R.array.wizard_popular_tag_names}) — skipped for any name already present in the
+     * real results — so the row never looks sparse or broken.
+     *
+     * @param realPopularTagNames tag names returned by the server, most-used first
+     */
+    private void renderPopularTags(List<String> realPopularTagNames) {
+        List<String> namesToShow = new java.util.ArrayList<>(realPopularTagNames);
+        if (namesToShow.size() < POPULAR_TAGS_LIMIT) {
+            for (String fallbackName : getResources().getStringArray(R.array.wizard_popular_tag_names)) {
+                if (namesToShow.size() >= POPULAR_TAGS_LIMIT) break;
+                boolean alreadyShown = namesToShow.stream().anyMatch(shown -> shown.equalsIgnoreCase(fallbackName));
+                if (!alreadyShown) {
+                    namesToShow.add(fallbackName);
+                }
+            }
+        }
+
+        cgPopularTags.removeAllViews();
+        for (String name : namesToShow) {
             TextView pill = new TextView(requireContext());
             pill.setText(name);
             pill.setTextSize(12.5f);
@@ -132,6 +155,7 @@ public class WizardBasicsFragment extends Fragment {
         chipMedium = view.findViewById(R.id.chip_difficulty_medium);
         chipHard = view.findViewById(R.id.chip_difficulty_hard);
         cgSelectedTags = view.findViewById(R.id.cg_selected_tags);
+        cgPopularTags = view.findViewById(R.id.cg_popular_tags);
 
         RecyclerView rvDescriptionBlocks = view.findViewById(R.id.rv_description_blocks);
         descriptionAdapter = new WizardDescriptionBlockAdapter(viewModel.getDescriptionBlocks());
@@ -274,6 +298,16 @@ public class WizardBasicsFragment extends Fragment {
         viewModel.getTagsResult().observe(getViewLifecycleOwner(), result -> {
             if (result instanceof ApiResult.Success<List<TagResponse>> success) {
                 tagController.setAvailableTags(success.getData());
+            }
+        });
+
+        viewModel.getPopularTagsResult().observe(getViewLifecycleOwner(), result -> {
+            if (result instanceof ApiResult.Success<List<TagResponse>> success) {
+                List<String> names = success.getData().stream().map(TagResponse::name).toList();
+                renderPopularTags(names);
+            } else if (result instanceof ApiResult.Error<List<TagResponse>>) {
+                // No real popularity data available — show the static fallback list on its own.
+                renderPopularTags(Collections.emptyList());
             }
         });
     }

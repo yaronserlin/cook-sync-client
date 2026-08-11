@@ -4,4 +4,7 @@
         <!-- The production backend uses HTTPS -->
         <domain includeSubdomains="true">cooksync-server.onrender.com</domain>
     </domain-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">192.168.0.223</domain>
+    </domain-config>
 </network-security-config>

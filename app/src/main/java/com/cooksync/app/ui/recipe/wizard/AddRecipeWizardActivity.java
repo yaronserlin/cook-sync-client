@@ -58,6 +58,7 @@ public class AddRecipeWizardActivity extends BaseActivity {
     private MaterialButton btnNext;
 
     public static final String EXTRA_EDIT_RECIPE_JSON = "extra_edit_recipe_json";
+    public static final String EXTRA_RESUME_DRAFT_ID = "extra_resume_draft_id";
 
     /**
      * Launches the wizard pre-populated with an existing recipe for editing.
@@ -68,6 +69,21 @@ public class AddRecipeWizardActivity extends BaseActivity {
     public static void startEdit(android.content.Context context, RecipeResponse recipe) {
         android.content.Intent intent = new android.content.Intent(context, AddRecipeWizardActivity.class);
         intent.putExtra(EXTRA_EDIT_RECIPE_JSON, new com.google.gson.Gson().toJson(recipe));
+        com.cooksync.app.ui.base.Navigator.start(context, AddRecipeWizardActivity.class, intent);
+    }
+
+    /**
+     * Launches the wizard resuming one specific locally saved draft, identified by
+     * {@link com.cooksync.app.data.model.recipe.RecipeDraft#draftId}. Used by the "Resume"
+     * action on each draft card in {@code MyRecipesActivity}, since any number of drafts can now
+     * be pinned at once.
+     *
+     * @param context hosting screen context
+     * @param draftId the draft's client-generated id
+     */
+    public static void startResumeDraft(android.content.Context context, String draftId) {
+        android.content.Intent intent = new android.content.Intent(context, AddRecipeWizardActivity.class);
+        intent.putExtra(EXTRA_RESUME_DRAFT_ID, draftId);
         com.cooksync.app.ui.base.Navigator.start(context, AddRecipeWizardActivity.class, intent);
     }
 
@@ -82,8 +98,10 @@ public class AddRecipeWizardActivity extends BaseActivity {
             String json = getIntent().getStringExtra(EXTRA_EDIT_RECIPE_JSON);
             RecipeResponse recipe = new com.google.gson.Gson().fromJson(json, RecipeResponse.class);
             viewModel.startEditRecipe(recipe);
+        } else if (getIntent() != null && getIntent().hasExtra(EXTRA_RESUME_DRAFT_ID)) {
+            viewModel.loadDraft(getIntent().getStringExtra(EXTRA_RESUME_DRAFT_ID));
         } else {
-            viewModel.loadDraftIfPresent();
+            viewModel.startNewDraft();
         }
 
         viewModel.loadTags();
@@ -113,20 +131,12 @@ public class AddRecipeWizardActivity extends BaseActivity {
         });
 
         btnClose.setOnClickListener(v -> confirmDiscard());
+        // Each draft now has its own stable id (RecipeDraft#draftId), so saving always upserts
+        // just this draft — it can no longer silently overwrite a different saved draft.
         View.OnClickListener saveDraft = v -> {
-            if (com.cooksync.app.data.datasource.local.RecipeDraftStore.hasDraft()) {
-                OrganicConfirmDialog.show(this, "Overwrite saved draft?",
-                        "Saving this recipe as a draft will overwrite your existing saved draft. Do you want to continue?",
-                        "Overwrite draft", "Keep editing", true, () -> {
-                            viewModel.saveDraftLocally();
-                            showSuccess(getString(R.string.wizard_draft_saved_toast), null);
-                            finish();
-                        });
-            } else {
-                viewModel.saveDraftLocally();
-                showSuccess(getString(R.string.wizard_draft_saved_toast), null);
-                finish();
-            }
+            viewModel.saveDraftLocally();
+            showSuccess(getString(R.string.wizard_draft_saved_toast), null);
+            finish();
         };
         tvSaveDraft.setOnClickListener(saveDraft);
         btnDraft.setOnClickListener(saveDraft);
@@ -172,8 +182,15 @@ public class AddRecipeWizardActivity extends BaseActivity {
      * actually run — matching the wizard's "nothing leaves the device before Publish" rule. This
      * orchestration lives here rather than in the ViewModel because the Cloudinary Android SDK is
      * inherently {@link android.content.Context}-dependent.
+     *
+     * <p>The draft is saved locally right before backgrounding the publish and leaving this
+     * screen, so if publishing fails (bad network, server error, upload failure) the recipe is
+     * never lost — it stays resumable as a draft.
+     * {@link com.cooksync.app.data.service.RecipePublishManager} removes this recovery entry
+     * itself, but only once the recipe is confirmed to exist server-side.</p>
      */
     private void startPublishFlow() {
+        viewModel.saveDraftLocally();
         com.cooksync.app.data.service.RecipePublishManager.getInstance().startPublish(viewModel.getDraft());
         com.cooksync.app.ui.base.Navigator.start(this, com.cooksync.app.ui.recipe.myrecipes.MyRecipesActivity.class);
         finish();

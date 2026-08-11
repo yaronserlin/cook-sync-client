@@ -211,7 +211,10 @@ public class RecipePublishManager {
                         : createRecipeSync(dto);
 
                 if (response != null) {
-                    RecipeDraftStore.clear();
+                    // Only remove the auto-saved recovery draft (see AddRecipeWizardActivity#startPublishFlow)
+                    // now that the recipe safely exists server-side. On any failure below or in
+                    // the catch block, it stays put so the user's work is never lost.
+                    RecipeDraftStore.remove(draft.draftId);
                     publishState.postValue(PublishState.success(response));
                     recipePublishedEvent.postValue(new Event<>(response));
                 } else {

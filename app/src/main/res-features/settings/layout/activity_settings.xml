@@ -141,6 +141,17 @@
                 android:layout_marginTop="24dp"
                 android:text="@string/settings_action_logout" />
 
+            <TextView
+                android:id="@+id/tv_legal_links"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:textColor="@color/color_text"
+                android:textSize="12sp"
+                tools:text="Terms of Use · Privacy Policy" />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

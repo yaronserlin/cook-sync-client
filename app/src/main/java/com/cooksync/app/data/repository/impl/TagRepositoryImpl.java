@@ -36,6 +36,12 @@ public class TagRepositoryImpl extends BaseRepository implements TagRepository {
     }
 
     @Override
+    public void getPopularTags(int limit, MutableLiveData<ApiResult<List<TagResponse>>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getPopularTags(limit))));
+    }
+
+    @Override
     public void createTag(String name, MutableLiveData<ApiResult<TagResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         TagRequestDTO request = new TagRequestDTO(name);

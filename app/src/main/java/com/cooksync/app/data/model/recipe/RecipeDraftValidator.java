@@ -65,15 +65,17 @@ public final class RecipeDraftValidator {
     }
 
     private static boolean isIngredientsValid(RecipeDraft draft) {
-        if (draft.ingredients.isEmpty()) {
-            return false;
-        }
+        boolean hasNonBlankRow = false;
         for (RecipeDraft.DraftIngredient ingredient : draft.ingredients) {
+            if (isIngredientBlank(ingredient)) {
+                continue;
+            }
+            hasNonBlankRow = true;
             if (!isIngredientValid(ingredient)) {
                 return false;
             }
         }
-        return true;
+        return hasNonBlankRow;
     }
 
     private static boolean isIngredientValid(RecipeDraft.DraftIngredient ingredient) {
@@ -82,16 +84,43 @@ public final class RecipeDraftValidator {
                 && ingredient.unitId != null && !ingredient.unitId.isEmpty();
     }
 
+    /**
+     * @param ingredient the ingredient row to inspect
+     * @return {@code true} if the row is an untouched placeholder (e.g. a freshly added row the
+     *         user hasn't typed into yet), which should be ignored by validation rather than
+     *         treated as an incomplete, blocking entry
+     */
+    public static boolean isIngredientBlank(RecipeDraft.DraftIngredient ingredient) {
+        return (ingredient.name == null || ingredient.name.trim().isEmpty())
+                && (ingredient.quantity == null || ingredient.quantity.trim().isEmpty())
+                && (ingredient.unitId == null || ingredient.unitId.isEmpty());
+    }
+
     private static boolean isInstructionsValid(RecipeDraft draft) {
-        if (draft.instructions.isEmpty()) {
-            return false;
-        }
+        boolean hasNonBlankRow = false;
         for (RecipeDraft.DraftInstruction instruction : draft.instructions) {
+            if (isInstructionBlank(instruction)) {
+                continue;
+            }
+            hasNonBlankRow = true;
             if (instruction.description == null || instruction.description.trim().isEmpty()) {
                 return false;
             }
         }
-        return true;
+        return hasNonBlankRow;
+    }
+
+    /**
+     * @param instruction the instruction row to inspect
+     * @return {@code true} if the row is an untouched placeholder (e.g. a freshly added step the
+     *         user hasn't typed into yet), which should be ignored by validation rather than
+     *         treated as an incomplete, blocking entry
+     */
+    public static boolean isInstructionBlank(RecipeDraft.DraftInstruction instruction) {
+        return (instruction.description == null || instruction.description.trim().isEmpty())
+                && !instruction.hasTimer
+                && instruction.linkedIngredientTmpIds.isEmpty()
+                && instruction.imageUrl == null;
     }
 
     /**

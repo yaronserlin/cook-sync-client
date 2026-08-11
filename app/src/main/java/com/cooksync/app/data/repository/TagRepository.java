@@ -28,6 +28,15 @@ public interface TagRepository {
     void getAllTags(MutableLiveData<ApiResult<List<TagResponse>>> resultTarget);
 
     /**
+     * Fetches the most-used tags across all recipes, ranked by descending recipe count, for the
+     * recipe wizard's "Popular tags" row.
+     *
+     * @param limit maximum number of popular tags to return
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getPopularTags(int limit, MutableLiveData<ApiResult<List<TagResponse>>> resultTarget);
+
+    /**
      * Creates a new custom tag, or returns the existing one if a tag with the same name
      * (case-insensitive) already exists. Used by the "Create tag" action in the recipe
      * creation wizard's tag autocomplete.

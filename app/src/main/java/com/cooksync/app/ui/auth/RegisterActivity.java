@@ -21,6 +21,7 @@ import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.ui.home.HomeActivity;
+import com.cooksync.app.ui.settings.LegalLinkSpanner;
 import com.google.android.material.checkbox.MaterialCheckBox;
 
 /**
@@ -85,6 +86,7 @@ public class RegisterActivity extends BaseActivity {
 
         bindViews();
         setupSkeleton(R.id.skeleton_container);
+        setupTermsLink();
         observeViewModel();
         setListeners();
 
@@ -133,6 +135,19 @@ public class RegisterActivity extends BaseActivity {
         cbMarketing = findViewById(R.id.cb_marketing);
 
         progress = findViewById(R.id.progress);
+    }
+
+    /**
+     * Turns the "Terms of Use" and "Privacy Policy" mentions inside {@link #cbTerms}'s label into
+     * tappable links, so the user can actually read what they're agreeing to before checking the
+     * box. See {@link LegalLinkSpanner} for the shared span/click behavior.
+     *
+     * Complexity:
+     * Time: O(n) — n is the length of the label text
+     * Space: O(n)
+     */
+    private void setupTermsLink() {
+        LegalLinkSpanner.apply(cbTerms, this, R.string.label_terms_accepted);
     }
 
     /**

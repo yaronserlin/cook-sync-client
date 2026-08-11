@@ -227,6 +227,8 @@ public class SettingsActivity extends BaseActivity {
                     getString(R.string.settings_row_admin_console_label), getString(R.string.settings_row_admin_console_sub),
                     v -> Navigator.start(this, AdminConsoleActivity.class));
         }
+
+        LegalLinkSpanner.apply(findViewById(R.id.tv_legal_links), this, R.string.settings_footer_legal_links);
     }
 
     /**

@@ -81,35 +81,45 @@ public class MyRecipesActivity extends RecipeListActivity {
     }
 
     /**
-     * Shows the pinned "resumable draft" card when a local, unpublished draft exists (see
-     * {@link RecipeDraftStore}), matching the design's singular "Resumable draft pinned above
-     * published recipes." Re-checked on every {@link #onResume()} since the draft can be
-     * created, resumed, or discarded from {@link AddRecipeWizardActivity} in between visits.
+     * Shows one pinned "resumable draft" card per local, unpublished draft (see
+     * {@link RecipeDraftStore}), most-recently-saved first — any number of drafts can coexist,
+     * each reusing the same {@code item_recipe_draft_card} layout. Re-populated on every
+     * {@link #onResume()} since drafts can be created, resumed, or discarded from
+     * {@link AddRecipeWizardActivity} in between visits.
      */
     private void showResumableDraftIfAny() {
-        View draftCard = findViewById(R.id.draft_card);
-        if (!RecipeDraftStore.hasDraft()) {
-            draftCard.setVisibility(View.GONE);
-            return;
+        android.view.ViewGroup draftsContainer = findViewById(R.id.drafts_container);
+        draftsContainer.removeAllViews();
+
+        List<RecipeDraft> drafts = new ArrayList<>(RecipeDraftStore.loadAll());
+        drafts.sort((a, b) -> Long.compare(b.savedAtMillis, a.savedAtMillis));
+
+        android.view.LayoutInflater inflater = getLayoutInflater();
+        for (RecipeDraft draft : drafts) {
+            View draftCard = inflater.inflate(R.layout.item_recipe_draft_card, draftsContainer, false);
+            // Dashed shape-drawable strokes don't reliably render under hardware acceleration.
+            draftCard.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
+
+            String title = draft.title == null || draft.title.trim().isEmpty()
+                    ? getString(R.string.my_recipes_draft_untitled) : draft.title;
+            ((TextView) draftCard.findViewById(R.id.tv_draft_title)).setText(title);
+
+            CharSequence savedAgo = draft.savedAtMillis > 0
+                    ? com.cooksync.app.util.RelativeTimeFormatter.format(draft.savedAtMillis)
+                    : "";
+            ((TextView) draftCard.findViewById(R.id.tv_draft_subtitle)).setText(
+                    getString(R.string.wizard_draft_step_of_format, draft.lastReachedStep + 1, savedAgo));
+
+            View.OnClickListener resume = v -> AddRecipeWizardActivity.startResumeDraft(this, draft.draftId);
+            draftCard.setOnClickListener(resume);
+            draftCard.findViewById(R.id.btn_resume_draft).setOnClickListener(resume);
+
+            if (draftsContainer.getChildCount() > 0) {
+                ((android.view.ViewGroup.MarginLayoutParams) draftCard.getLayoutParams()).topMargin =
+                        (int) (12 * getResources().getDisplayMetrics().density);
+            }
+            draftsContainer.addView(draftCard);
         }
-        // Dashed shape-drawable strokes don't reliably render under hardware acceleration.
-        draftCard.setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-
-        RecipeDraft draft = RecipeDraftStore.load();
-        String title = draft.title == null || draft.title.trim().isEmpty()
-                ? getString(R.string.my_recipes_draft_untitled) : draft.title;
-        ((TextView) draftCard.findViewById(R.id.tv_draft_title)).setText(title);
-
-        CharSequence savedAgo = draft.savedAtMillis > 0
-                ? android.text.format.DateUtils.getRelativeTimeSpanString(draft.savedAtMillis)
-                : "";
-        ((TextView) draftCard.findViewById(R.id.tv_draft_subtitle)).setText(
-                getString(R.string.wizard_draft_step_of_format, draft.lastReachedStep + 1, savedAgo));
-
-        View.OnClickListener resume = v -> Navigator.start(this, AddRecipeWizardActivity.class);
-        draftCard.setOnClickListener(resume);
-        draftCard.findViewById(R.id.btn_resume_draft).setOnClickListener(resume);
-        draftCard.setVisibility(View.VISIBLE);
     }
 
     private void initViews() {
@@ -258,6 +268,10 @@ public class MyRecipesActivity extends RecipeListActivity {
                     bar.setProgress(100);
 
                     viewModel.loadMyRecipes();
+                    // RecipePublishManager already removed the now-published draft from
+                    // RecipeDraftStore, but the drafts row rendered by onResume() before this
+                    // background publish finished is stale until re-populated here.
+                    showResumableDraftIfAny();
                     new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
                         card.setVisibility(View.GONE);
                         com.cooksync.app.data.service.RecipePublishManager.getInstance().resetState();
@@ -267,9 +281,12 @@ public class MyRecipesActivity extends RecipeListActivity {
                     spinner.setVisibility(View.GONE);
                     checkIcon.setVisibility(View.GONE);
                     tvTitle.setText("Publishing failed");
-                    tvSubtitle.setText(state.error != null ? state.error : "Failed to publish recipe");
+                    String reason = state.error != null ? state.error : "Failed to publish recipe";
+                    tvSubtitle.setText(reason + " — your recipe was saved as a draft, nothing was lost.");
                     tvPercent.setText("");
                     bar.setProgress(0);
+
+                    showResumableDraftIfAny();
                 }
             }
         });

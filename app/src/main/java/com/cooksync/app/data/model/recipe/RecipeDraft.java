@@ -40,6 +40,9 @@ public class RecipeDraft {
         public String imageUrl;
     }
 
+    /** Client-generated id used by {@link com.cooksync.app.data.datasource.local.RecipeDraftStore}
+     *  to distinguish this draft from any other concurrently saved draft. Not sent to the server. */
+    public String draftId = UUID.randomUUID().toString();
     public String editingRecipeId = null;
     public String title = "";
     public List<DescriptionBlockDTO> descriptionBlocks = new ArrayList<>();
