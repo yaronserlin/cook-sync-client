@@ -18,7 +18,9 @@ import com.dtos.response.instruction.InstructionResponse;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipeResponse;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Manages data state for {@link CookingModeActivity}: the loaded recipe, which step is
@@ -41,6 +43,7 @@ public class CookingModeViewModel extends BaseViewModel {
     private final MutableLiveData<Boolean> timerRunning = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> timerStarted = new MutableLiveData<>(false);
     private final MutableLiveData<Event<Boolean>> timerFinishedEvent = new MutableLiveData<>();
+    private final MutableLiveData<Set<String>> checkedIngredientIds = new MutableLiveData<>(new HashSet<>());
 
     private CountDownTimer countDownTimer;
 
@@ -55,6 +58,23 @@ public class CookingModeViewModel extends BaseViewModel {
     public LiveData<Boolean> getTimerRunning() { return timerRunning; }
     public LiveData<Boolean> getTimerStarted() { return timerStarted; }
     public LiveData<Event<Boolean>> getTimerFinishedEvent() { return timerFinishedEvent; }
+    public LiveData<Set<String>> getCheckedIngredientIds() { return checkedIngredientIds; }
+
+    /**
+     * Toggles whether an ingredient has been marked as already added to the dish, so the cook
+     * can tap "this step uses" chips off as they go. State lives here (not per-step) since the
+     * same ingredient id can recur across steps and should stay marked once handled.
+     *
+     * @param ingredientId the {@link com.dtos.response.ingredient.IngredientResponse#id()} to toggle
+     */
+    public void toggleIngredientChecked(@NonNull String ingredientId) {
+        Set<String> current = checkedIngredientIds.getValue();
+        Set<String> updated = current == null ? new HashSet<>() : new HashSet<>(current);
+        if (!updated.remove(ingredientId)) {
+            updated.add(ingredientId);
+        }
+        checkedIngredientIds.setValue(updated);
+    }
 
     public void loadRecipe(String recipeId) {
         repository.getRecipeDetail(recipeId, recipeResult);
