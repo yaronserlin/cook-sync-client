@@ -18,7 +18,7 @@ glide = "4.16.0"
 cloudinary = "3.1.2"
 fresco = "3.7.0"
 photoview = "2.3.0"
-cooksyncDtos = "d9c01b317c"
+cooksyncDtos = "6a86904"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
