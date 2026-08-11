@@ -195,7 +195,10 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
                     return false;
                 });
             } else {
-                Glide.with(itemView.getContext()).load(block.imageUrl()).into(ivImage);
+                Glide.with(itemView.getContext()).load(block.imageUrl())
+                        .placeholder(R.drawable.bg_skeleton_bone)
+                        .error(R.drawable.ic_image_failed)
+                        .into(ivImage);
                 etCaption.setText(block.caption());
                 captionWatcher = onChanged(value -> {
                     DescriptionBlockDTO current = currentBlock();

@@ -152,6 +152,8 @@ public class WizardInstructionAdapter extends RecyclerView.Adapter<WizardInstruc
             if (instruction.imageUrl != null && !instruction.imageUrl.isEmpty()) {
                 cardPhotoPreview.setVisibility(View.VISIBLE);
                 Glide.with(context).load(instruction.imageUrl)
+                        .placeholder(R.drawable.bg_skeleton_bone)
+                        .error(R.drawable.ic_image_failed)
                         .into((ImageView) cardPhotoPreview.findViewById(R.id.iv_instruction_photo_preview));
             } else {
                 cardPhotoPreview.setVisibility(View.GONE);

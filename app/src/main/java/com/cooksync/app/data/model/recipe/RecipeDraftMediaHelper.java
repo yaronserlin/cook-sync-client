@@ -41,6 +41,14 @@ public final class RecipeDraftMediaHelper {
         public Kind getKind() {
             return kind;
         }
+
+        public DescriptionBlockDTO getDescriptionBlock() {
+            return descriptionBlock;
+        }
+
+        public RecipeDraft.DraftInstruction getInstruction() {
+            return instruction;
+        }
     }
 
     private RecipeDraftMediaHelper() {

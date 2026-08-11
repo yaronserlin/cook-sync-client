@@ -20,6 +20,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
+import android.graphics.drawable.Drawable;
+import androidx.annotation.Nullable;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.base.BaseActivity;
@@ -516,6 +522,9 @@ public class RecipeDetailActivity extends BaseActivity {
                 ? recipe.createdBy().firstName() + " " + recipe.createdBy().lastName()
                 : getString(R.string.anonymous);
         kicker.setText(getString(R.string.recipe_kicker_format, authorName, formatPublishedDate(recipe.createdAt())));
+        if (recipe.createdBy() != null && recipe.createdBy().id() != null) {
+            kicker.setOnClickListener(v -> com.cooksync.app.ui.auth.UserProfileDialogFragment.show(getSupportFragmentManager(), recipe.createdBy().id(), authorName));
+        }
 
         title.setText(recipe.title());
         rating.setText(recipe.averageRating() == null ? "0.0" : String.format(Locale.US, "%.1f", recipe.averageRating()));
@@ -532,8 +541,33 @@ public class RecipeDetailActivity extends BaseActivity {
             btnEditRecipe.setOnClickListener(v -> AddRecipeWizardActivity.startEdit(this, recipe));
         }
 
-        Glide.with(this).load(recipe.primaryImageUrl()).placeholder(R.color.color_neutral_300).centerCrop().into(heroImage);
-        heroImage.setOnClickListener(v -> openFullscreenImage(recipe.primaryImageUrl()));
+        if (recipe.primaryImageUrl() != null && !recipe.primaryImageUrl().isBlank()) {
+            Glide.with(this)
+                    .load(recipe.primaryImageUrl())
+                    .placeholder(R.drawable.bg_skeleton_bone)
+                    .error(R.drawable.ic_image_failed)
+                    .centerCrop()
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            heroImage.setClickable(false);
+                            heroImage.setOnClickListener(null);
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            heroImage.setClickable(true);
+                            heroImage.setOnClickListener(v -> openFullscreenImage(recipe.primaryImageUrl()));
+                            return false;
+                        }
+                    })
+                    .into(heroImage);
+        } else {
+            heroImage.setImageResource(R.drawable.ic_image_failed);
+            heroImage.setClickable(false);
+            heroImage.setOnClickListener(null);
+        }
 
         descriptionBlockAdapter.setBlocks(recipe.descriptionBlocks());
         ingredientAdapter.setIngredients(new ArrayList<>(recipe.ingredients()));
@@ -705,5 +739,24 @@ public class RecipeDetailActivity extends BaseActivity {
 
     private void updateFavoriteIcon() {
         btnFavorite.setImageResource(isFavorite ? R.drawable.ic_heart_filled : R.drawable.ic_heart_outline);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(android.view.MotionEvent ev) {
+        if (ev.getAction() == android.view.MotionEvent.ACTION_DOWN) {
+            View v = getCurrentFocus();
+            if (v instanceof android.widget.EditText) {
+                android.graphics.Rect outRect = new android.graphics.Rect();
+                v.getGlobalVisibleRect(outRect);
+                if (!outRect.contains((int) ev.getRawX(), (int) ev.getRawY())) {
+                    v.clearFocus();
+                    android.view.inputmethod.InputMethodManager imm = (android.view.inputmethod.InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                    if (imm != null) {
+                        imm.hideSoftInputFromWindow(v.getWindowToken(), 0);
+                    }
+                }
+            }
+        }
+        return super.dispatchTouchEvent(ev);
     }
 }

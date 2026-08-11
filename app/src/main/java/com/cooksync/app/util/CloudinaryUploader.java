@@ -71,14 +71,26 @@ public final class CloudinaryUploader {
      */
     public static void upload(@NonNull Context context, @NonNull Uri fileUri,
                                @NonNull CloudinarySignatureResponse signature, @NonNull Callback callback) {
+        upload(context, fileUri, null, null, signature, callback);
+    }
+
+    public static void upload(@NonNull Context context, @NonNull Uri fileUri,
+                               String folder, String publicId,
+                               @NonNull CloudinarySignatureResponse signature, @NonNull Callback callback) {
         ensureInitialized(context, signature.cloudName());
 
-        MediaManager.get().upload(fileUri)
+        String targetFolder = (folder == null || folder.isBlank()) ? UPLOAD_FOLDER : folder;
+        com.cloudinary.android.UploadRequest request = MediaManager.get().upload(fileUri)
                 .option("api_key", signature.apiKey())
                 .option("timestamp", signature.timestamp())
-                .option("folder", UPLOAD_FOLDER)
-                .option("signature", signature.signature())
-                .callback(new UploadCallback() {
+                .option("folder", targetFolder)
+                .option("signature", signature.signature());
+
+        if (publicId != null && !publicId.isBlank()) {
+            request.option("public_id", publicId);
+        }
+
+        request.callback(new UploadCallback() {
                     @Override
                     public void onStart(String requestId) {
                     }

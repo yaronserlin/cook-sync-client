@@ -3,6 +3,7 @@ package com.cooksync.app.data.repository;
 import androidx.lifecycle.MutableLiveData;
 
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.unit.UnitResponse;
 
 import java.util.List;
@@ -26,4 +27,20 @@ public interface UnitRepository {
      * @param resultTarget LiveData target to post the outcome
      */
     void getAllUnits(MutableLiveData<ApiResult<List<UnitResponse>>> resultTarget);
+
+    /**
+     * Creates a new measurement unit. Admin-only.
+     *
+     * @param request      unit creation request DTO
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void createUnit(UnitRequestDTO request, MutableLiveData<ApiResult<UnitResponse>> resultTarget);
+
+    /**
+     * Deletes a measurement unit by ID. Admin-only.
+     *
+     * @param id           unique identifier of the unit to delete
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deleteUnit(String id, MutableLiveData<ApiResult<Void>> resultTarget);
 }

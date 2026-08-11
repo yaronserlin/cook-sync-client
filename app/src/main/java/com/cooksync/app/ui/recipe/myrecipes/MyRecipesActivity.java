@@ -77,6 +77,7 @@ public class MyRecipesActivity extends RecipeListActivity {
     protected void onResume() {
         super.onResume();
         showResumableDraftIfAny();
+        viewModel.loadMyRecipes();
     }
 
     /**
@@ -190,12 +191,15 @@ public class MyRecipesActivity extends RecipeListActivity {
             }
         });
 
-        // Both results now only fire for a deferred call that reached the server and failed —
-        // a success needs no signal since the list already reflects it optimistically, and the
-        // "Recipe deleted"/"is now public/private" toast (with its Undo action) is shown
-        // immediately from confirmDelete()/showOptionsMenu() instead of from here.
+        // Delete waits for the server before updating the list, so both outcomes are reported
+        // here. Visibility toggling below stays optimistic: it only fires for a deferred call
+        // that reached the server and failed, since a success needs no signal — the list
+        // already reflects it, and its own "is now public/private" toast (with Undo) is shown
+        // immediately from showOptionsMenu() instead of from here.
         viewModel.getDeleteResult().observe(this, result -> {
-            if (result instanceof ApiResult.Error<Void> error) {
+            if (result instanceof ApiResult.Success<Void>) {
+                OrganicToast.showSuccess(this, bottomNav, getString(R.string.recipe_deleted));
+            } else if (result instanceof ApiResult.Error<Void> error) {
                 showError(error.getMessage(), bottomNav);
             }
         });
@@ -386,8 +390,6 @@ public class MyRecipesActivity extends RecipeListActivity {
                 getString(R.string.dialog_delete_recipe_message, recipe.title()),
                 getString(R.string.action_delete), getString(R.string.action_cancel), true, () -> {
                     viewModel.deleteRecipe(recipe);
-                    OrganicToast.showWithAction(this, bottomNav, R.drawable.ic_delete, getString(R.string.recipe_deleted),
-                            getString(R.string.action_undo), () -> viewModel.undoDeleteRecipe(recipe));
                 });
     }
 }

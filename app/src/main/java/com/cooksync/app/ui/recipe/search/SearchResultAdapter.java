@@ -70,7 +70,8 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
         Glide.with(holder.itemView.getContext())
                 .load(recipe.primaryImageUrl())
-                .placeholder(R.color.color_neutral_300)
+                .placeholder(R.drawable.bg_skeleton_bone)
+                .error(R.drawable.ic_image_failed)
                 .centerCrop()
                 .into(holder.image);
 

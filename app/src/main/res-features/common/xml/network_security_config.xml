@@ -2,7 +2,7 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <!-- Allow HTTP communication specifically for the target backend server -->
-        <domain includeSubdomains="true">192.168.0.223</domain>
+        <domain includeSubdomains="true">192.168.20.251</domain>
 
 
     </domain-config>

@@ -53,23 +53,7 @@
                     android:textSize="28sp"
                     tools:text="YS" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btn_edit_avatar"
-                    style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="34dp"
-                    android:layout_height="34dp"
-                    android:layout_gravity="bottom|end"
-                    android:background="@drawable/bg_white_circle"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:padding="0dp"
-                    app:icon="@drawable/ic_edit"
-                    app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="16dp"
-                    app:iconTint="@color/color_accent" />
+
 
                 <ProgressBar
                     android:id="@+id/avatar_progress"
@@ -118,13 +102,6 @@
 
                 <include
                     android:id="@+id/row_my_recipes"
-                    layout="@layout/item_settings_row"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp" />
-
-                <include
-                    android:id="@+id/row_notifications"
                     layout="@layout/item_settings_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

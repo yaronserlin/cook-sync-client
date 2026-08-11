@@ -67,7 +67,8 @@ public class AdminConsoleActivity extends BaseActivity {
         String[] tabLabels = {
                 getString(R.string.admin_tab_reports),
                 getString(R.string.admin_tab_tags),
-                getString(R.string.admin_tab_users)
+                getString(R.string.admin_tab_users),
+                getString(R.string.admin_tab_units)
         };
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             tab.setCustomView(R.layout.item_admin_tab);
@@ -103,6 +104,7 @@ public class AdminConsoleActivity extends BaseActivity {
         viewModel.loadReportedReviews();
         viewModel.loadDuplicateTagGroups();
         viewModel.refreshUsers(null, null);
+        viewModel.loadUnits();
     }
 
     /**
@@ -165,6 +167,15 @@ public class AdminConsoleActivity extends BaseActivity {
                 }
             }
         });
+        viewModel.getUnitsResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success<List<com.dtos.response.unit.UnitResponse>> success) {
+                String badge = getString(R.string.admin_badge_units, success.getData().size());
+                setTabCount(AdminPagerAdapter.TAB_UNITS, badge);
+                if (activeTab == AdminPagerAdapter.TAB_UNITS) {
+                    tvBadge.setText(badge);
+                }
+            }
+        });
         updateHeader();
     }
 
@@ -179,6 +190,7 @@ public class AdminConsoleActivity extends BaseActivity {
         switch (activeTab) {
             case AdminPagerAdapter.TAB_TAGS -> tvHeading.setText(R.string.admin_heading_tags);
             case AdminPagerAdapter.TAB_USERS -> tvHeading.setText(R.string.admin_heading_users);
+            case AdminPagerAdapter.TAB_UNITS -> tvHeading.setText(R.string.admin_heading_units);
             default -> tvHeading.setText(R.string.admin_heading_reports);
         }
         TabLayout.Tab tab = tabLayout.getTabAt(activeTab);

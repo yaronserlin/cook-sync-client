@@ -26,6 +26,9 @@ import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.user.UserResponse;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 /**
  * ViewModel for {@link SettingsActivity}. Validates every field client-side (mirroring the
@@ -58,6 +61,9 @@ public class SettingsViewModel extends BaseViewModel {
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> favoritesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<List<RecipePreviewResponse>>> myRecipesResult = new MutableLiveData<>();
     private final MutableLiveData<ApiResult<UserResponse>> accountDetailsResult = new MutableLiveData<>();
+    private final MutableLiveData<Event<ApiResult<Void>>> saveChangesResult = new MutableLiveData<>();
+    private String pendingFolder;
+    private String pendingPublicId;
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
@@ -128,7 +134,12 @@ public class SettingsViewModel extends BaseViewModel {
      * Space: O(1)
      */
     public void requestUploadSignature() {
-        mediaRepository.getUploadSignature(signatureResult);
+        String userId = com.cooksync.app.util.SessionManager.getInstance().getUserId();
+        String first = com.cooksync.app.util.SessionManager.getInstance().getFirstName() == null ? "" : com.cooksync.app.util.SessionManager.getInstance().getFirstName().trim();
+        String last = com.cooksync.app.util.SessionManager.getInstance().getLastName() == null ? "" : com.cooksync.app.util.SessionManager.getInstance().getLastName().trim();
+        pendingFolder = "cooksync/" + userId + "/avatar";
+        pendingPublicId = first + "_" + last + "_" + userId + "_" + System.currentTimeMillis();
+        mediaRepository.getUploadSignature(pendingFolder, pendingPublicId, signatureResult);
     }
 
     /**
@@ -191,6 +202,95 @@ public class SettingsViewModel extends BaseViewModel {
             return;
         }
         authRepository.updateEmail(new EmailUpdateRequestDTO(rawNewEmail.trim(), rawCurrentPassword), emailResult);
+    }
+
+    /**
+     * Submits the profile (name/city/bio), privacy settings, and — if a new password was
+     * entered — a password change, as a single batch. Every request that applies is fired in
+     * parallel; the batch reports exactly one combined outcome via {@link #getSaveChangesResult()}
+     * once all of them have settled, so the caller can navigate away on success without racing
+     * any one of them. A client-side validation failure (invalid name, weak password, mismatched
+     * repeat) fails fast and fires no network call at all.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param rawFirstName          raw text from the first-name field
+     * @param rawLastName           raw text from the last-name field
+     * @param rawCity               raw text from the city field, may be blank
+     * @param rawBio                raw text from the bio field, may be blank
+     * @param showRecipesPublicly   whether published recipes appear on the public profile
+     * @param showFavoritesPublicly whether favorited recipes are visible to other users
+     * @param rawCurrentPassword    raw text from the current-password field, required only if
+     *                              {@code rawNewPassword} is non-blank
+     * @param rawNewPassword        raw text from the new-password field, or blank to leave the
+     *                              password unchanged
+     * @param rawRepeatPassword     raw text from the repeat-new-password field
+     */
+    public void saveAccountChanges(String rawFirstName, String rawLastName, String rawCity, String rawBio,
+                                    boolean showRecipesPublicly, boolean showFavoritesPublicly,
+                                    String rawCurrentPassword, String rawNewPassword, String rawRepeatPassword) {
+        InputValidator.ValidationResult firstRes = InputValidator.validateName(rawFirstName, "First name");
+        if (!firstRes.isValid) {
+            validationError.setValue(new Event<>(firstRes.errorMessage));
+            return;
+        }
+        InputValidator.ValidationResult lastRes = InputValidator.validateName(rawLastName, "Last name");
+        if (!lastRes.isValid) {
+            validationError.setValue(new Event<>(lastRes.errorMessage));
+            return;
+        }
+
+        boolean changingPassword = rawNewPassword != null && !rawNewPassword.isEmpty();
+        if (changingPassword) {
+            InputValidator.ValidationResult currentRes = InputValidator.validateLoginPassword(rawCurrentPassword);
+            if (!currentRes.isValid) {
+                validationError.setValue(new Event<>(currentRes.errorMessage));
+                return;
+            }
+            InputValidator.ValidationResult newRes = InputValidator.validateNewPassword(rawNewPassword);
+            if (!newRes.isValid) {
+                validationError.setValue(new Event<>(newRes.errorMessage));
+                return;
+            }
+            InputValidator.ValidationResult matchRes = InputValidator.validatePasswordsMatch(rawNewPassword, rawRepeatPassword);
+            if (!matchRes.isValid) {
+                validationError.setValue(new Event<>(matchRes.errorMessage));
+                return;
+            }
+        }
+
+        int totalCalls = changingPassword ? 3 : 2;
+        AtomicInteger remaining = new AtomicInteger(totalCalls);
+        AtomicReference<String> firstError = new AtomicReference<>();
+        Consumer<ApiResult<Void>> onEachSettled = result -> {
+            if (result instanceof ApiResult.Error<Void> error) {
+                firstError.compareAndSet(null, error.getMessage());
+            }
+            if (remaining.decrementAndGet() == 0) {
+                String error = firstError.get();
+                saveChangesResult.postValue(new Event<>(error != null
+                        ? new ApiResult.Error<>(error, null)
+                        : new ApiResult.Success<>(null)));
+            }
+        };
+
+        String city = rawCity == null || rawCity.trim().isEmpty() ? null : rawCity.trim();
+        String bio = rawBio == null || rawBio.trim().isEmpty() ? null : rawBio.trim();
+        MutableLiveData<ApiResult<Void>> profileTarget = new MutableLiveData<>();
+        observeOnce(profileTarget, onEachSettled);
+        authRepository.updateProfile(new ProfileUpdateRequestDTO(rawFirstName.trim(), rawLastName.trim(), city, bio), profileTarget);
+
+        MutableLiveData<ApiResult<Void>> privacyTarget = new MutableLiveData<>();
+        observeOnce(privacyTarget, onEachSettled);
+        authRepository.updatePrivacySettings(new PrivacySettingsUpdateRequestDTO(showRecipesPublicly, showFavoritesPublicly), privacyTarget);
+
+        if (changingPassword) {
+            MutableLiveData<ApiResult<Void>> passwordTarget = new MutableLiveData<>();
+            observeOnce(passwordTarget, onEachSettled);
+            authRepository.changePassword(new ChangePasswordRequestDTO(rawCurrentPassword, rawNewPassword), passwordTarget);
+        }
     }
 
     /**
@@ -286,6 +386,8 @@ public class SettingsViewModel extends BaseViewModel {
     public LiveData<ApiResult<Void>> getPrivacyResult() { return privacyResult; }
     /** @return observable result of an account-deletion request */
     public LiveData<ApiResult<Void>> getDeleteAccountResult() { return deleteAccountResult; }
+    /** @return one-shot combined outcome of {@link #saveAccountChanges}, Success only once every fired call has succeeded */
+    public LiveData<Event<ApiResult<Void>>> getSaveChangesResult() { return saveChangesResult; }
     /** @return observable result of a logout */
     public LiveData<ApiResult<Void>> getLogoutResult() { return logoutResult; }
     /** @return observable result of a Cloudinary upload-signature request */
@@ -298,4 +400,6 @@ public class SettingsViewModel extends BaseViewModel {
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getMyRecipesResult() { return myRecipesResult; }
     /** @return observable result of the current user's full profile fetch */
     public LiveData<ApiResult<UserResponse>> getAccountDetailsResult() { return accountDetailsResult; }
+    public String getPendingFolder() { return pendingFolder; }
+    public String getPendingPublicId() { return pendingPublicId; }
 }

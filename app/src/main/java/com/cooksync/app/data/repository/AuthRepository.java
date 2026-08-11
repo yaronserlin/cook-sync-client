@@ -134,6 +134,14 @@ public interface AuthRepository {
     void getCurrentUserProfile(MutableLiveData<ApiResult<UserResponse>> resultTarget);
 
     /**
+     * Fetches a specific user's public profile by ID.
+     *
+     * @param userId       target user ID
+     * @param resultTarget live data target the result will be posted to
+     */
+    void getUserProfile(String userId, MutableLiveData<ApiResult<UserResponse>> resultTarget);
+
+    /**
      * Requests a password-reset email for the given account, if one exists. Always succeeds
      * from the caller's perspective regardless of whether the email is registered.
      *

@@ -75,6 +75,7 @@
     <string name="action_back">Back</string>
 
     <!-- Common Actions -->
+    <string name="action_add">Add</string>
     <string name="action_undo">Undo</string>
     <string name="action_cancel">Cancel</string>
     <string name="action_save">Save</string>
@@ -173,6 +174,7 @@
     <string name="star_chip_label_format">%1$d\u2605</string>
     <string name="recipe_add_note_hint">Add a private note</string>
     <string name="anonymous">Anonymous</string>
+    <string name="user_profile_no_bio">No bio available yet.</string>
     <string name="reviews_count_summary">%1$d reviews</string>
     <string name="reviews_count_filtered_summary">%1$d reviews · filtered by %2$d\u2605</string>
     <string name="review_reported">Review reported</string>
@@ -192,6 +194,7 @@
     <string name="cook_timer_clock_format_hours">%1$02d:%2$02d:%3$02d</string>
     <string name="cook_timer_clock_format_minutes">%1$02d:%2$02d</string>
     <string name="cook_timer_clock_format_seconds">00:%1$02d</string>
+    <string name="timer_start">Start</string>
     <string name="timer_pause">Pause</string>
     <string name="timer_resume">Resume</string>
     <string name="cook_done_action">Done — rate it</string>
@@ -296,6 +299,9 @@
     <string name="account_details_discard_message">Your changes have not been saved.</string>
     <string name="account_details_discard_confirm">Discard</string>
     <string name="account_details_discard_keep_editing">Keep editing</string>
+    <string name="account_details_dialog_change_email_title">Confirm your password</string>
+    <string name="account_details_dialog_change_email_message">Enter your password to confirm changing your email to %1$s.</string>
+    <string name="account_details_action_change_email">Change email</string>
 
     <!-- Cooking preferences -->
     <string name="cooking_preferences_title">Cooking preferences</string>
@@ -315,12 +321,19 @@
     <string name="admin_tab_reports">Reports</string>
     <string name="admin_tab_tags">Tags</string>
     <string name="admin_tab_users">Users</string>
+    <string name="admin_tab_units">Units</string>
     <string name="admin_heading_reports">Reported reviews</string>
     <string name="admin_heading_tags">Duplicate tags</string>
     <string name="admin_heading_users">Users</string>
+    <string name="admin_heading_units">Measurement units</string>
     <string name="admin_badge_reports">%1$d open</string>
     <string name="admin_badge_tags">%1$d pairs</string>
     <string name="admin_badge_users">%1$d total</string>
+    <string name="admin_badge_units">%1$d total</string>
+    <string name="admin_units_validation_required">Name and code are required</string>
+    <string name="admin_units_create_success">Unit created successfully</string>
+    <string name="admin_units_deleted_format">Unit \"%1$s\" deleted</string>
+    <string name="error_resource_conflict">This item already exists</string>
 
     <string name="admin_reason_all">All</string>
     <string name="admin_reason_spam">Spam</string>

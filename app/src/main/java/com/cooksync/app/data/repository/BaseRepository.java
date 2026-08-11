@@ -153,6 +153,24 @@ public abstract class BaseRepository {
      * @return a user-facing error string
      */
     protected String extractErrorMessage(Response<?> response) {
+        try {
+            if (response.errorBody() != null) {
+                String errorJson = response.errorBody().string();
+                if (errorJson != null && !errorJson.isBlank()) {
+                    org.json.JSONObject obj = new org.json.JSONObject(errorJson);
+                    if (obj.has("message") && !obj.isNull("message") && !obj.getString("message").isBlank()) {
+                        return obj.getString("message");
+                    }
+                    if (obj.has("error") && !obj.isNull("error")) {
+                        org.json.JSONObject errObj = obj.getJSONObject("error");
+                        if (errObj.has("message") && !errObj.isNull("message") && !errObj.getString("message").isBlank()) {
+                            return errObj.getString("message");
+                        }
+                    }
+                }
+            }
+        } catch (Exception ignored) {
+        }
         if (response.body() instanceof ApiResponse<?> apiResponse) {
             String msg = apiResponse.message();
             if (msg != null && !msg.isBlank()) {
@@ -164,7 +182,7 @@ public abstract class BaseRepository {
             case 401 -> CookSyncApplication.getAppContext().getString(R.string.error_invalid_credentials);
             case 403 -> CookSyncApplication.getAppContext().getString(R.string.error_no_permission);
             case 404 -> CookSyncApplication.getAppContext().getString(R.string.error_not_found);
-            case 409 -> CookSyncApplication.getAppContext().getString(R.string.error_account_exists);
+            case 409 -> CookSyncApplication.getAppContext().getString(R.string.error_resource_conflict);
             case 500 -> CookSyncApplication.getAppContext().getString(R.string.error_server);
             default -> CookSyncApplication.getAppContext().getString(R.string.error_unexpected, response.code());
         };

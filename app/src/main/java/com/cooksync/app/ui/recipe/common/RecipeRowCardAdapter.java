@@ -111,7 +111,7 @@ public class RecipeRowCardAdapter extends RecyclerView.Adapter<RecipeRowCardAdap
 
         if (recipe.hasPersonalNote() && recipe.personalNoteText() != null && !recipe.personalNoteText().isEmpty()) {
             holder.noteStrip.setVisibility(View.VISIBLE);
-            holder.noteStrip.setText(context.getString(R.string.recipe_note_strip_format, recipe.personalNoteText()));
+            holder.noteStrip.setText(recipe.personalNoteText());
         } else {
             holder.noteStrip.setVisibility(View.GONE);
         }
@@ -123,7 +123,8 @@ public class RecipeRowCardAdapter extends RecyclerView.Adapter<RecipeRowCardAdap
 
         Glide.with(context)
                 .load(recipe.primaryImageUrl())
-                .placeholder(R.color.color_neutral_300)
+                .placeholder(R.drawable.bg_skeleton_bone)
+                .error(R.drawable.ic_image_failed)
                 .centerCrop()
                 .into(holder.image);
 

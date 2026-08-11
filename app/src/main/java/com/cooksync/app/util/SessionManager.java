@@ -214,6 +214,16 @@ public final class SessionManager {
     }
 
     /**
+     * Returns the user's full display name, or email/User fallback.
+     */
+    public String getDisplayName() {
+        String first = getFirstName();
+        String last = getLastName();
+        String name = ((first != null ? first : "") + " " + (last != null ? last : "")).trim();
+        return name.isEmpty() ? (getEmail() != null ? getEmail() : "User") : name;
+    }
+
+    /**
      * Returns the cached user ID of the currently authenticated user.
      *
      * Complexity:

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:background="@drawable/bg_info_card"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="14dp">
+
+    <TextView
+        android:id="@+id/tv_unit_code"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_tag_accent"
+        android:fontFamily="sans-serif-medium"
+        android:paddingHorizontal="10dp"
+        android:paddingVertical="4dp"
+        android:textColor="@color/color_accent_700"
+        android:textSize="13sp"
+        tools:text="tbsp" />
+
+    <TextView
+        android:id="@+id/tv_unit_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_weight="1"
+        android:textColor="@color/color_text"
+        android:textSize="15sp"
+        tools:text="Tablespoon" />
+
+    <ImageButton
+        android:id="@+id/btn_delete_unit"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/action_delete"
+        android:src="@drawable/ic_delete"
+        app:tint="@color/color_danger" />
+
+</LinearLayout>

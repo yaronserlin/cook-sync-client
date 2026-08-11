@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 import com.cooksync.app.data.datasource.remote.ApiService;
 import com.cooksync.app.data.datasource.remote.RetrofitClient;
 import com.cooksync.app.domain.ApiResult;
+import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.unit.UnitResponse;
 
 import java.util.List;
@@ -32,5 +33,23 @@ public class UnitRepositoryImpl extends BaseRepository implements UnitRepository
     public void getAllUnits(MutableLiveData<ApiResult<List<UnitResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(fetchAllPages(apiService::getUnits)));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void createUnit(UnitRequestDTO request, MutableLiveData<ApiResult<UnitResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.createUnit(request))));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteUnit(String id, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.deleteUnit(id))));
     }
 }

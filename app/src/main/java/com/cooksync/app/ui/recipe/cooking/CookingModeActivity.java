@@ -179,7 +179,11 @@ public class CookingModeActivity extends BaseActivity {
                     steps.sort(Comparator.comparingInt(InstructionResponse::stepNumber));
                 }
                 buildProgressBars(steps.size());
-                renderCurrentStep();
+                if (!steps.isEmpty()) {
+                    viewModel.goToStep(0, steps);
+                } else {
+                    renderCurrentStep();
+                }
             } else if (result instanceof ApiResult.Error<RecipeResponse> error) {
                 showError(error.getMessage(), null);
                 finish();
@@ -203,16 +207,29 @@ public class CookingModeActivity extends BaseActivity {
 
         viewModel.getTimerRemainingSeconds().observe(this, this::updateTimerClock);
 
-        viewModel.getTimerRunning().observe(this, running -> {
-            boolean isRunning = Objects.equals(running, true);
-            btnTimerToggle.setText(isRunning ? getString(R.string.timer_pause) : getString(R.string.timer_resume));
-            btnTimerToggle.setIconResource(isRunning ? R.drawable.ic_pause : R.drawable.ic_play);
-        });
+        viewModel.getTimerRunning().observe(this, running -> updateTimerToggleButton());
+        viewModel.getTimerStarted().observe(this, started -> updateTimerToggleButton());
 
         viewModel.getTimerFinishedEvent().observe(this, event -> {
             Boolean finished = event.getContentIfNotHandled();
             if (finished != null) notifyTimerFinished();
         });
+    }
+
+    private void updateTimerToggleButton() {
+        boolean isRunning = Objects.equals(viewModel.getTimerRunning().getValue(), true);
+        boolean isStarted = Objects.equals(viewModel.getTimerStarted().getValue(), true);
+
+        if (isRunning) {
+            btnTimerToggle.setText(getString(R.string.timer_pause));
+            btnTimerToggle.setIconResource(R.drawable.ic_pause);
+        } else if (isStarted) {
+            btnTimerToggle.setText(getString(R.string.timer_resume));
+            btnTimerToggle.setIconResource(R.drawable.ic_play);
+        } else {
+            btnTimerToggle.setText(getString(R.string.timer_start));
+            btnTimerToggle.setIconResource(R.drawable.ic_play);
+        }
     }
 
     private int currentIndex() {
@@ -296,23 +313,12 @@ public class CookingModeActivity extends BaseActivity {
         boolean hasImage = imageUrl != null && !imageUrl.isBlank();
         stepImageContainer.setVisibility(hasImage ? View.VISIBLE : View.GONE);
         if (!hasImage) return;
-        stepImage.setVisibility(View.INVISIBLE);
+        stepImage.setVisibility(View.VISIBLE);
         Glide.with(stepImage.getContext())
                 .load(imageUrl)
+                .placeholder(R.drawable.bg_skeleton_bone)
+                .error(R.drawable.ic_image_failed)
                 .centerCrop()
-                .listener(new RequestListener<>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, @NonNull Target<Drawable> target, boolean isFirstResource) {
-                        stepImageContainer.setVisibility(View.GONE);
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target, @NonNull DataSource dataSource, boolean isFirstResource) {
-                        stepImage.setVisibility(View.VISIBLE);
-                        return false;
-                    }
-                })
                 .into(stepImage);
         stepImage.setOnClickListener(v -> openFullscreenImage(imageUrl));
     }

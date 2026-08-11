@@ -66,6 +66,9 @@ import java.util.Objects;
  */
 public class SettingsActivity extends BaseActivity {
 
+    /** Intent extra: a one-shot success message to show once this screen is resumed. */
+    public static final String EXTRA_PENDING_TOAST = "extra_pending_toast";
+
     private SettingsViewModel viewModel;
 
     private ImageView ivAvatar;
@@ -77,8 +80,6 @@ public class SettingsActivity extends BaseActivity {
     private TextView tvMyRecipesSub;
     private TextView tvCookingSub;
 
-    private ActivityResultLauncher<String> pickAvatarLauncher;
-    private Uri pendingAvatarUri;
     private BottomNavigationView bottomNav;
 
     @Override
@@ -88,21 +89,12 @@ public class SettingsActivity extends BaseActivity {
 
         viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(SettingsViewModel.class);
 
-        pickAvatarLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
-            if (uri != null) {
-                pendingAvatarUri = uri;
-                setAvatarUploading(true);
-                viewModel.requestUploadSignature();
-            }
-        });
-
         bindViews();
         renderCachedProfile();
         setupBottomNav();
         setupRows();
         setupObservers();
 
-        findViewById(R.id.btn_edit_avatar).setOnClickListener(v -> pickAvatarLauncher.launch("image/*"));
         findViewById(R.id.btn_logout).setOnClickListener(v -> confirmLogout());
         findViewById(R.id.fab_add_recipe).setOnClickListener(v ->
                 Navigator.start(this, com.cooksync.app.ui.recipe.wizard.AddRecipeWizardActivity.class));
@@ -114,7 +106,26 @@ public class SettingsActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        renderCachedProfile();
         refreshCookingPreferencesSub();
+        viewModel.loadFavoritesCount();
+        viewModel.loadMyRecipesCount();
+        showPendingToastIfAny();
+    }
+
+    /**
+     * Shows and consumes a one-shot success message passed via {@link #EXTRA_PENDING_TOAST},
+     * e.g. from {@link AccountDetailsActivity} after a successful save. {@link OrganicToast}
+     * can't outlive the activity it's anchored to, so this is how a save on one screen shows its
+     * confirmation on the screen the user actually lands on. Removed from the intent immediately
+     * so it isn't re-shown on a later {@code onResume} (rotation, returning from another tab).
+     */
+    private void showPendingToastIfAny() {
+        String message = getIntent().getStringExtra(EXTRA_PENDING_TOAST);
+        if (message != null) {
+            getIntent().removeExtra(EXTRA_PENDING_TOAST);
+            showSuccess(message, bottomNav);
+        }
     }
 
     private void bindViews() {
@@ -199,11 +210,6 @@ public class SettingsActivity extends BaseActivity {
                 getString(R.string.settings_row_my_recipes_label),
                 getString(R.string.settings_row_my_recipes_sub_format, 0),
                 v -> Navigator.start(this, MyRecipesActivity.class));
-
-        bindRow(R.id.row_notifications, R.drawable.ic_bell,
-                getString(R.string.settings_row_notifications_label), getString(R.string.settings_row_notifications_sub),
-                v -> showComingSoon(R.string.settings_row_notifications_label));
-
         tvCookingSub = bindRow(R.id.row_cooking_preferences, R.drawable.ic_smartphone,
                 getString(R.string.settings_row_cooking_preferences_label), null,
                 v -> Navigator.start(this, CookingPreferencesActivity.class));
@@ -285,40 +291,7 @@ public class SettingsActivity extends BaseActivity {
             }
         });
 
-        viewModel.getSignatureResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success<CloudinarySignatureResponse> success && pendingAvatarUri != null) {
-                CloudinaryUploader.upload(this, pendingAvatarUri, success.getData(), new CloudinaryUploader.Callback() {
-                    @Override
-                    public void onSuccess(@NonNull String secureUrl) {
-                        viewModel.updateAvatar(secureUrl);
-                    }
 
-                    @Override
-                    public void onError(@NonNull String message) {
-                        setAvatarUploading(false);
-                        pendingAvatarUri = null;
-                        showError(message, bottomNav);
-                    }
-                });
-            } else if (result instanceof ApiResult.Error<?> error) {
-                setAvatarUploading(false);
-                pendingAvatarUri = null;
-                showError(error.getMessage(), bottomNav);
-            }
-        });
-
-        viewModel.getAvatarResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success) {
-                setAvatarUploading(false);
-                pendingAvatarUri = null;
-                renderAvatar(SessionManager.getInstance().getAvatarUrl());
-                showSuccess(getString(R.string.settings_avatar_updated), bottomNav);
-            } else if (result instanceof ApiResult.Error<?> error) {
-                setAvatarUploading(false);
-                pendingAvatarUri = null;
-                showError(error.getMessage(), bottomNav);
-            }
-        });
 
         viewModel.getPasswordResult().observe(this, result -> {
             if (result instanceof ApiResult.Success) {

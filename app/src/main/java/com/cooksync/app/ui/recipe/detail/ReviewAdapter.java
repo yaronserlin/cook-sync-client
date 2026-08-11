@@ -97,11 +97,15 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         String author = review.authorName();
         holder.authorName.setText(author);
         holder.avatar.setAvatar(review.authorAvatarUrl(), author);
-        holder.avatar.setOnClickListener(v -> {
-            if (avatarClickListener != null) {
-                avatarClickListener.onAvatarClick(review.authorAvatarUrl());
+        View.OnClickListener openProfile = v -> {
+            if (review.userId() != null) {
+                if (v.getContext() instanceof androidx.fragment.app.FragmentActivity activity) {
+                    com.cooksync.app.ui.auth.UserProfileDialogFragment.show(activity.getSupportFragmentManager(), review.userId(), author);
+                }
             }
-        });
+        };
+        holder.avatar.setOnClickListener(openProfile);
+        holder.authorName.setOnClickListener(openProfile);
 
         holder.rating.setText(review.rating() != null ? review.rating().toString() : "0.0");
         holder.content.setText(review.comment());

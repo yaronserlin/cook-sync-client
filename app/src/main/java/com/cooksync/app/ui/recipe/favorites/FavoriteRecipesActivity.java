@@ -223,4 +223,10 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
         }
         return constraints;
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        viewModel.loadFavorites();
+    }
 }

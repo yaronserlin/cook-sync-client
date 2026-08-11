@@ -10,14 +10,17 @@ import androidx.lifecycle.MutableLiveData;
 import com.cooksync.app.data.repository.AdminRepository;
 import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
+import com.cooksync.app.data.repository.UnitRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
+import com.dtos.request.unit.UnitRequestDTO;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 import com.dtos.response.admin.ReportedReviewResponse;
+import com.dtos.response.unit.UnitResponse;
 import com.dtos.response.user.UserResponse;
 
 import java.util.ArrayList;
@@ -57,9 +60,13 @@ public class AdminViewModel extends BaseViewModel {
 
     private final AdminRepository adminRepository;
     private final RecipeRepository recipeRepository;
+    private final UnitRepository unitRepository;
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
     private final MutableLiveData<ApiResult<AdminStatsResponse>> statsResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<List<UnitResponse>>> unitsResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<UnitResponse>> unitCreateResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<Void>> unitDeleteResult = new MutableLiveData<>();
 
     private final MutableLiveData<List<ReportedReviewResponse>> filteredReports = new MutableLiveData<>(Collections.emptyList());
     private final MutableLiveData<Event<ApiResult<Void>>> reportActionResult = new MutableLiveData<>();
@@ -95,10 +102,12 @@ public class AdminViewModel extends BaseViewModel {
      * @param adminRepository the repository used for every admin-only endpoint
      * @param recipeRepository the repository reused for {@code deleteReview}, since removing a
      *                         reported review deletes the same entity a recipe-owner would
+     * @param unitRepository the repository used for the Units tab's CRUD calls
      */
-    public AdminViewModel(AdminRepository adminRepository, RecipeRepository recipeRepository) {
+    public AdminViewModel(AdminRepository adminRepository, RecipeRepository recipeRepository, UnitRepository unitRepository) {
         this.adminRepository = adminRepository;
         this.recipeRepository = recipeRepository;
+        this.unitRepository = unitRepository;
     }
 
     public LiveData<ApiResult<AdminStatsResponse>> getStatsResult() { return statsResult; }
@@ -276,10 +285,12 @@ public class AdminViewModel extends BaseViewModel {
      * @param report the queued report whose author should be suspended
      */
     public void banReporter(ReportedReviewResponse report) {
+        removeReportsForUser(report.reviewerId());
         pendingActions.schedule(banReporterKey(report), BaseRepository.UNDO_WINDOW_MS, () -> {
             MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
             observeOnce(result, apiResult -> {
                 if (apiResult instanceof ApiResult.Error<Void> error) {
+                    loadReportedReviews();
                     reportActionResult.postValue(new Event<>(new ApiResult.Error<>(error.getMessage(), error.getCause())));
                 }
             });
@@ -456,11 +467,15 @@ public class AdminViewModel extends BaseViewModel {
      */
     public void setUserEnabled(UserResponse user, boolean enabled) {
         patchUserEnabled(user.id(), enabled, enabled ? "ACTIVE" : "SUSPENDED");
+        if (!enabled) {
+            removeReportsForUser(user.id());
+        }
         pendingActions.schedule(userStatusKey(user), BaseRepository.UNDO_WINDOW_MS, () -> {
             MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
             observeOnce(result, apiResult -> {
                 if (apiResult instanceof ApiResult.Error<Void> error) {
                     patchUserEnabled(user.id(), user.enabled(), user.status());
+                    loadReportedReviews();
                     userActionResult.postValue(new Event<>(new ApiResult.Error<>(error.getMessage(), error.getCause())));
                 }
             });
@@ -470,6 +485,12 @@ public class AdminViewModel extends BaseViewModel {
                 adminRepository.disableUser(user.id(), result);
             }
         });
+    }
+
+    private void removeReportsForUser(String userId) {
+        if (userId == null) return;
+        allReports.removeIf(r -> userId.equals(r.reviewerId()));
+        applyReasonFilter();
     }
 
     /**
@@ -500,6 +521,51 @@ public class AdminViewModel extends BaseViewModel {
         }
         usersResult.postValue(new ApiResult.Success<>(new ArrayList<>(currentUsers)));
     }
+
+    /**
+     * Loads every measurement unit for the Units tab.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    public void loadUnits() {
+        unitRepository.getAllUnits(unitsResult);
+    }
+
+    /**
+     * Creates a new measurement unit.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param name display name of the new unit
+     * @param code short symbol code of the new unit
+     */
+    public void createUnit(String name, String code) {
+        unitRepository.createUnit(new UnitRequestDTO(name, code), unitCreateResult);
+    }
+
+    /**
+     * Deletes a measurement unit.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param id unique identifier of the unit to delete
+     */
+    public void deleteUnit(String id) {
+        unitRepository.deleteUnit(id, unitDeleteResult);
+    }
+
+    /** @return observable list of every measurement unit (Loading → Success/Error) */
+    public LiveData<ApiResult<List<UnitResponse>>> getUnitsResult() { return unitsResult; }
+    /** @return observable result of the most recent unit-creation call */
+    public LiveData<ApiResult<UnitResponse>> getUnitCreateResult() { return unitCreateResult; }
+    /** @return observable result of the most recent unit-deletion call */
+    public LiveData<ApiResult<Void>> getUnitDeleteResult() { return unitDeleteResult; }
 
     /**
      * Flushes any still-pending actions immediately rather than dropping them, so navigating

@@ -24,6 +24,7 @@ import com.cooksync.app.ui.recipe.wizard.AddRecipeViewModel;
 import com.cooksync.app.data.model.recipe.RecipeDraft;
 import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
 import com.cooksync.app.util.CloudinaryUploader;
+import com.cooksync.app.util.SessionManager;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.recipe.RecipeResponse;
@@ -152,6 +153,10 @@ public class RecipePublishManager {
                         com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.collectPendingImageUploads(draft);
                 int totalImages = pending.size();
 
+                String userId = SessionManager.getInstance().getUserId();
+                String recipeTitle = (draft.title == null || draft.title.isBlank()) ? "recipe" : draft.title.trim().replaceAll("[^a-zA-Z0-9_]", "_");
+                String folder = "cooksync/" + userId + "/" + recipeTitle;
+
                 for (int i = 0; i < totalImages; i++) {
                     com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.PendingImageUpload item = pending.get(i);
                     int itemNum = i + 1;
@@ -159,15 +164,27 @@ public class RecipePublishManager {
                     publishState.postValue(PublishState.uploading(percent,
                             "Uploading image " + itemNum + " of " + totalImages + "..."));
 
+                    long currentTime = System.currentTimeMillis();
+                    String publicId;
+                    if (item.getKind() == com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.PendingImageUpload.Kind.COVER) {
+                        publicId = "main_" + userId + "_" + currentTime;
+                    } else if (item.getKind() == com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.PendingImageUpload.Kind.DESCRIPTION_BLOCK) {
+                        publicId = "description_" + userId + "_" + currentTime;
+                    } else {
+                        int stepNum = (item.getInstruction() != null && draft.instructions != null) ? (draft.instructions.indexOf(item.getInstruction()) + 1) : 1;
+                        if (stepNum <= 0) stepNum = 1;
+                        publicId = "instruction_" + stepNum + "_" + currentTime;
+                    }
+
                     // Fetch signature synchronously
-                    CloudinarySignatureResponse sig = fetchSignatureSync();
+                    CloudinarySignatureResponse sig = fetchSignatureSync(folder, publicId);
                     if (sig == null) {
                         publishState.postValue(PublishState.error("Failed to acquire upload signature"));
                         return;
                     }
 
                     // Perform Cloudinary upload
-                    String uploadedUrl = uploadImageSync(item.getLocalUri(), sig);
+                    String uploadedUrl = uploadImageSync(item.getLocalUri(), folder, publicId, sig);
                     if (uploadedUrl == null) {
                         publishState.postValue(PublishState.error("Failed to upload image " + itemNum));
                         return;
@@ -207,12 +224,14 @@ public class RecipePublishManager {
         });
     }
 
-    private String uploadImageSync(String localUri, CloudinarySignatureResponse signature) throws InterruptedException {
+    private String uploadImageSync(String localUri, String folder, String publicId, CloudinarySignatureResponse signature) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<String> result = new AtomicReference<>();
         mainHandler.post(() -> CloudinaryUploader.upload(
                 CookSyncApplication.getAppContext(),
                 android.net.Uri.parse(localUri),
+                folder,
+                publicId,
                 signature,
                 new CloudinaryUploader.Callback() {
                     @Override
@@ -231,7 +250,7 @@ public class RecipePublishManager {
         return result.get();
     }
 
-    private CloudinarySignatureResponse fetchSignatureSync() throws InterruptedException {
+    private CloudinarySignatureResponse fetchSignatureSync(String folder, String publicId) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<CloudinarySignatureResponse> result = new AtomicReference<>();
         MutableLiveData<ApiResult<CloudinarySignatureResponse>> target = new MutableLiveData<>();
@@ -245,7 +264,7 @@ public class RecipePublishManager {
             }
         }));
 
-        mediaRepository.getUploadSignature(target);
+        mediaRepository.getUploadSignature(folder, publicId, target);
         latch.await();
         return result.get();
     }

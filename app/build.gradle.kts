@@ -26,7 +26,7 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Pointing to the specific backend server address provided.
-        buildConfigField("String", "BASE_URL", "\"http://192.168.0.223:8080/\"")
+        buildConfigField("String", "BASE_URL", "\"http://192.168.20.251:8080/\"")
     }
 
     buildTypes {

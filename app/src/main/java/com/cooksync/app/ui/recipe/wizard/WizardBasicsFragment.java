@@ -287,7 +287,10 @@ public class WizardBasicsFragment extends Fragment {
         cardCoverPreview.setVisibility(hasCover ? View.VISIBLE : View.GONE);
         btnPickCover.setVisibility(hasCover ? View.GONE : View.VISIBLE);
         if (hasCover) {
-            Glide.with(this).load(url).into(ivCoverPreview);
+            Glide.with(this).load(url)
+                    .placeholder(R.drawable.bg_skeleton_bone)
+                    .error(R.drawable.ic_image_failed)
+                    .into(ivCoverPreview);
         }
     }
 

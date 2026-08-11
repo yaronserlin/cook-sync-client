@@ -17,6 +17,7 @@ import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
 import com.cooksync.app.ui.base.BaseActivity;
+import com.cooksync.app.ui.common.AvatarView;
 import com.cooksync.app.ui.common.FilterSheetLauncher;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.common.OrganicToast;
@@ -83,14 +84,23 @@ public class HomeActivity extends BaseActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        AvatarView avatarView = findViewById(R.id.avatar_view_profile);
+        if (avatarView != null) {
+            avatarView.setAvatar(SessionManager.getInstance().getAvatarUrl(), SessionManager.getInstance().getDisplayName());
+        }
         viewModel.loadInitialFeed();
         viewModel.loadFavorites();
-        bottomNav.setSelectedItemId(R.id.nav_home);
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_home);
+        }
     }
+
+    private View emptyStateView;
 
     private void initViews() {
         rvFeed = findViewById(R.id.rv_feed);
         noResultsState = findViewById(R.id.no_results_state);
+        emptyStateView = findViewById(R.id.empty_state);
         cgRemovableConstraints = noResultsState.findViewById(R.id.cg_removable_constraints);
         btnClearAll = noResultsState.findViewById(R.id.btn_clear_all);
         btnClearAll.setOnClickListener(v -> {
@@ -100,9 +110,9 @@ public class HomeActivity extends BaseActivity {
 
         setupSkeleton(R.id.skeleton_view);
 
-        TextView avatar = findViewById(R.id.tv_profile_avatar);
-        avatar.setText(SessionManager.getInstance().getInitials());
-        avatar.setOnClickListener(v -> Navigator.start(this, AccountDetailsActivity.class));
+        AvatarView avatarView = findViewById(R.id.avatar_view_profile);
+        avatarView.setAvatar(SessionManager.getInstance().getAvatarUrl(), SessionManager.getInstance().getDisplayName());
+        avatarView.setOnClickListener(v -> Navigator.start(this, AccountDetailsActivity.class));
 
         findViewById(R.id.search_bar_tap_target).setOnClickListener(v ->
                 Navigator.start(this, SearchActivity.newIntentWithFilters(this, viewModel)));
@@ -263,6 +273,17 @@ public class HomeActivity extends BaseActivity {
         summary.setVisibility(View.VISIBLE);
     }
 
+    @Override
+    protected void showSkeleton(boolean show, View contentView) {
+        super.showSkeleton(show, contentView);
+        View searchTarget = findViewById(R.id.search_bar_tap_target);
+        View filterButton = findViewById(R.id.btn_filters);
+        View tagsList = findViewById(R.id.rv_tags);
+        if (searchTarget != null) searchTarget.setVisibility(show ? View.GONE : View.VISIBLE);
+        if (filterButton != null) filterButton.setVisibility(show ? View.GONE : View.VISIBLE);
+        if (tagsList != null) tagsList.setVisibility(show ? View.GONE : View.VISIBLE);
+    }
+
     /**
      * Shows the no-results state (with one removable chip per active filter) instead of the
      * feed when the currently active filters match no recipes. A no-op when nothing is
@@ -278,12 +299,21 @@ public class HomeActivity extends BaseActivity {
         boolean hasActiveFilters = difficulty != null || !tags.isEmpty()
                 || minRating != null || maxTotalTimeMinutes != null;
 
-        if (!feedIsEmpty || !hasActiveFilters) {
+        if (!feedIsEmpty) {
             noResultsState.setVisibility(View.GONE);
+            if (emptyStateView != null) emptyStateView.setVisibility(View.GONE);
             rvFeed.setVisibility(View.VISIBLE);
             return;
         }
 
+        if (!hasActiveFilters) {
+            noResultsState.setVisibility(View.GONE);
+            rvFeed.setVisibility(View.GONE);
+            if (emptyStateView != null) emptyStateView.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        if (emptyStateView != null) emptyStateView.setVisibility(View.GONE);
         rvFeed.setVisibility(View.GONE);
         List<com.cooksync.app.ui.common.NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
         if (difficulty != null) {

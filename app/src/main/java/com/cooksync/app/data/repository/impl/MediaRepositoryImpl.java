@@ -38,7 +38,12 @@ public class MediaRepositoryImpl extends BaseRepository implements MediaReposito
      */
     @Override
     public void getUploadSignature(MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget) {
+        getUploadSignature(null, null, resultTarget);
+    }
+
+    @Override
+    public void getUploadSignature(String folder, String publicId, MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
-        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getMediaSignature())));
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getMediaSignature(folder, publicId))));
     }
 }

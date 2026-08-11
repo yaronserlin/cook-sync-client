@@ -73,6 +73,15 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
 
         holder.name.setText(fullName);
         holder.avatar.setAvatar(user.avatarUrl(), fullName);
+
+        View.OnClickListener openProfile = v -> {
+            if (user.id() != null && v.getContext() instanceof androidx.fragment.app.FragmentActivity activity) {
+                com.cooksync.app.ui.auth.UserProfileDialogFragment.show(activity.getSupportFragmentManager(), user.id(), fullName);
+            }
+        };
+        holder.avatar.setOnClickListener(openProfile);
+        holder.name.setOnClickListener(openProfile);
+
         holder.email.setText(user.email());
         holder.adminTag.setVisibility(Boolean.TRUE.equals(user.isAdmin()) ? View.VISIBLE : View.GONE);
 

@@ -222,43 +222,23 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
     }
 
     /**
-     * Removes a recipe from the list immediately, so the UI updates without waiting on a
-     * network round trip. The actual delete is delayed by {@link #UNDO_WINDOW_MS} rather than
-     * sent right away, so a tap on the toast's "Undo" action (see {@link #undoDeleteRecipe})
-     * can cancel it before it's ever sent — a delete the user undoes in time never reaches the
-     * server at all. If the deferred call does reach the server and fails, the recipe is
-     * restored and the failure is published via {@link #getDeleteResult()}.
+     * Deletes a recipe: waits for the server call to succeed before removing it from the list,
+     * then publishes the outcome via {@link #getDeleteResult()}. Unlike {@link #toggleVisibility},
+     * this is not optimistic — the recipe stays visible until the server confirms the delete.
      *
      * @param recipe the recipe to delete, as currently shown
      */
     public void deleteRecipe(RecipePreviewResponse recipe) {
         String recipeId = recipe.id();
-        allRecipes.removeIf(r -> Objects.equals(r.id(), recipeId));
-        publishFiltered();
-
-        pendingActions.schedule(recipeId, UNDO_WINDOW_MS, () -> {
-            MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
-            observeOnce(result, apiResult -> {
-                if (apiResult instanceof ApiResult.Error<Void>) {
-                    allRecipes.add(recipe);
-                    publishFiltered();
-                }
-                deleteResult.setValue(apiResult);
-            });
-            repository.deleteRecipe(recipeId, result);
+        MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
+        observeOnce(result, apiResult -> {
+            if (apiResult instanceof ApiResult.Success<Void>) {
+                allRecipes.removeIf(r -> Objects.equals(r.id(), recipeId));
+                publishFiltered();
+            }
+            deleteResult.postValue(apiResult);
         });
-    }
-
-    /**
-     * Cancels a still-pending delete and restores the recipe to the list. Does nothing if the
-     * undo window already elapsed and the delete reached the server.
-     *
-     * @param recipe the recipe to restore, as it looked before being deleted
-     */
-    public void undoDeleteRecipe(RecipePreviewResponse recipe) {
-        if (!pendingActions.cancel(recipe.id())) return;
-        allRecipes.add(recipe);
-        publishFiltered();
+        repository.deleteRecipe(recipeId, result);
     }
 
     /**

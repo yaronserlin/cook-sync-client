@@ -22,6 +22,7 @@ public class AdminPagerAdapter extends FragmentStateAdapter {
     public static final int TAB_REPORTS = 0;
     public static final int TAB_TAGS = 1;
     public static final int TAB_USERS = 2;
+    public static final int TAB_UNITS = 3;
 
     public AdminPagerAdapter(@NonNull FragmentActivity activity) {
         super(activity);
@@ -29,7 +30,7 @@ public class AdminPagerAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 3;
+        return 4;
     }
 
     @NonNull
@@ -38,7 +39,8 @@ public class AdminPagerAdapter extends FragmentStateAdapter {
         return switch (position) {
             case TAB_REPORTS -> new AdminReportsFragment();
             case TAB_TAGS -> new AdminTagsFragment();
-            default -> new AdminUsersFragment();
+            case TAB_USERS -> new AdminUsersFragment();
+            default -> new AdminUnitsFragment();
         };
     }
 }

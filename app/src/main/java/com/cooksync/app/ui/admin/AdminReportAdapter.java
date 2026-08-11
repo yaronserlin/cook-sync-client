@@ -14,6 +14,8 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.common.AvatarView;
+import com.cooksync.app.ui.auth.UserProfileDialogFragment;
 import com.dtos.response.admin.ReportedReviewResponse;
 import com.google.android.material.button.MaterialButton;
 
@@ -67,6 +69,16 @@ public class AdminReportAdapter extends RecyclerView.Adapter<AdminReportAdapter.
         ReportedReviewResponse report = reports.get(position);
 
         holder.reviewer.setText(report.reviewerName());
+        holder.avatar.setAvatar(report.reviewerAvatarUrl(), report.reviewerName());
+
+        View.OnClickListener openProfile = v -> {
+            if (report.reviewerId() != null && v.getContext() instanceof androidx.fragment.app.FragmentActivity activity) {
+                UserProfileDialogFragment.show(activity.getSupportFragmentManager(), report.reviewerId(), report.reviewerName());
+            }
+        };
+        holder.avatar.setOnClickListener(openProfile);
+        holder.reviewer.setOnClickListener(openProfile);
+
         holder.recipe.setText(holder.itemView.getContext()
                 .getString(R.string.admin_report_on_format, report.recipeTitle()));
         holder.reasonTag.setText(report.reason());
@@ -98,6 +110,7 @@ public class AdminReportAdapter extends RecyclerView.Adapter<AdminReportAdapter.
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
+        AvatarView avatar;
         TextView reviewer;
         TextView recipe;
         TextView reasonTag;
@@ -109,6 +122,7 @@ public class AdminReportAdapter extends RecyclerView.Adapter<AdminReportAdapter.
 
         ViewHolder(View view) {
             super(view);
+            avatar = view.findViewById(R.id.report_user_avatar);
             reviewer = view.findViewById(R.id.tv_report_reviewer);
             recipe = view.findViewById(R.id.tv_report_recipe);
             reasonTag = view.findViewById(R.id.tv_report_reason_tag);

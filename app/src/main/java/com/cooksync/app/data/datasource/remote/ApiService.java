@@ -23,6 +23,7 @@ import com.dtos.response.user.UserResponse;
 
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.HTTP;
 import retrofit2.http.PATCH;
@@ -89,6 +90,15 @@ public interface ApiService {
      */
     @GET("api/auth/me")
     Call<ApiResponse<UserResponse>> getCurrentUser();
+
+    /**
+     * Fetches a specific user's public profile by ID.
+     *
+     * @param id target user ID
+     * @return call yielding the user's public profile
+     */
+    @GET("api/users/{id}")
+    Call<ApiResponse<UserResponse>> getUserProfile(@Path("id") String id);
 
     /**
      * Invalidates the current refresh token session on the server.
@@ -187,7 +197,10 @@ public interface ApiService {
      * @return call yielding Cloudinary upload credentials
      */
     @GET("api/cloudinary/signature")
-    Call<ApiResponse<CloudinarySignatureResponse>> getMediaSignature();
+    Call<ApiResponse<CloudinarySignatureResponse>> getMediaSignature(
+            @retrofit2.http.Query("folder") String folder,
+            @retrofit2.http.Query("publicId") String publicId
+    );
 
     // ── Recipe Feed & Discovery ────────────────────────────────────
 
@@ -351,6 +364,24 @@ public interface ApiService {
             @retrofit2.http.Query("page") int page,
             @retrofit2.http.Query("size") int size
     );
+
+    /**
+     * Creates a new measurement unit. Admin-only.
+     *
+     * @param request unit creation request DTO
+     * @return call yielding the created unit
+     */
+    @POST("api/units")
+    Call<ApiResponse<com.dtos.response.unit.UnitResponse>> createUnit(@Body com.dtos.request.unit.UnitRequestDTO request);
+
+    /**
+     * Deletes a measurement unit by ID. Admin-only.
+     *
+     * @param id target unit unique identifier
+     * @return call acknowledging the deletion
+     */
+    @DELETE("api/units/{id}")
+    Call<ApiResponse<Void>> deleteUnit(@Path("id") String id);
 
     // ── Favorites ──────────────────────────────────────────────────
 

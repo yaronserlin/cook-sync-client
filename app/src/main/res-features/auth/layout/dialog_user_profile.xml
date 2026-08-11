@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_info_card"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <com.cooksync.app.ui.common.AvatarView
+        android:id="@+id/avatar_view"
+        android:layout_width="84dp"
+        android:layout_height="84dp" />
+
+    <TextView
+        android:id="@+id/tv_full_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="@font/caprasimo"
+        android:textColor="@color/color_text"
+        android:textSize="22sp"
+        tools:text="Jane Smith" />
+
+    <TextView
+        android:id="@+id/tv_city"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textColor="@color/color_accent_600"
+        android:textSize="14sp"
+        android:visibility="gone"
+        tools:text="Tel Aviv, Israel"
+        tools:visibility="visible" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="16dp"
+        android:background="@color/color_divider" />
+
+    <TextView
+        android:id="@+id/tv_bio"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:lineSpacingExtra="4dp"
+        android:textColor="@color/color_neutral_800"
+        android:textSize="15sp"
+        tools:text="Passionate home cook, baker, and recipe creator." />
+
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="20dp"
+        android:visibility="gone" />
+
+</LinearLayout>

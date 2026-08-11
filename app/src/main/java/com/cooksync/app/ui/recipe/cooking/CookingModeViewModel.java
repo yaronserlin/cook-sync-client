@@ -39,20 +39,11 @@ public class CookingModeViewModel extends BaseViewModel {
     private final MutableLiveData<Integer> currentStepIndex = new MutableLiveData<>(0);
     private final MutableLiveData<Integer> timerRemainingSeconds = new MutableLiveData<>();
     private final MutableLiveData<Boolean> timerRunning = new MutableLiveData<>(false);
+    private final MutableLiveData<Boolean> timerStarted = new MutableLiveData<>(false);
     private final MutableLiveData<Event<Boolean>> timerFinishedEvent = new MutableLiveData<>();
 
     private CountDownTimer countDownTimer;
 
-    /**
-     * Constructs the ViewModel with the given {@link RecipeRepository}, injected by
-     * {@link com.cooksync.app.ui.base.ViewModelFactory}.
-     *
-     * Complexity:
-     * Time: O(1)
-     * Space: O(1)
-     *
-     * @param repository the repository used for recipe/note calls
-     */
     public CookingModeViewModel(RecipeRepository repository) {
         this.repository = repository;
     }
@@ -62,34 +53,17 @@ public class CookingModeViewModel extends BaseViewModel {
     public LiveData<Integer> getCurrentStepIndex() { return currentStepIndex; }
     public LiveData<Integer> getTimerRemainingSeconds() { return timerRemainingSeconds; }
     public LiveData<Boolean> getTimerRunning() { return timerRunning; }
+    public LiveData<Boolean> getTimerStarted() { return timerStarted; }
     public LiveData<Event<Boolean>> getTimerFinishedEvent() { return timerFinishedEvent; }
 
-    /**
-     * Loads the recipe being cooked.
-     *
-     * @param recipeId the ID of the recipe to load
-     */
     public void loadRecipe(String recipeId) {
         repository.getRecipeDetail(recipeId, recipeResult);
     }
 
-    /**
-     * Loads every private note (recipe-wide and per-step) attached to the recipe, so the
-     * current step can show its own note alongside the instruction text.
-     *
-     * @param recipeId the ID of the recipe being cooked
-     */
     public void loadNotes(String recipeId) {
         repository.getAllPersonalNotes(recipeId, notesResult);
     }
 
-    /**
-     * Jumps to a specific step, cancelling any running timer and arming a fresh countdown
-     * (paused) if the new step has one.
-     *
-     * @param index the target step's index within {@code steps}
-     * @param steps the recipe's ordered instruction steps
-     */
     public void goToStep(int index, @NonNull List<InstructionResponse> steps) {
         if (index < 0 || index >= steps.size()) {
             return;
@@ -103,6 +77,7 @@ public class CookingModeViewModel extends BaseViewModel {
             timerRemainingSeconds.setValue(null);
         }
         timerRunning.setValue(false);
+        timerStarted.setValue(false);
     }
 
     /**
@@ -160,6 +135,7 @@ public class CookingModeViewModel extends BaseViewModel {
         cancelTimer();
         timerRemainingSeconds.setValue(Math.max(totalSeconds, 1));
         timerRunning.setValue(false);
+        timerStarted.setValue(false);
     }
 
     private void startTimer() {
@@ -178,10 +154,12 @@ public class CookingModeViewModel extends BaseViewModel {
             public void onFinish() {
                 timerRemainingSeconds.setValue(0);
                 timerRunning.setValue(false);
+                timerStarted.setValue(false);
                 timerFinishedEvent.setValue(new Event<>(true));
             }
         }.start();
         timerRunning.setValue(true);
+        timerStarted.setValue(true);
     }
 
     private void cancelTimer() {

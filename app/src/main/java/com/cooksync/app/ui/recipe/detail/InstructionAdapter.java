@@ -119,25 +119,12 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
         // image treatment, so a slow fetch never shows a broken tile.
         holder.stepImageContainer.setVisibility(hasImage ? View.VISIBLE : View.GONE);
         if (hasImage) {
-            holder.stepImage.setVisibility(View.INVISIBLE);
+            holder.stepImage.setVisibility(View.VISIBLE);
             Glide.with(holder.stepImage.getContext())
                     .load(imageUrl)
+                    .placeholder(R.drawable.bg_skeleton_bone)
+                    .error(R.drawable.ic_image_failed)
                     .centerCrop()
-                    .listener(new RequestListener<>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model,
-                                                     @NonNull Target<Drawable> target, boolean isFirstResource) {
-                            holder.stepImageContainer.setVisibility(View.GONE);
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(@NonNull Drawable resource, @NonNull Object model, Target<Drawable> target,
-                                                        @NonNull DataSource dataSource, boolean isFirstResource) {
-                            holder.stepImage.setVisibility(View.VISIBLE);
-                            return false;
-                        }
-                    })
                     .into(holder.stepImage);
             holder.stepImage.setOnClickListener(v -> {
                 if (imageClickListener != null) {

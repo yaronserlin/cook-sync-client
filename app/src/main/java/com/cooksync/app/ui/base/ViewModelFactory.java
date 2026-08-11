@@ -26,6 +26,7 @@ import com.cooksync.app.ui.admin.AdminViewModel;
 import com.cooksync.app.ui.auth.ForgotPasswordViewModel;
 import com.cooksync.app.ui.auth.LoginViewModel;
 import com.cooksync.app.ui.auth.RegisterViewModel;
+import com.cooksync.app.ui.auth.UserProfileViewModel;
 import com.cooksync.app.ui.home.HomeViewModel;
 import com.cooksync.app.ui.recipe.cooking.CookingModeViewModel;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailViewModel;
@@ -113,9 +114,11 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         } else if (modelClass.isAssignableFrom(ReviewViewModel.class)) {
             return (T) new ReviewViewModel(recipeRepository);
         } else if (modelClass.isAssignableFrom(AdminViewModel.class)) {
-            return (T) new AdminViewModel(adminRepository, recipeRepository);
+            return (T) new AdminViewModel(adminRepository, recipeRepository, unitRepository);
         } else if (modelClass.isAssignableFrom(AddRecipeViewModel.class)) {
             return (T) new AddRecipeViewModel(recipeRepository, tagRepository, unitRepository, mediaRepository);
+        } else if (modelClass.isAssignableFrom(UserProfileViewModel.class)) {
+            return (T) new UserProfileViewModel(authRepository);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }

@@ -108,7 +108,10 @@ public class WizardReviewFragment extends Fragment {
 
         if (draft.primaryImageUrl != null && !draft.primaryImageUrl.isEmpty()) {
             cardCover.setVisibility(View.VISIBLE);
-            Glide.with(this).load(draft.primaryImageUrl).into(ivCover);
+            Glide.with(this).load(draft.primaryImageUrl)
+                    .placeholder(R.drawable.bg_skeleton_bone)
+                    .error(R.drawable.ic_image_failed)
+                    .into(ivCover);
         } else {
             cardCover.setVisibility(View.GONE);
         }

@@ -97,24 +97,12 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
         if (holder instanceof ImageViewHolder imageHolder) {
             // Stays hidden until the load actually succeeds, rather than showing a placeholder
             // tile, so a slow or failed fetch never renders as a gray box or broken image.
-            imageHolder.image.setVisibility(View.INVISIBLE);
+            imageHolder.image.setVisibility(View.VISIBLE);
             Glide.with(imageHolder.image.getContext())
                     .load(block.imageUrl())
+                    .placeholder(R.drawable.bg_skeleton_bone)
+                    .error(R.drawable.ic_image_failed)
                     .centerCrop()
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model,
-                                                     Target<Drawable> target, boolean isFirstResource) {
-                            return false;
-                        }
-
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target,
-                                                        DataSource dataSource, boolean isFirstResource) {
-                            imageHolder.image.setVisibility(View.VISIBLE);
-                            return false;
-                        }
-                    })
                     .into(imageHolder.image);
             imageHolder.image.setOnClickListener(v -> {
                 if (imageClickListener != null) {

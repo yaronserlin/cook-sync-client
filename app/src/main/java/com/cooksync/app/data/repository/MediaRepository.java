@@ -21,4 +21,13 @@ public interface MediaRepository {
      * @param resultTarget live data target the result will be posted to
      */
     void getUploadSignature(MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget);
+
+    /**
+     * Fetches a fresh signed upload signature from the server for a specific folder and public ID.
+     *
+     * @param folder target folder path
+     * @param publicId target asset public ID
+     * @param resultTarget live data target the result will be posted to
+     */
+    void getUploadSignature(String folder, String publicId, MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget);
 }

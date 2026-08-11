@@ -34,10 +34,10 @@
                     android:layout_weight="1"
                     android:text="@string/home_title" />
 
-                <TextView
-                    android:id="@+id/tv_profile_avatar"
-                    style="@style/CookSync.AvatarChip"
-                    tools:text="YS" />
+                <com.cooksync.app.ui.common.AvatarView
+                    android:id="@+id/avatar_view_profile"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp" />
 
             </LinearLayout>
 
@@ -143,6 +143,43 @@
             android:id="@+id/skeleton_view"
             layout="@layout/activity_home_skeleton"
             android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:paddingHorizontal="40dp"
+            android:visibility="gone">
+
+            <ImageView
+                android:id="@+id/iv_empty_icon"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:src="@drawable/ic_book"
+                app:tint="@color/color_accent_700" />
+
+            <TextView
+                android:id="@+id/tv_empty_title"
+                style="@style/CookSync.Heading.H2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="No recipes yet" />
+
+            <TextView
+                android:id="@+id/tv_empty_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:alpha="0.7"
+                android:gravity="center"
+                android:textColor="@color/color_text"
+                android:textSize="14sp"
+                android:text="Be the first to publish a recipe!" />
+
+        </LinearLayout>
 
         <include layout="@layout/layout_no_results_state" />
 

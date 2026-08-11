@@ -4,6 +4,7 @@ import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -217,7 +218,7 @@ public class AccountDetailsActivity extends BaseActivity {
 
         viewModel.getSignatureResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<CloudinarySignatureResponse> success && pendingAvatarUri != null) {
-                CloudinaryUploader.upload(this, pendingAvatarUri, success.getData(), new CloudinaryUploader.Callback() {
+                CloudinaryUploader.upload(this, pendingAvatarUri, viewModel.getPendingFolder(), viewModel.getPendingPublicId(), success.getData(), new CloudinaryUploader.Callback() {
                     @Override
                     public void onSuccess(@NonNull String secureUrl) {
                         viewModel.updateAvatar(secureUrl);
@@ -241,22 +242,10 @@ public class AccountDetailsActivity extends BaseActivity {
                 pendingAvatarUri = null;
                 avatarCleared = false;
                 renderAvatar(SessionManager.getInstance().getAvatarUrl());
-                showSuccess(getString(R.string.settings_avatar_updated), footer);
+                saveRemainingProfileChanges();
             } else if (result instanceof ApiResult.Error<?> error) {
                 setAvatarUploading(false);
                 renderAvatar(SessionManager.getInstance().getAvatarUrl());
-                showError(error.getMessage(), footer);
-            }
-        });
-
-        viewModel.getProfileResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success) {
-                loadedFirstName = etFirstName.getText().toString().trim();
-                loadedLastName = etLastName.getText().toString().trim();
-                loadedCity = etCity.getText().toString().trim();
-                loadedBio = etBio.getText().toString().trim();
-                showSuccess(getString(R.string.settings_updated), footer);
-            } else if (result instanceof ApiResult.Error<?> error) {
                 showError(error.getMessage(), footer);
             }
         });
@@ -270,23 +259,25 @@ public class AccountDetailsActivity extends BaseActivity {
             }
         });
 
-        viewModel.getPasswordResult().observe(this, result -> {
+        viewModel.getSaveChangesResult().observe(this, event -> {
+            ApiResult<Void> result = event.getContentIfNotHandled();
+            if (result == null) return;
             if (result instanceof ApiResult.Success) {
+                loadedFirstName = etFirstName.getText().toString().trim();
+                loadedLastName = etLastName.getText().toString().trim();
+                loadedCity = etCity.getText().toString().trim();
+                loadedBio = etBio.getText().toString().trim();
+                loadedShowRecipesPublicly = cbShowRecipesPublicly.isChecked();
+                loadedShowFavoritesPublicly = cbShowFavoritesPublicly.isChecked();
                 etCurrentPassword.setText("");
                 etNewPassword.setText("");
                 etRepeatNewPassword.setText("");
-                showSuccess(getString(R.string.settings_password_updated), footer);
-            } else if (result instanceof ApiResult.Error<?> error) {
-                showError(error.getMessage(), footer);
-            }
-        });
 
-        viewModel.getPrivacyResult().observe(this, result -> {
-            if (result instanceof ApiResult.Success) {
-                loadedShowRecipesPublicly = cbShowRecipesPublicly.isChecked();
-                loadedShowFavoritesPublicly = cbShowFavoritesPublicly.isChecked();
-                showSuccess(getString(R.string.settings_updated), footer);
-            } else if (result instanceof ApiResult.Error<?> error) {
+                Intent extras = new Intent();
+                extras.putExtra(SettingsActivity.EXTRA_PENDING_TOAST, getString(R.string.settings_updated));
+                Navigator.start(AccountDetailsActivity.this, SettingsActivity.class, extras);
+                finish();
+            } else if (result instanceof ApiResult.Error<Void> error) {
                 showError(error.getMessage(), footer);
             }
         });
@@ -301,10 +292,12 @@ public class AccountDetailsActivity extends BaseActivity {
     }
 
     /**
-     * Submits every section of the form that actually changed: the name/city/bio profile bundle
-     * is always resubmitted (cheap and idempotent), while avatar, email, and password changes
-     * are only fired if their fields were actually touched — email and password both require the
-     * current-password field to be filled in as re-authentication.
+     * Kicks off saving the form. A pending avatar change (new photo or "use initials") is
+     * resolved first — {@link #saveRemainingProfileChanges()} only runs once that single call
+     * has actually settled, from {@link SettingsViewModel#getAvatarResult()}'s success handler,
+     * so it never fires twice for the same tap and never races the avatar write into
+     * {@link SessionManager}. With no pending avatar change, the rest of the form is submitted
+     * right away.
      *
      * Complexity:
      * Time: O(1)
@@ -315,33 +308,75 @@ public class AccountDetailsActivity extends BaseActivity {
             setAvatarUploading(true);
             viewModel.requestUploadSignature();
         } else if (avatarCleared) {
+            setAvatarUploading(true);
             viewModel.updateAvatar(null);
+        } else {
+            saveRemainingProfileChanges();
         }
+    }
 
-        viewModel.updateProfile(
+    /**
+     * If the email field changed, gates the whole save behind a password-confirmation dialog —
+     * {@link #submitAccountChanges()} only runs from that dialog's confirm callback, once it has
+     * already dismissed itself, so it never fires while the dialog is still on screen and can't
+     * be torn down mid-confirmation by a navigate-away triggered from the rest of the batch.
+     * Cancelling the dialog abandons the whole save attempt. With no email change, the batch is
+     * submitted right away.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    private void saveRemainingProfileChanges() {
+        String newEmail = etEmail.getText().toString().trim();
+        if (!newEmail.equalsIgnoreCase(loadedEmail)) {
+            showEmailChangeDialog(newEmail);
+        } else {
+            submitAccountChanges();
+        }
+    }
+
+    /**
+     * Prompts for the current password before submitting {@code newEmail}, since changing email
+     * requires re-authentication and the "current password" field on this screen is meant for
+     * the password-change section, not implicitly reused for email too. On confirm, submits the
+     * email change and then the rest of the form's changes, in that order.
+     *
+     * @param newEmail the new email address to submit once the password is confirmed
+     */
+    private void showEmailChangeDialog(String newEmail) {
+        OrganicConfirmDialog.showWithPasswordConfirm(this,
+                getString(R.string.account_details_dialog_change_email_title),
+                getString(R.string.account_details_dialog_change_email_message, newEmail),
+                getString(R.string.account_details_action_change_email),
+                getString(R.string.action_cancel),
+                password -> {
+                    viewModel.updateEmail(newEmail, password);
+                    submitAccountChanges();
+                });
+    }
+
+    /**
+     * Submits the name/city/bio/privacy/password batch (see
+     * {@link SettingsViewModel#saveAccountChanges}); on success this navigates to
+     * {@link SettingsActivity}, so it must only run once any required email confirmation has
+     * already been resolved.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    private void submitAccountChanges() {
+        viewModel.saveAccountChanges(
                 etFirstName.getText().toString(),
                 etLastName.getText().toString(),
                 etCity.getText().toString(),
-                etBio.getText().toString());
-
-        String newEmail = etEmail.getText().toString().trim();
-        String currentPassword = etCurrentPassword.getText().toString();
-        boolean emailChanged = !newEmail.equalsIgnoreCase(loadedEmail);
-        if (emailChanged) {
-            viewModel.updateEmail(newEmail, currentPassword);
-        }
-
-        String newPassword = etNewPassword.getText().toString();
-        if (!TextUtils.isEmpty(newPassword)) {
-            String repeatPassword = etRepeatNewPassword.getText().toString();
-            if (!newPassword.equals(repeatPassword)) {
-                showError(getString(R.string.account_details_password_mismatch), footer);
-            } else {
-                viewModel.changePassword(currentPassword, newPassword);
-            }
-        }
-
-        viewModel.updatePrivacySettings(cbShowRecipesPublicly.isChecked(), cbShowFavoritesPublicly.isChecked());
+                etBio.getText().toString(),
+                cbShowRecipesPublicly.isChecked(),
+                cbShowFavoritesPublicly.isChecked(),
+                etCurrentPassword.getText().toString(),
+                etNewPassword.getText().toString(),
+                etRepeatNewPassword.getText().toString());
     }
 
     private void confirmDeleteAccount() {

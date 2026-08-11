@@ -212,6 +212,15 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
      * {@inheritDoc}
      */
     @Override
+    public void getUserProfile(String userId, MutableLiveData<ApiResult<UserResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getUserProfile(userId))));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public void updatePrivacySettings(PrivacySettingsUpdateRequestDTO request, MutableLiveData<ApiResult<Void>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.updatePrivacySettings(request))));

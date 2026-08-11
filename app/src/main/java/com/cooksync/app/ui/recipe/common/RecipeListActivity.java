@@ -141,6 +141,9 @@ public abstract class RecipeListActivity extends BaseActivity {
      */
     protected void showSkeleton(boolean show) {
         showSkeleton(show, rvList);
+        if (searchView != null) searchView.setVisibility(show ? View.GONE : View.VISIBLE);
+        if (btnFilters != null) btnFilters.setVisibility(show ? View.GONE : View.VISIBLE);
+        if (chipContainer != null) chipContainer.setVisibility(show ? View.GONE : View.VISIBLE);
     }
 
     /**
