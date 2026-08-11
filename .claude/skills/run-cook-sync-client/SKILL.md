@@ -32,8 +32,15 @@ talks to a backend at runtime, not at build time).
 ```bash
 cd cook-sync-client
 .claude/skills/run-cook-sync-client/driver.sh build
-# → runs ./gradlew assembleDebug, produces app/build/outputs/apk/debug/app-debug.apk
+# → runs ./gradlew assembleDevDebug, produces app/build/outputs/apk/dev/debug/app-dev-debug.apk
 ```
+
+The app ships two product flavors (`app/build.gradle.kts`, `flavorDimensions`):
+`dev` (applicationId `com.cooksync.app.dev`, points `BASE_URL` at a local LAN
+backend) and `prod` (applicationId `com.cooksync.app`, points `BASE_URL` at
+the deployed Render backend). The driver always builds/installs/launches
+`dev` — that's the flavor that can reach a locally running
+`cook-sync-server`.
 
 The client depends on `com.cooksync:dtos:1.0.0-SNAPSHOT`, resolved from
 `mavenLocal()` (see `settings.gradle.kts`) — confirm
@@ -65,10 +72,10 @@ Screenshots land in `/tmp/cooksync-client-shots/` (override with `$SHOT_DIR`).
 | command | what it does |
 |---|---|
 | `boot` | Cold/snapshot-boots the `Pixel_10_Pro` AVD fully headless, waits up to 5 min for boot |
-| `build` | `./gradlew assembleDebug` |
-| `install` | Installs the built debug APK via `adb install -r` |
+| `build` | `./gradlew assembleDevDebug` |
+| `install` | Installs the built `dev` debug APK via `adb install -r` |
 | `wake` | Wakes + swipe-unlocks the screen (the emulator screen sleeps/locks between commands) |
-| `launch [activity]` | `wake`, then `am start`; defaults to `com.cooksync.app/.ui.auth.LoginActivity` |
+| `launch [activity]` | `wake`, then `am start`; defaults to `com.cooksync.app.dev/.ui.auth.LoginActivity` |
 | `tap X Y` | `input tap` at device pixel coordinates (get them from `dump`) |
 | `text STRING` | `input text` (spaces auto-escaped to `%s`) |
 | `key KEYCODE` | `input keyevent` |
@@ -116,16 +123,17 @@ was not exercised as part of authoring this skill.)
   unless the previous one was fully killed. Always `driver.sh stop` (or
   `pkill -f qemu-system`) and confirm `adb devices` is empty before
   re-booting.
-- **`BASE_URL` is hardcoded** in `app/build.gradle.kts`
-  (`buildConfigField "String" "BASE_URL"`) to a specific LAN IP — it is
-  *not* set per-environment automatically. In this session the hardcoded IP
-  happened to be reachable and a live backend answered "Invalid
-  credentials" on sign-in (proving the network call round-trips); on a
-  different network the same tap will instead show a network-error state.
-  Either is a legitimate, working UI state — don't assume a network error
-  means the harness is broken. Use `run_project.sh` (repo root) to rewrite
+- **The `dev` flavor's `BASE_URL` is a hardcoded LAN IP** in
+  `app/build.gradle.kts` (`buildConfigField "String" "BASE_URL"` inside
+  `create("dev")`) — it is *not* re-detected automatically. If that IP
+  happens to be reachable, a live backend answers "Invalid credentials" on
+  sign-in (proving the network call round-trips); on a different network the
+  same tap will instead show a network-error state. Either is a legitimate,
+  working UI state — don't assume a network error means the harness is
+  broken. Use `run_project.sh` (repo root) to rewrite the `dev` flavor's
   `BASE_URL` to the current host's LAN IP if you need the client to reach a
-  locally-running `cook-sync-server`.
+  locally-running `cook-sync-server`; it never touches the `prod` flavor's
+  Render URL.
 - **Cold boot vs snapshot boot**: if `~/.android/avd/Pixel_10_Pro.avd`
   has no `default_boot` snapshot (e.g. after `-no-window` runs, which by
   default don't save one on exit), boot falls back to a full cold boot —

@@ -36,12 +36,12 @@ jobs:
           EOF
 
       - name: Build release APK
-        run: ./gradlew assembleRelease --stacktrace
+        run: ./gradlew assembleProdRelease --stacktrace
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          files: app/build/outputs/apk/release/app-release.apk
+          files: app/build/outputs/apk/prod/release/app-prod-release.apk
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           draft: false

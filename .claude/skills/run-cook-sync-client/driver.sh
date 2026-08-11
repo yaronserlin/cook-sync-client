@@ -13,7 +13,9 @@ export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
 
 AVD_NAME="${AVD_NAME:-Pixel_10_Pro}"
 SERIAL="${SERIAL:-emulator-5554}"
-PKG="com.cooksync.app"
+# Drives the "dev" flavor (applicationIdSuffix ".dev") — points at the local LAN backend,
+# which is what agent-driven testing against a locally running cook-sync-server needs.
+PKG="com.cooksync.app.dev"
 LAUNCH_ACTIVITY="$PKG/.ui.auth.LoginActivity"
 CLIENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 SHOT_DIR="${SHOT_DIR:-/tmp/cooksync-client-shots}"
@@ -40,12 +42,12 @@ case "$cmd" in
 
   build)
     cd "$CLIENT_DIR"
-    ./gradlew assembleDebug --console=plain
+    ./gradlew assembleDevDebug --console=plain
     ;;
 
   install)
     cd "$CLIENT_DIR"
-    apk=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
+    apk=$(find app/build/outputs/apk/dev/debug -name "*.apk" | head -1)
     [ -n "$apk" ] || { echo "no debug APK found — run 'driver.sh build' first" >&2; exit 1; }
     adb -s "$SERIAL" install -r "$apk"
     ;;

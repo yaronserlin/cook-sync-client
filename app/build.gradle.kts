@@ -35,9 +35,25 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
 
-        // Pointing to the specific backend server address provided.
-        buildConfigField("String", "BASE_URL", "\"http://192.168.0.223:8080/\"")
+    // Selects which backend the app talks to. "dev" hits the local network server used during
+    // development; "prod" hits the deployed Render instance. Switch via the Android Studio
+    // Build Variants panel (or -PbuildVariant / --product-flavor on the CLI).
+    flavorDimensions += "environment"
+
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "CookSync Dev")
+            buildConfigField("String", "BASE_URL", "\"http://192.168.0.223:8080/\"") // LOCAL_DEV_HOST: rewritten by run_project.sh to the current machine's LAN IP
+        }
+        create("prod") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"https://cooksync-server.onrender.com/\"")
+        }
     }
 
     signingConfigs {
@@ -83,6 +99,7 @@ android {
 
     buildFeatures {
         buildConfig = true
+        resValues = true
     }
     packaging {
         jniLibs {
