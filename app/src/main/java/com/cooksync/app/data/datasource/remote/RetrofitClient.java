@@ -4,6 +4,8 @@ import com.cooksync.app.BuildConfig;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import java.util.concurrent.TimeUnit;
+
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
@@ -116,8 +118,15 @@ public final class RetrofitClient {
     }
 
     /**
+     * Backend host (Render free tier) can take up to ~50s to wake from an idle cold start;
+     * OkHttp's 10s default timeouts were firing before the response ever arrived.
+     */
+    private static final long TIMEOUT_SECONDS = 60;
+
+    /**
      * Returns a pre-configured {@link OkHttpClient.Builder} shared by both client variants.
-     * Attaches an HTTP logging interceptor in DEBUG builds only.
+     * Attaches an HTTP logging interceptor in DEBUG builds only, and sets generous connect/
+     * read/write timeouts to tolerate a slow-to-wake backend (see {@link #TIMEOUT_SECONDS}).
      *
      * Complexity:
      * Time: O(1)
@@ -126,7 +135,10 @@ public final class RetrofitClient {
      * @return a partially configured builder
      */
     private static OkHttpClient.Builder baseClientBuilder() {
-        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        OkHttpClient.Builder builder = new OkHttpClient.Builder()
+                .connectTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .readTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                .writeTimeout(TIMEOUT_SECONDS, TimeUnit.SECONDS);
         if (BuildConfig.DEBUG) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor();
             logging.setLevel(HttpLoggingInterceptor.Level.BODY);
