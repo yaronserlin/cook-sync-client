@@ -290,7 +290,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_prev"
-            android:layout_width="98dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:insetTop="0dp"
             android:insetBottom="0dp"
