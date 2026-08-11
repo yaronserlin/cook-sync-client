@@ -38,7 +38,7 @@ okhttp-logging-interceptor = { group = "com.squareup.okhttp3", name = "logging-i
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 
 # Shared DTOs (github.com/yaronserlin/cooksync-DTOs, served via JitPack)
-cooksync-dtos = { group = "com.cooksync", name = "dtos", version.ref = "cooksyncDtos" }
+cooksync-dtos = { group = "com.github.yaronserlin", name = "cooksync-DTOs", version.ref = "cooksyncDtos" }
 
 # Security — encrypted local token storage
 security-crypto = { group = "androidx.security", name = "security-crypto-ktx", version.ref = "securityCrypto" }
