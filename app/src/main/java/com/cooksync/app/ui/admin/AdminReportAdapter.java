@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.cooksync.app.R;
 import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.ui.common.AvatarView;
-import com.cooksync.app.ui.auth.UserProfileDialogFragment;
 import com.dtos.response.admin.ReportedReviewResponse;
 import com.google.android.material.button.MaterialButton;
 
@@ -69,8 +68,11 @@ public class AdminReportAdapter extends BaseAdapter<ReportedReviewResponse, Admi
         holder.avatar.setAvatar(report.reviewerAvatarUrl(), report.reviewerName());
 
         View.OnClickListener openProfile = v -> {
-            if (report.reviewerId() != null && v.getContext() instanceof androidx.fragment.app.FragmentActivity activity) {
-                UserProfileDialogFragment.show(activity.getSupportFragmentManager(), report.reviewerId(), report.reviewerName());
+            if (report.reviewerId() != null && v.getContext() instanceof android.app.Activity activity) {
+                android.content.Intent intent = new android.content.Intent();
+                intent.putExtra(com.cooksync.app.ui.auth.UserProfileActivity.EXTRA_USER_ID, report.reviewerId());
+                intent.putExtra(com.cooksync.app.ui.auth.UserProfileActivity.EXTRA_USER_NAME, report.reviewerName());
+                com.cooksync.app.ui.base.Navigator.start(activity, com.cooksync.app.ui.auth.UserProfileActivity.class, intent);
             }
         };
         holder.avatar.setOnClickListener(openProfile);

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/color_bg"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:context=".ui.auth.UserProfileActivity">
+
+    <!-- ── App bar ───────────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/dp_8"
+        android:paddingEnd="@dimen/dp_20"
+        android:paddingTop="@dimen/dp_8">
+
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_40"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@null"
+            android:padding="@dimen/dp_8"
+            android:src="@drawable/ic_arrow_back"
+            app:tint="@color/color_text" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/dp_4"
+            android:fontFamily="@font/caprasimo"
+            android:text="@string/user_profile_title"
+            android:textColor="@color/color_text"
+            android:textSize="@dimen/sp_18" />
+
+    </LinearLayout>
+
+    <!-- ── Content ───────────────────────────────────────────────────────── -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_0"
+        android:layout_weight="1"
+        android:clipToPadding="false">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/dp_24">
+
+            <!-- Avatar / name / city / bio -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/dp_16"
+                android:background="@drawable/bg_info_card"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:padding="@dimen/dp_24">
+
+                <com.cooksync.app.ui.common.AvatarView
+                    android:id="@+id/avatar_view"
+                    android:layout_width="@dimen/dp_84"
+                    android:layout_height="@dimen/dp_84" />
+
+                <TextView
+                    android:id="@+id/tv_full_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_12"
+                    android:fontFamily="@font/caprasimo"
+                    android:textColor="@color/color_text"
+                    android:textSize="@dimen/sp_22"
+                    tools:text="Jane Smith" />
+
+                <TextView
+                    android:id="@+id/tv_city"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_4"
+                    android:fontFamily="@font/figtree"
+                    android:textColor="@color/color_accent_600"
+                    android:textSize="@dimen/sp_14"
+                    android:visibility="gone"
+                    tools:text="Tel Aviv, Israel"
+                    tools:visibility="visible" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/dp_1"
+                    android:layout_marginVertical="@dimen/dp_16"
+                    android:background="@color/color_divider" />
+
+                <TextView
+                    android:id="@+id/tv_bio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/figtree"
+                    android:gravity="center"
+                    android:lineSpacingExtra="@dimen/dp_4"
+                    android:textColor="@color/color_neutral_800"
+                    android:textSize="@dimen/sp_15"
+                    tools:text="Passionate home cook, baker, and recipe creator." />
+
+                <ProgressBar
+                    android:id="@+id/progress_bar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/dp_20"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- Recipes section, shown only when the profile allows it -->
+            <LinearLayout
+                android:id="@+id/section_recipes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_16"
+                    android:layout_marginTop="@dimen/dp_8"
+                    android:fontFamily="@font/caprasimo"
+                    android:text="@string/user_profile_recipes_header"
+                    android:textColor="@color/color_text"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:id="@+id/tv_recipes_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/dp_16"
+                    android:layout_marginTop="@dimen/dp_8"
+                    android:alpha="0.65"
+                    android:fontFamily="@font/figtree"
+                    android:text="@string/user_profile_no_recipes"
+                    android:textColor="@color/color_text"
+                    android:textSize="@dimen/sp_13"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_recipes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_8"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="2"
+                    tools:listitem="@layout/item_recipe_row_card" />
+
+            </LinearLayout>
+
+            <!-- Favorites section, shown only when the profile allows it -->
+            <LinearLayout
+                android:id="@+id/section_favorites"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/dp_16"
+                    android:layout_marginTop="@dimen/dp_20"
+                    android:fontFamily="@font/caprasimo"
+                    android:text="@string/user_profile_favorites_header"
+                    android:textColor="@color/color_text"
+                    android:textSize="@dimen/sp_16" />
+
+                <TextView
+                    android:id="@+id/tv_favorites_empty"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/dp_16"
+                    android:layout_marginTop="@dimen/dp_8"
+                    android:alpha="0.65"
+                    android:fontFamily="@font/figtree"
+                    android:text="@string/user_profile_no_favorites"
+                    android:textColor="@color/color_text"
+                    android:textSize="@dimen/sp_13"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_favorites"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/dp_8"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                    tools:itemCount="2"
+                    tools:listitem="@layout/item_recipe_row_card" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+</LinearLayout>

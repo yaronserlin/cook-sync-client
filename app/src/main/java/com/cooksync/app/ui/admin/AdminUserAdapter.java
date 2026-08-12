@@ -72,8 +72,11 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
         holder.avatar.setAvatar(user.avatarUrl(), fullName);
 
         View.OnClickListener openProfile = v -> {
-            if (user.id() != null && v.getContext() instanceof androidx.fragment.app.FragmentActivity activity) {
-                com.cooksync.app.ui.auth.UserProfileDialogFragment.show(activity.getSupportFragmentManager(), user.id(), fullName);
+            if (user.id() != null && v.getContext() instanceof android.app.Activity activity) {
+                android.content.Intent intent = new android.content.Intent();
+                intent.putExtra(com.cooksync.app.ui.auth.UserProfileActivity.EXTRA_USER_ID, user.id());
+                intent.putExtra(com.cooksync.app.ui.auth.UserProfileActivity.EXTRA_USER_NAME, fullName);
+                com.cooksync.app.ui.base.Navigator.start(activity, com.cooksync.app.ui.auth.UserProfileActivity.class, intent);
             }
         };
         holder.avatar.setOnClickListener(openProfile);

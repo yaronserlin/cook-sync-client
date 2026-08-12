@@ -108,6 +108,16 @@ public class RecipeRepositoryImpl extends BaseRepository implements RecipeReposi
     }
 
     @Override
+    public void getPublicRecipesForUser(String userId, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
+        fetchAsync((page, size) -> apiService.getPublicUserRecipes(userId, page, size), resultTarget);
+    }
+
+    @Override
+    public void getPublicFavoritesForUser(String userId, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget) {
+        fetchAsync((page, size) -> apiService.getPublicUserFavorites(userId, page, size), resultTarget);
+    }
+
+    @Override
     public void deleteRecipe(String recipeId, MutableLiveData<ApiResult<Void>> resultTarget) {
         executeAsync(apiService.deleteRecipe(recipeId), resultTarget);
     }

@@ -39,7 +39,9 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
         /** Rotated overflow-dots icon; opens a management menu (My Recipes). */
         OPTIONS_MENU,
         /** Filled heart icon; every row here is already a favorite, tapping unfavorites it. */
-        FAVORITE_TOGGLE
+        FAVORITE_TOGGLE,
+        /** No trailing icon at all, for read-only contexts (e.g. another user's public profile). */
+        NONE
     }
 
     /** Notified on row/action interactions the host Activity needs to act on. */
@@ -113,10 +115,15 @@ public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, Rec
             holder.noteStrip.setVisibility(View.GONE);
         }
 
-        boolean isFavoriteToggle = trailingAction == TrailingAction.FAVORITE_TOGGLE;
-        holder.btnTrailing.setImageResource(isFavoriteToggle ? R.drawable.ic_heart_filled : R.drawable.ic_more_horiz);
-        holder.btnTrailing.setRotation(isFavoriteToggle ? 0f : 90f);
-        holder.btnTrailing.setColorFilter(context.getColor(isFavoriteToggle ? R.color.color_accent : R.color.color_text));
+        if (trailingAction == TrailingAction.NONE) {
+            holder.btnTrailing.setVisibility(View.GONE);
+        } else {
+            holder.btnTrailing.setVisibility(View.VISIBLE);
+            boolean isFavoriteToggle = trailingAction == TrailingAction.FAVORITE_TOGGLE;
+            holder.btnTrailing.setImageResource(isFavoriteToggle ? R.drawable.ic_heart_filled : R.drawable.ic_more_horiz);
+            holder.btnTrailing.setRotation(isFavoriteToggle ? 0f : 90f);
+            holder.btnTrailing.setColorFilter(context.getColor(isFavoriteToggle ? R.color.color_accent : R.color.color_text));
+        }
 
         Glide.with(context)
                 .load(recipe.primaryImageUrl())

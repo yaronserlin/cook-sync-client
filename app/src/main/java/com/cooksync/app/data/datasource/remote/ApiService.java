@@ -101,6 +101,38 @@ public interface ApiService {
     Call<ApiResponse<UserResponse>> getUserProfile(@Path("id") String id);
 
     /**
+     * Fetches a page of a user's publicly visible recipes, for their public profile page. Empty
+     * if the target user has disabled {@code showRecipesPublicly}.
+     *
+     * @param id target user ID
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of the user's public recipes
+     */
+    @GET("api/users/{id}/recipes")
+    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getPublicUserRecipes(
+            @Path("id") String id,
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
+    );
+
+    /**
+     * Fetches a page of a user's publicly visible favorites, for their public profile page.
+     * Empty if the target user has disabled {@code showFavoritesPublicly}.
+     *
+     * @param id target user ID
+     * @param page 0-based page index
+     * @param size number of items per page
+     * @return call yielding a paged collection of the user's public favorites
+     */
+    @GET("api/users/{id}/favorites")
+    Call<ApiResponse<PagedResponse<com.dtos.response.recipe.RecipePreviewResponse>>> getPublicUserFavorites(
+            @Path("id") String id,
+            @retrofit2.http.Query("page") int page,
+            @retrofit2.http.Query("size") int size
+    );
+
+    /**
      * Invalidates the current refresh token session on the server.
      *
      * @return call yielding an empty acknowledgement

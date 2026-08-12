@@ -49,6 +49,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.auth.UserProfileActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.recipe.myrecipes.MyRecipesActivity"
             android:exported="false" />
 

@@ -151,6 +151,26 @@ public interface RecipeRepository {
     void getMyRecipes(MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
 
     /**
+     * Fetches the complete set of a given user's publicly visible recipes, for their public
+     * profile page. Empty if that user has disabled {@code showRecipesPublicly}. Loops through
+     * every server page internally the same way {@link #getMyRecipes} does.
+     *
+     * @param userId target user ID
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getPublicRecipesForUser(String userId, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+
+    /**
+     * Fetches the complete set of a given user's publicly visible favorites, for their public
+     * profile page. Empty if that user has disabled {@code showFavoritesPublicly}. Loops through
+     * every server page internally the same way {@link #getFavorites} does.
+     *
+     * @param userId target user ID
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void getPublicFavoritesForUser(String userId, MutableLiveData<ApiResult<List<RecipePreviewResponse>>> resultTarget);
+
+    /**
      * Deletes one of the current user's own recipes.
      *
      * @param recipeId the ID of the recipe to delete

@@ -503,13 +503,27 @@ public class RecipeDetailActivity extends BaseActivity {
         }
     }
 
+    /**
+     * Opens {@link com.cooksync.app.ui.auth.UserProfileActivity} for the given user, used by
+     * both the recipe author kicker here and {@link ReviewAdapter}'s reviewer name/avatar taps.
+     *
+     * @param userId ID of the user whose profile should be opened
+     * @param userName display name to show immediately while the full profile loads
+     */
+    void openUserProfile(String userId, String userName) {
+        Intent intent = new Intent();
+        intent.putExtra(com.cooksync.app.ui.auth.UserProfileActivity.EXTRA_USER_ID, userId);
+        intent.putExtra(com.cooksync.app.ui.auth.UserProfileActivity.EXTRA_USER_NAME, userName);
+        Navigator.start(this, com.cooksync.app.ui.auth.UserProfileActivity.class, intent);
+    }
+
     private void bindRecipe(RecipeResponse recipe) {
         String authorName = recipe.createdBy() != null
                 ? recipe.createdBy().firstName() + " " + recipe.createdBy().lastName()
                 : getString(R.string.anonymous);
         kicker.setText(getString(R.string.recipe_kicker_format, authorName, viewModel.formatPublishedDate(recipe.createdAt())));
         if (recipe.createdBy() != null && recipe.createdBy().id() != null) {
-            kicker.setOnClickListener(v -> com.cooksync.app.ui.auth.UserProfileDialogFragment.show(getSupportFragmentManager(), recipe.createdBy().id(), authorName));
+            kicker.setOnClickListener(v -> openUserProfile(recipe.createdBy().id(), authorName));
         }
 
         title.setText(recipe.title());

@@ -178,6 +178,11 @@
     <string name="recipe_add_note_hint">Add a private note</string>
     <string name="anonymous">Anonymous</string>
     <string name="user_profile_no_bio">No bio available yet.</string>
+    <string name="user_profile_title">Profile</string>
+    <string name="user_profile_recipes_header">Recipes</string>
+    <string name="user_profile_favorites_header">Favorites</string>
+    <string name="user_profile_no_recipes">No public recipes yet.</string>
+    <string name="user_profile_no_favorites">No public favorites yet.</string>
     <string name="reviews_count_summary">%1$d reviews</string>
     <string name="reviews_count_filtered_summary">%1$d reviews · filtered by %2$d\u2605</string>
     <string name="review_reported">Review reported</string>

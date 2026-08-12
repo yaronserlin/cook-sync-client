@@ -130,7 +130,7 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
         } else if (modelClass.isAssignableFrom(AddRecipeViewModel.class)) {
             return (T) new AddRecipeViewModel(recipeRepository, tagRepository, unitRepository, mediaRepository);
         } else if (modelClass.isAssignableFrom(UserProfileViewModel.class)) {
-            return (T) new UserProfileViewModel(authRepository);
+            return (T) new UserProfileViewModel(authRepository, recipeRepository);
         }
         throw new IllegalArgumentException("Unknown ViewModel class: " + modelClass.getName());
     }

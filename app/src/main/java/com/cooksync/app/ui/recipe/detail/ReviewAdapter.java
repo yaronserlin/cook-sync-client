@@ -96,8 +96,8 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
         holder.avatar.setAvatar(review.authorAvatarUrl(), author);
         View.OnClickListener openProfile = v -> {
             if (review.userId() != null) {
-                if (v.getContext() instanceof androidx.fragment.app.FragmentActivity activity) {
-                    com.cooksync.app.ui.auth.UserProfileDialogFragment.show(activity.getSupportFragmentManager(), review.userId(), author);
+                if (v.getContext() instanceof RecipeDetailActivity activity) {
+                    activity.openUserProfile(review.userId(), author);
                 }
             }
         };
