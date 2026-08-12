@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
-import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.base.ViewModelFactory;
 import com.cooksync.app.ui.common.OrganicConfirmDialog;
@@ -39,9 +38,6 @@ public class AdminUnitsFragment extends Fragment {
     private EditText etCode;
     private ProgressBar progressBar;
 
-    private final android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
-    private Runnable pendingDeleteRunnable;
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -64,26 +60,14 @@ public class AdminUnitsFragment extends Fragment {
         rvUnits.setAdapter(adapter);
 
         adapter.setListener(unit -> {
-            if (pendingDeleteRunnable != null) {
-                handler.removeCallbacks(pendingDeleteRunnable);
-                pendingDeleteRunnable.run();
-            }
             adapter.removeUnit(unit);
-
-            pendingDeleteRunnable = () -> {
-                viewModel.deleteUnit(unit.id());
-                pendingDeleteRunnable = null;
-            };
-
-            handler.postDelayed(pendingDeleteRunnable, BaseRepository.UNDO_WINDOW_MS);
+            viewModel.scheduleDeleteUnit(unit.id());
 
             OrganicToast.showWithAction(requireActivity(), null, R.drawable.ic_delete,
                     getString(R.string.admin_units_deleted_format, unit.name()), getString(R.string.action_undo), () -> {
-                        if (pendingDeleteRunnable != null) {
-                            handler.removeCallbacks(pendingDeleteRunnable);
-                            pendingDeleteRunnable = null;
+                        if (viewModel.cancelPendingDelete(unit.id())) {
+                            adapter.restoreUnit(unit);
                         }
-                        adapter.restoreUnit(unit);
                     });
         });
 
@@ -132,15 +116,5 @@ public class AdminUnitsFragment extends Fragment {
                 OrganicToast.showError(requireActivity(), null, error.getMessage());
             }
         });
-    }
-
-    @Override
-    public void onDestroyView() {
-        super.onDestroyView();
-        if (pendingDeleteRunnable != null) {
-            handler.removeCallbacks(pendingDeleteRunnable);
-            pendingDeleteRunnable.run();
-            pendingDeleteRunnable = null;
-        }
     }
 }

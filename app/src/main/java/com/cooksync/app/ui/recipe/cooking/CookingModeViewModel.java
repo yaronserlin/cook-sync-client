@@ -189,6 +189,43 @@ public class CookingModeViewModel extends BaseViewModel {
         }
     }
 
+    /**
+     * Breaks a remaining-seconds count down into hours/minutes/seconds for the timer clock
+     * label.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param remainingSeconds seconds left on the current step's timer
+     * @return a 3-element array of {@code [hours, minutes, seconds]}
+     */
+    public int[] timerClockParts(int remainingSeconds) {
+        int hours = remainingSeconds / 3600;
+        int minutes = (remainingSeconds % 3600) / 60;
+        int seconds = remainingSeconds % 60;
+        return new int[]{hours, minutes, seconds};
+    }
+
+    /**
+     * Computes how far the timer ring should be filled to represent elapsed (not remaining)
+     * time, so the ring depletes as the timer counts down.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param remainingSeconds seconds left on the current step's timer
+     * @param totalSeconds the step's full timer duration; a non-positive value (no timer set
+     *                     yet) yields no progress
+     * @param maxProgress the ring view's maximum progress value
+     * @return the ring's progress value, between 0 and {@code maxProgress}
+     */
+    public int timerRingProgress(int remainingSeconds, int totalSeconds, int maxProgress) {
+        if (totalSeconds <= 0) return 0;
+        return maxProgress - (int) ((remainingSeconds / (float) totalSeconds) * maxProgress);
+    }
+
     @Override
     protected void onCleared() {
         super.onCleared();

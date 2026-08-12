@@ -119,4 +119,26 @@ public final class RecipeImagePicker {
             return null;
         }
     }
+
+    /**
+     * Deletes every cache copy this picker has made ({@code wizard_pick_*.jpg}), once none of
+     * them are needed anymore — the wizard's single in-flight draft either finished publishing
+     * (bytes already sent to Cloudinary) or was discarded, so no local {@code file://} URI it
+     * handed out is still referenced by anything.
+     *
+     * Complexity:
+     * Time: O(n) where n is the number of files in the app's cache directory
+     * Space: O(1)
+     *
+     * @param context any context; only {@link Context#getCacheDir()} is used
+     */
+    public static void clearCache(@NonNull Context context) {
+        EXECUTOR.execute(() -> {
+            File[] files = context.getCacheDir().listFiles((dir, name) -> name.startsWith("wizard_pick_"));
+            if (files == null) return;
+            for (File file : files) {
+                file.delete();
+            }
+        });
+    }
 }

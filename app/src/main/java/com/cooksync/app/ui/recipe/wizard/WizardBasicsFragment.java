@@ -9,8 +9,6 @@ import com.cooksync.app.data.model.recipe.RecipeDraftValidator;
 import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +29,7 @@ import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.base.ViewModelFactory;
+import com.cooksync.app.util.TextWatchers;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 import com.dtos.response.tags.TagResponse;
 import com.google.android.material.card.MaterialCardView;
@@ -38,7 +37,6 @@ import com.google.android.material.chip.ChipGroup;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Wizard step 1: cover photo, title, an ordered/reorderable description (text and inline
@@ -60,6 +58,7 @@ public class WizardBasicsFragment extends Fragment {
     private RecipeImagePicker imagePicker;
     private TagAutocompleteController tagController;
     private WizardDescriptionBlockAdapter descriptionAdapter;
+    private ItemTouchHelper descriptionTouchHelper;
 
     private EditText etTitle;
     private EditText etPrepTime;
@@ -115,16 +114,8 @@ public class WizardBasicsFragment extends Fragment {
      * @param realPopularTagNames tag names returned by the server, most-used first
      */
     private void renderPopularTags(List<String> realPopularTagNames) {
-        List<String> namesToShow = new java.util.ArrayList<>(realPopularTagNames);
-        if (namesToShow.size() < POPULAR_TAGS_LIMIT) {
-            for (String fallbackName : getResources().getStringArray(R.array.wizard_popular_tag_names)) {
-                if (namesToShow.size() >= POPULAR_TAGS_LIMIT) break;
-                boolean alreadyShown = namesToShow.stream().anyMatch(shown -> shown.equalsIgnoreCase(fallbackName));
-                if (!alreadyShown) {
-                    namesToShow.add(fallbackName);
-                }
-            }
-        }
+        List<String> fallbackNames = java.util.Arrays.asList(getResources().getStringArray(R.array.wizard_popular_tag_names));
+        List<String> namesToShow = viewModel.mergePopularTags(realPopularTagNames, fallbackNames, POPULAR_TAGS_LIMIT);
 
         cgPopularTags.removeAllViews();
         for (String name : namesToShow) {
@@ -200,7 +191,7 @@ public class WizardBasicsFragment extends Fragment {
         });
         rvDescriptionBlocks.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvDescriptionBlocks.setAdapter(descriptionAdapter);
-        ItemTouchHelper descriptionTouchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback((from, to) -> {
+        descriptionTouchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback((from, to) -> {
             Collections.swap(viewModel.getDescriptionBlocks(), from, to);
             descriptionAdapter.notifyItemMoved(from, to);
         }));
@@ -256,8 +247,8 @@ public class WizardBasicsFragment extends Fragment {
     }
 
     private void setupListeners(View view) {
-        etTitle.addTextChangedListener(onChanged(viewModel::setTitle));
-        etServings.addTextChangedListener(onChanged(text -> viewModel.setServings(parseIntOrNull(text))));
+        etTitle.addTextChangedListener(TextWatchers.onChanged(viewModel::setTitle));
+        etServings.addTextChangedListener(TextWatchers.onChanged(text -> viewModel.setServings(parseIntOrNull(text))));
 
         etPrepTime.setOnClickListener(v -> com.cooksync.app.ui.common.TimePickerDialog.showMinutes(requireContext(), R.string.wizard_prep_time_dialog_title,
                 viewModel.getDraft().prepTimeMinutes == null ? 0 : viewModel.getDraft().prepTimeMinutes, minutes -> {
@@ -335,18 +326,9 @@ public class WizardBasicsFragment extends Fragment {
 
     private void styleDifficultyChips() {
         String selected = viewModel.getDraft().difficulty;
-        styleChip(chipEasy, "EASY".equals(selected));
-        styleChip(chipMedium, "MEDIUM".equals(selected));
-        styleChip(chipHard, "HARD".equals(selected));
-    }
-
-    private void styleChip(TextView chip, boolean active) {
-        chip.setBackgroundColor(active
-                ? getResources().getColor(R.color.color_accent, null)
-                : android.graphics.Color.TRANSPARENT);
-        chip.setTextColor(active
-                ? getResources().getColor(R.color.color_bg, null)
-                : getResources().getColor(R.color.color_text, null));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipEasy, "EASY".equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipMedium, "MEDIUM".equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipHard, "HARD".equals(selected));
     }
 
     private void renderSelectedTags() {
@@ -361,20 +343,19 @@ public class WizardBasicsFragment extends Fragment {
         }
     }
 
-    private static TextWatcher onChanged(Consumer<String> onChanged) {
-        return new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                onChanged.accept(s.toString());
-            }
-        };
+    /**
+     * Detaches the drag helper and drops the adapter reference before the wizard's ViewPager2
+     * recycles this step's view (e.g. swiping to another step and back) — the adapter/helper
+     * are rebuilt fresh in {@link #onViewCreated} against the new view tree, so nothing carries
+     * over a reference to the destroyed one.
+     */
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (descriptionTouchHelper != null) {
+            descriptionTouchHelper.attachToRecyclerView(null);
+            descriptionTouchHelper = null;
+        }
+        descriptionAdapter = null;
     }
 }

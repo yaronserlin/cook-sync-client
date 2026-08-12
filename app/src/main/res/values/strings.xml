@@ -139,6 +139,9 @@
     <string name="filter_sort_newest">Newest</string>
     <string name="filter_sort_top_rated">Top Rated</string>
     <string name="filter_sort_shortest_time">Shortest Time</string>
+    <string name="review_sort_newest">Newest</string>
+    <string name="review_sort_highest_rated">Highest rated</string>
+    <string name="review_sort_lowest_rated">Lowest rated</string>
 
     <!-- Home -->
     <string name="home_title">Discover</string>

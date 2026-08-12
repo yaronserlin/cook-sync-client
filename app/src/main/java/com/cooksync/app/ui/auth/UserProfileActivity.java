@@ -147,7 +147,7 @@ public class UserProfileActivity extends BaseActivity {
 
     private void openRecipe(RecipePreviewResponse recipe) {
         Intent intent = new Intent();
-        intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipe.id());
+        intent.putExtra(Navigator.EXTRA_RECIPE_ID, recipe.id());
         Navigator.start(this, RecipeDetailActivity.class, intent);
     }
 

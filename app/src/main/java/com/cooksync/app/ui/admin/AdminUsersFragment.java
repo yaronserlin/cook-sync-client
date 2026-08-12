@@ -98,18 +98,8 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
-                if (dy <= 0) return;
-                int visibleItemCount = layoutManager.getChildCount();
-                int totalItemCount = layoutManager.getItemCount();
-                int firstVisible = layoutManager.findFirstVisibleItemPosition();
-                if (visibleItemCount + firstVisible >= totalItemCount - 4) {
-                    viewModel.loadNextUsersPage();
-                }
-            }
-        });
+        recyclerView.addOnScrollListener(com.cooksync.app.ui.common.PaginatingScrollListener.withThreshold(
+                layoutManager, viewModel::loadNextUsersPage));
 
         chipAll.setOnClickListener(v -> selectFilter(null, null));
         chipActive.setOnClickListener(v -> selectFilter(true, null));
@@ -180,17 +170,10 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
     }
 
     private void styleChips() {
-        styleChip(chipAll, selectedEnabledFilter == null);
-        styleChip(chipActive, Boolean.TRUE.equals(selectedEnabledFilter));
-        styleChip(chipDeactivated, Boolean.FALSE.equals(selectedEnabledFilter) && "DEACTIVATED".equals(selectedStatusFilter));
-        styleChip(chipSuspended, Boolean.FALSE.equals(selectedEnabledFilter) && "SUSPENDED".equals(selectedStatusFilter));
-    }
-
-    private void styleChip(MaterialButton chip, boolean active) {
-        int bg = active ? R.color.color_neutral_900 : R.color.color_neutral_300;
-        int fg = active ? R.color.color_neutral_100 : R.color.color_text;
-        chip.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(bg, null)));
-        chip.setTextColor(getResources().getColor(fg, null));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipAll, selectedEnabledFilter == null);
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipActive, Boolean.TRUE.equals(selectedEnabledFilter));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipDeactivated, Boolean.FALSE.equals(selectedEnabledFilter) && "DEACTIVATED".equals(selectedStatusFilter));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipSuspended, Boolean.FALSE.equals(selectedEnabledFilter) && "SUSPENDED".equals(selectedStatusFilter));
     }
 
     @Override

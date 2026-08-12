@@ -77,10 +77,6 @@ public class AdminReportsViewModel extends BaseViewModel {
         this.recipeRepository = recipeRepository;
     }
 
-    /** Trivial holder so the {@code pendingActions} field can be declared {@code final} above its own initializer runs. */
-    private static final class PendingActionSchedulerHolder {
-        private final com.cooksync.app.util.PendingActionScheduler scheduler = new com.cooksync.app.util.PendingActionScheduler();
-    }
 
     public LiveData<List<ReportedReviewResponse>> getFilteredReports() { return filteredReports; }
     public LiveData<Event<ApiResult<Void>>> getReportActionResult() { return reportActionResult; }

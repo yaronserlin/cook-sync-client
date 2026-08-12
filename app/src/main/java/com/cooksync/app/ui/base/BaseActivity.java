@@ -1,9 +1,4 @@
 package com.cooksync.app.ui.base;
-import com.cooksync.app.ui.common.*;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +6,9 @@ import android.view.ViewGroup;
 import androidx.annotation.IdRes;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.cooksync.app.ui.common.OrganicToast;
+import com.cooksync.app.ui.common.SkeletonHelper;
 
 /**
  * Shared base for all Activities in the application. Centralizes the boilerplate that was

@@ -1,8 +1,4 @@
 package com.cooksync.app.ui.recipe.search;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -11,20 +7,16 @@ import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.FeedState;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.common.FilterSheetLauncher;
+import com.cooksync.app.ui.base.AbstractFilterableListViewModel;
 import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -36,10 +28,10 @@ import java.util.stream.Collectors;
  * as the results list is scrolled, exactly like {@code HomeViewModel}'s browse feed.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 05/08/2026
  */
-public class SearchViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
+public class SearchViewModel extends AbstractFilterableListViewModel {
 
     private static final int PAGE_SIZE = 10;
 
@@ -59,11 +51,6 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
     private String currentQuery = null;
     /** The tag currently being browsed via {@link #searchByTag}, or {@code null} for a keyword search. */
     private String browseTagName = null;
-    private String currentSort = "Newest";
-    private String currentDifficulty = null;
-    private Double currentMinRating = null;
-    private Integer currentMaxTotalTimeMinutes = null;
-    private final Set<String> selectedTags = new LinkedHashSet<>();
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
@@ -83,11 +70,6 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
 
     public LiveData<FeedState> getFeedState() { return feedState; }
     public LiveData<ApiResult<List<TagResponse>>> getTagsResult() { return tagsResult; }
-    public String getCurrentSort() { return currentSort; }
-    public String getCurrentDifficulty() { return currentDifficulty; }
-    public Double getCurrentMinRating() { return currentMinRating; }
-    public Integer getCurrentMaxTotalTimeMinutes() { return currentMaxTotalTimeMinutes; }
-    public Set<String> getSelectedTags() { return Collections.unmodifiableSet(selectedTags); }
 
     /** @return the most recently submitted (non-blank) search query, or {@code null} */
     public String getCurrentQuery() { return currentQuery; }
@@ -211,62 +193,11 @@ public class SearchViewModel extends BaseViewModel implements FilterSheetLaunche
     }
 
     /**
-     * Applies the sort/difficulty/tags/rating/time chosen in the shared filters sheet, re-
-     * filtering over the results accumulated so far rather than issuing a new network call.
-     *
-     * @param sortBy one of "Newest", "Top Rated", "Shortest Time"
-     * @param difficulty one of "Easy", "Medium", "Hard", or {@code null}
-     * @param tags the selected tag names, possibly empty
-     * @param minRating minimum average rating threshold, or {@code null}
-     * @param maxTotalTimeMinutes maximum prep+cook time in minutes, or {@code null}
+     * Re-filters {@link #rawResults} against the new filter state without issuing a new network
+     * call — the search/tag-browse results already fetched so far are filtered client-side.
      */
-    public void applyFilters(String sortBy, String difficulty, Collection<String> tags,
-                              Double minRating, Integer maxTotalTimeMinutes) {
-        this.currentSort = sortBy;
-        this.currentDifficulty = difficulty;
-        this.currentMinRating = minRating;
-        this.currentMaxTotalTimeMinutes = maxTotalTimeMinutes;
-        this.selectedTags.clear();
-        if (tags != null) {
-            this.selectedTags.addAll(tags);
-        }
-        publishFiltered();
-    }
-
-    /**
-     * Drops the active difficulty filter alone and re-filters, leaving every other constraint
-     * (query, tags, rating, time) untouched — lets the no-results state offer per-constraint
-     * removal instead of only an all-or-nothing reset.
-     */
-    public void removeDifficulty() {
-        currentDifficulty = null;
-        publishFiltered();
-    }
-
-    /**
-     * Drops a single selected tag alone and re-filters.
-     *
-     * @param tagName the tag to remove from {@link #selectedTags}
-     */
-    public void removeTag(String tagName) {
-        if (selectedTags.remove(tagName)) {
-            publishFiltered();
-        }
-    }
-
-    /**
-     * Drops the active minimum-rating filter alone and re-filters.
-     */
-    public void removeMinRating() {
-        currentMinRating = null;
-        publishFiltered();
-    }
-
-    /**
-     * Drops the active total-time filter alone and re-filters.
-     */
-    public void removeMaxTotalTime() {
-        currentMaxTotalTimeMinutes = null;
+    @Override
+    protected void onFiltersChanged() {
         publishFiltered();
     }
 

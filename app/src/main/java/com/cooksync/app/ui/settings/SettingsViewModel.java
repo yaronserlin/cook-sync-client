@@ -402,4 +402,55 @@ public class SettingsViewModel extends BaseViewModel {
     public LiveData<ApiResult<UserResponse>> getAccountDetailsResult() { return accountDetailsResult; }
     public String getPendingFolder() { return pendingFolder; }
     public String getPendingPublicId() { return pendingPublicId; }
+
+    /**
+     * Compares the account details form's current field values against their last-known-saved
+     * baseline, deciding whether leaving the screen should prompt a "discard changes?"
+     * confirmation. The Activity supplies the current values (it owns the widgets); this method
+     * owns only the "what counts as changed" rule.
+     *
+     * Complexity:
+     * Time: O(n) where n is the combined length of the text fields
+     * Space: O(1)
+     *
+     * @param firstName current value of the first-name field
+     * @param lastName current value of the last-name field
+     * @param city current value of the city field
+     * @param bio current value of the bio field
+     * @param email current value of the email field
+     * @param currentPassword current value of the current-password field
+     * @param newPassword current value of the new-password field
+     * @param repeatNewPassword current value of the repeat-new-password field
+     * @param showRecipesPublicly current state of the "show recipes publicly" checkbox
+     * @param showFavoritesPublicly current state of the "show favorites publicly" checkbox
+     * @param pendingAvatarChange whether a new photo was picked or the avatar was cleared, but
+     *                            not yet saved
+     * @param baselineFirstName first name as last loaded/saved
+     * @param baselineLastName last name as last loaded/saved
+     * @param baselineCity city as last loaded/saved
+     * @param baselineBio bio as last loaded/saved
+     * @param baselineEmail email as last loaded/saved
+     * @param baselineShowRecipesPublicly "show recipes publicly" as last loaded/saved
+     * @param baselineShowFavoritesPublicly "show favorites publicly" as last loaded/saved
+     * @return {@code true} if any field or the avatar differs from what's actually saved
+     */
+    public boolean hasUnsavedAccountChanges(
+            String firstName, String lastName, String city, String bio, String email,
+            String currentPassword, String newPassword, String repeatNewPassword,
+            boolean showRecipesPublicly, boolean showFavoritesPublicly, boolean pendingAvatarChange,
+            String baselineFirstName, String baselineLastName, String baselineCity, String baselineBio,
+            String baselineEmail, boolean baselineShowRecipesPublicly, boolean baselineShowFavoritesPublicly) {
+        if (pendingAvatarChange) return true;
+        if (!firstName.trim().equals(baselineFirstName)) return true;
+        if (!lastName.trim().equals(baselineLastName)) return true;
+        if (!city.trim().equals(baselineCity)) return true;
+        if (!bio.trim().equals(baselineBio)) return true;
+        if (!email.trim().equalsIgnoreCase(baselineEmail)) return true;
+        if (!currentPassword.isEmpty()) return true;
+        if (!newPassword.isEmpty()) return true;
+        if (!repeatNewPassword.isEmpty()) return true;
+        if (showRecipesPublicly != baselineShowRecipesPublicly) return true;
+        if (showFavoritesPublicly != baselineShowFavoritesPublicly) return true;
+        return false;
+    }
 }

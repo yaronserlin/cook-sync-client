@@ -9,7 +9,6 @@ import com.cooksync.app.data.model.recipe.RecipeDraftValidator;
 import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 
 import android.content.Context;
-import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
 import android.view.KeyEvent;
@@ -29,10 +28,11 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
+import com.cooksync.app.util.TextWatchers;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 
 import java.util.List;
-import java.util.function.Consumer;
 
 /**
  * Renders the Basics step's description as an ordered, reorderable list of TEXT and IMAGE
@@ -47,7 +47,7 @@ import java.util.function.Consumer;
  * @version 1.0
  * @since 08/08/2026
  */
-public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDescriptionBlockAdapter.ViewHolder> {
+public class WizardDescriptionBlockAdapter extends BaseAdapter<DescriptionBlockDTO, WizardDescriptionBlockAdapter.ViewHolder> {
 
     /** Notified on block actions the host fragment needs to act on. */
     public interface Listener {
@@ -64,7 +64,6 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
         void onRemoveEmptyTextBlock(DescriptionBlockDTO block);
     }
 
-    private final List<DescriptionBlockDTO> blocks;
     private Listener listener;
     private ItemTouchHelper itemTouchHelper;
     private RecyclerView recyclerView;
@@ -105,7 +104,7 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
     }
 
     public WizardDescriptionBlockAdapter(@NonNull List<DescriptionBlockDTO> blocks) {
-        this.blocks = blocks;
+        super(blocks);
     }
 
     public void setListener(Listener listener) {
@@ -126,12 +125,7 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(blocks.get(position), listener);
-    }
-
-    @Override
-    public int getItemCount() {
-        return blocks.size();
+        holder.bind(items.get(position), listener);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -164,8 +158,8 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
          */
         private DescriptionBlockDTO currentBlock() {
             int position = getBindingAdapterPosition();
-            if (position == RecyclerView.NO_POSITION || position >= blocks.size()) return null;
-            return blocks.get(position);
+            if (position == RecyclerView.NO_POSITION || position >= items.size()) return null;
+            return items.get(position);
         }
 
         @SuppressWarnings("ClickableViewAccessibility")
@@ -179,7 +173,7 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
 
             if (isText) {
                 etText.setText(block.text());
-                textWatcher = onChanged(value -> {
+                textWatcher = TextWatchers.onChanged(value -> {
                     DescriptionBlockDTO current = currentBlock();
                     if (listener != null && current != null) listener.onTextChanged(current, value);
                 });
@@ -187,7 +181,7 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
                 etText.setFilters(new InputFilter[]{newlineSplitFilter()});
                 etText.setOnKeyListener((v, keyCode, event) -> {
                     if (keyCode == KeyEvent.KEYCODE_DEL && event.getAction() == KeyEvent.ACTION_DOWN
-                            && etText.getText().length() == 0 && blocks.size() > 1) {
+                            && etText.getText().length() == 0 && items.size() > 1) {
                         DescriptionBlockDTO current = currentBlock();
                         if (listener != null && current != null) listener.onRemoveEmptyTextBlock(current);
                         return true;
@@ -200,7 +194,7 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
                         .error(R.drawable.ic_image_failed)
                         .into(ivImage);
                 etCaption.setText(block.caption());
-                captionWatcher = onChanged(value -> {
+                captionWatcher = TextWatchers.onChanged(value -> {
                     DescriptionBlockDTO current = currentBlock();
                     if (listener != null && current != null) listener.onCaptionChanged(current, value);
                 });
@@ -250,21 +244,5 @@ public class WizardDescriptionBlockAdapter extends RecyclerView.Adapter<WizardDe
             };
         }
 
-        private static TextWatcher onChanged(Consumer<String> onChanged) {
-            return new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    onChanged.accept(s.toString());
-                }
-            };
-        }
     }
 }

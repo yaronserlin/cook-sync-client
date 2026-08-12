@@ -73,18 +73,8 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
-                if (dy <= 0) return;
-                int visibleItemCount = layoutManager.getChildCount();
-                int totalItemCount = layoutManager.getItemCount();
-                int firstVisible = layoutManager.findFirstVisibleItemPosition();
-                if (visibleItemCount + firstVisible >= totalItemCount - 4) {
-                    viewModel.loadNextReportsPage();
-                }
-            }
-        });
+        recyclerView.addOnScrollListener(com.cooksync.app.ui.common.PaginatingScrollListener.withThreshold(
+                layoutManager, viewModel::loadNextReportsPage));
 
         chipAll.setOnClickListener(v -> selectReason(AdminReportsViewModel.REASON_ALL));
         chipSpam.setOnClickListener(v -> selectReason("SPAM"));
@@ -130,17 +120,10 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
 
     private void styleChips() {
         String selected = viewModel.getReasonFilter();
-        styleChip(chipAll, AdminReportsViewModel.REASON_ALL.equals(selected));
-        styleChip(chipSpam, "SPAM".equals(selected));
-        styleChip(chipAbuse, "ABUSE".equals(selected));
-        styleChip(chipOffTopic, "OFF_TOPIC".equals(selected));
-    }
-
-    private void styleChip(MaterialButton chip, boolean active) {
-        int bg = active ? R.color.color_neutral_900 : R.color.color_neutral_300;
-        int fg = active ? R.color.color_neutral_100 : R.color.color_text;
-        chip.setBackgroundTintList(android.content.res.ColorStateList.valueOf(getResources().getColor(bg, null)));
-        chip.setTextColor(getResources().getColor(fg, null));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipAll, AdminReportsViewModel.REASON_ALL.equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipSpam, "SPAM".equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipAbuse, "ABUSE".equals(selected));
+        com.cooksync.app.ui.common.ChipStyler.styleNeutralChip(chipOffTopic, "OFF_TOPIC".equals(selected));
     }
 
     @Override

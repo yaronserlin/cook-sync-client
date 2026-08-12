@@ -1,8 +1,4 @@
 package com.cooksync.app.ui.recipe.detail;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.view.LayoutInflater;
 import android.view.View;

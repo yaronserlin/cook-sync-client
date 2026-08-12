@@ -25,6 +25,7 @@ import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
 import com.dtos.response.unit.UnitResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -151,6 +152,7 @@ public class AddRecipeViewModel extends BaseViewModel {
     /** Discards the current draft, both in-memory and on-device. Other saved drafts are unaffected. */
     public void discardDraft() {
         RecipeDraftStore.remove(draft.draftId);
+        RecipeImagePicker.clearCache(com.cooksync.app.CookSyncApplication.getAppContext());
         draft = new RecipeDraft();
     }
 
@@ -464,6 +466,7 @@ public class AddRecipeViewModel extends BaseViewModel {
         observeOnce(result, apiResult -> {
             if (apiResult instanceof ApiResult.Success<RecipeResponse>) {
                 RecipeDraftStore.remove(draft.draftId);
+                RecipeImagePicker.clearCache(com.cooksync.app.CookSyncApplication.getAppContext());
             }
             publishResult.setValue(new Event<>(apiResult));
         });
@@ -471,4 +474,33 @@ public class AddRecipeViewModel extends BaseViewModel {
     }
 
     public LiveData<Event<ApiResult<RecipeResponse>>> getPublishResult() { return publishResult; }
+
+    /**
+     * Pads {@code realNames} up to {@code limit} entries using {@code fallbackNames}, skipping
+     * any fallback name that's a case-insensitive duplicate of one already present — so the
+     * "Popular tags" row never looks sparse when the server has fewer ranked tags than the row
+     * wants to show (e.g. a fresh catalog), without ever showing the same tag name twice.
+     *
+     * Complexity:
+     * Time: O(n * m) where n is {@code fallbackNames}' size and m is the merged list's size
+     * Space: O(min(limit, n + m))
+     *
+     * @param realNames tag names returned by the server, most-used first
+     * @param fallbackNames static fallback names to pad with, in preference order
+     * @param limit the maximum number of names to return
+     * @return {@code realNames} followed by non-duplicate fallback names, capped at {@code limit}
+     */
+    public List<String> mergePopularTags(List<String> realNames, List<String> fallbackNames, int limit) {
+        List<String> namesToShow = new ArrayList<>(realNames);
+        if (namesToShow.size() < limit) {
+            for (String fallbackName : fallbackNames) {
+                if (namesToShow.size() >= limit) break;
+                boolean alreadyShown = namesToShow.stream().anyMatch(shown -> shown.equalsIgnoreCase(fallbackName));
+                if (!alreadyShown) {
+                    namesToShow.add(fallbackName);
+                }
+            }
+        }
+        return namesToShow;
+    }
 }

@@ -1,9 +1,4 @@
 package com.cooksync.app.ui.base;
-import com.cooksync.app.ui.common.*;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.app.Activity;
 import android.content.Context;
@@ -15,6 +10,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.common.OrganicConfirmDialog;
+import com.cooksync.app.ui.common.OrganicToast;
 
 /**
  * Centralizes every activity-to-activity transition in the app behind a single utility, so the
@@ -33,6 +30,15 @@ import com.cooksync.app.R;
  * @since 07/08/2026
  */
 public final class Navigator {
+
+    /**
+     * Intent extra key for a recipe's ID, shared by every screen that navigates to
+     * {@link com.cooksync.app.ui.recipe.detail.RecipeDetailActivity} or reads a recipe ID off an
+     * intent that originated there (e.g. {@link com.cooksync.app.ui.recipe.cooking.CookingModeActivity}),
+     * so those screens depend on this one shared constant instead of reaching into each other's
+     * class just for it.
+     */
+    public static final String EXTRA_RECIPE_ID = "extra_recipe_id";
 
     private Navigator() {
     }

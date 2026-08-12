@@ -8,7 +8,6 @@ import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
 import com.cooksync.app.data.model.recipe.RecipeDraftValidator;
 import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 
-import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -25,12 +24,13 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
+import com.cooksync.app.util.TextWatchers;
 import com.dtos.response.unit.UnitResponse;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 /**
  * Renders the editable ingredient rows on the Create Recipe wizard's Ingredients step. Binds
@@ -43,20 +43,19 @@ import java.util.function.Consumer;
  * @version 1.0
  * @since 08/08/2026
  */
-public class WizardIngredientAdapter extends RecyclerView.Adapter<WizardIngredientAdapter.ViewHolder> {
+public class WizardIngredientAdapter extends BaseAdapter<RecipeDraft.DraftIngredient, WizardIngredientAdapter.ViewHolder> {
 
     /** Notified when the row's remove action is tapped. */
     public interface Listener {
         void onRemove(RecipeDraft.DraftIngredient ingredient);
     }
 
-    private final List<RecipeDraft.DraftIngredient> ingredients;
     private List<UnitResponse> units = new ArrayList<>();
     private Listener listener;
     private ItemTouchHelper itemTouchHelper;
 
     public WizardIngredientAdapter(@NonNull List<RecipeDraft.DraftIngredient> ingredients) {
-        this.ingredients = ingredients;
+        super(ingredients);
     }
 
     public void setListener(Listener listener) {
@@ -88,12 +87,7 @@ public class WizardIngredientAdapter extends RecyclerView.Adapter<WizardIngredie
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(ingredients.get(position), units, listener);
-    }
-
-    @Override
-    public int getItemCount() {
-        return ingredients.size();
+        holder.bind(items.get(position), units, listener);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -148,8 +142,8 @@ public class WizardIngredientAdapter extends RecyclerView.Adapter<WizardIngredie
                 }
             });
 
-            nameWatcher = onChanged(value -> ingredient.name = value);
-            quantityWatcher = onChanged(value -> ingredient.quantity = value);
+            nameWatcher = TextWatchers.onChanged(value -> ingredient.name = value);
+            quantityWatcher = TextWatchers.onChanged(value -> ingredient.quantity = value);
             etName.addTextChangedListener(nameWatcher);
             etQuantity.addTextChangedListener(quantityWatcher);
 
@@ -166,23 +160,6 @@ public class WizardIngredientAdapter extends RecyclerView.Adapter<WizardIngredie
 
         private static String unitLabel(UnitResponse unit) {
             return String.format(Locale.getDefault(), "%s (%s)", unit.name(), unit.code());
-        }
-
-        private static TextWatcher onChanged(Consumer<String> onChanged) {
-            return new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    onChanged.accept(s.toString());
-                }
-            };
         }
     }
 }

@@ -1,32 +1,26 @@
 package com.cooksync.app.ui.home;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
+import com.cooksync.app.data.service.RecipePublishManager;
 import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.domain.Event;
 import com.cooksync.app.domain.FeedState;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.common.FilterSheetLauncher;
+import com.cooksync.app.ui.base.AbstractFilterableListViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.PagedResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
+import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Manages the data state for the {@link HomeActivity}, including paginated recipe
@@ -34,10 +28,10 @@ import java.util.Set;
  * dedicated search screen instead.
  *
  * @author Yaron Serlin
- * @version 1.0
+ * @version 1.1
  * @since 04/08/2026
  */
-public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
+public class HomeViewModel extends AbstractFilterableListViewModel {
 
     private static final int PAGE_SIZE = 10;
 
@@ -51,13 +45,19 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
     private final MutableLiveData<Event<String>> errorEvent = new MutableLiveData<>();
 
     private final List<RecipePreviewResponse> currentRecipes = new ArrayList<>();
-    private final Set<String> selectedTags = new LinkedHashSet<>();
     private int currentPage = 0;
     private boolean isLastPage = false;
-    private String currentSort = "Newest";
-    private String currentDifficulty = null;
-    private Double currentMinRating = null;
-    private Integer currentMaxTotalTimeMinutes = null;
+
+    /**
+     * Kept as a field so it can be detached in {@link #onCleared()} — {@link RecipePublishManager}
+     * is a process-wide singleton, so an observer registered via {@code observeForever} and never
+     * removed would keep this ViewModel (and everything it references) alive indefinitely.
+     */
+    private final Observer<Event<RecipeResponse>> recipePublishedObserver = event -> {
+        if (event != null && event.getContentIfNotHandled() != null) {
+            loadInitialFeed();
+        }
+    };
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
@@ -73,11 +73,7 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
     public HomeViewModel(RecipeRepository recipeRepository, TagRepository tagRepository) {
         this.recipeRepository = recipeRepository;
         this.tagRepository = tagRepository;
-        com.cooksync.app.data.service.RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(event -> {
-            if (event != null && event.getContentIfNotHandled() != null) {
-                loadInitialFeed();
-            }
-        });
+        RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(recipePublishedObserver);
     }
 
     public LiveData<FeedState> getFeedState() { return feedState; }
@@ -135,52 +131,25 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
         refresh();
     }
 
-    /**
-     * An unmodifiable snapshot of the currently selected tag names, for the tag-row highlight
-     * and the active-filters summary.
-     */
-    public Set<String> getSelectedTags() { return Collections.unmodifiableSet(selectedTags); }
-    public String getCurrentSort() { return currentSort; }
-    public String getCurrentDifficulty() { return currentDifficulty; }
-    public Double getCurrentMinRating() { return currentMinRating; }
-    public Integer getCurrentMaxTotalTimeMinutes() { return currentMaxTotalTimeMinutes; }
-
-    /**
-     * Applies the sort/difficulty/tags chosen in the filters sheet and reloads the feed from
-     * the first page so the new criteria take effect immediately.
-     *
-     * <p>The server's {@code /public/paged}, {@code /public/search} and
-     * {@code /public/tag/{tag}} endpoints don't accept sort, difficulty, or multi-tag
-     * parameters, so filtering and sorting happen client-side via {@link RecipeFilterUtils},
-     * over whatever recipes have been loaded so far. Server-side support for these would let
-     * filtering cover the full catalog immediately instead of only the pages loaded via
-     * scrolling.</p>
-     *
-     * @param sortBy one of "Newest", "Top Rated", "Shortest Time"
-     * @param difficulty one of "Easy", "Medium", "Hard", or {@code null} for no filter
-     * @param tags the selected tag names (possibly empty, never {@code null})
-     * @param minRating minimum average rating threshold, or {@code null} for no filter
-     * @param maxTotalTimeMinutes maximum prep+cook time in minutes, or {@code null} for no filter
-     */
-    public void applyFilters(String sortBy, String difficulty, Collection<String> tags,
-                              Double minRating, Integer maxTotalTimeMinutes) {
-        this.currentSort = sortBy;
-        this.currentDifficulty = difficulty;
-        this.currentMinRating = minRating;
-        this.currentMaxTotalTimeMinutes = maxTotalTimeMinutes;
-        this.selectedTags.clear();
-        if (tags != null) {
-            this.selectedTags.addAll(tags);
-        }
-        refresh();
-    }
-
     public void loadTags() {
         tagRepository.getAllTags(tagsResult);
     }
 
     public void loadFavorites() {
         recipeRepository.getFavorites(favoritesResult);
+    }
+
+    /**
+     * Re-fetches the feed from the first page so a filter-sheet change or per-dimension removal
+     * takes effect immediately. The server's browse/search/tag endpoints don't accept sort,
+     * difficulty, or multi-tag parameters, so filtering and sorting happen client-side via
+     * {@link RecipeFilterUtils} in {@link #applyFiltersAndSort} — server-side support for these
+     * would let filtering cover the full catalog immediately instead of only the pages loaded so
+     * far via scrolling.
+     */
+    @Override
+    protected void onFiltersChanged() {
+        refresh();
     }
 
     /**
@@ -315,5 +284,6 @@ public class HomeViewModel extends BaseViewModel implements FilterSheetLauncher.
     protected void onCleared() {
         super.onCleared();
         pendingActions.flushAll();
+        RecipePublishManager.getInstance().getRecipePublishedEvent().removeObserver(recipePublishedObserver);
     }
 }

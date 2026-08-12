@@ -74,18 +74,8 @@ public class AdminTagsFragment extends Fragment implements AdminTagGroupAdapter.
         LinearLayoutManager layoutManager = new LinearLayoutManager(requireContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setAdapter(adapter);
-        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
-                if (dy <= 0) return;
-                int visibleItemCount = layoutManager.getChildCount();
-                int totalItemCount = layoutManager.getItemCount();
-                int firstVisible = layoutManager.findFirstVisibleItemPosition();
-                if (visibleItemCount + firstVisible >= totalItemCount - 4) {
-                    viewModel.loadNextTagGroupsPage();
-                }
-            }
-        });
+        recyclerView.addOnScrollListener(com.cooksync.app.ui.common.PaginatingScrollListener.withThreshold(
+                layoutManager, viewModel::loadNextTagGroupsPage));
 
         search.addTextChangedListener(new TextWatcher() {
             @Override

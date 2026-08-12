@@ -1,7 +1,4 @@
 package com.cooksync.app.data.service;
-import com.cooksync.app.data.datasource.remote.*;
-import com.cooksync.app.data.datasource.local.*;
-import com.cooksync.app.data.model.recipe.*;
 
 import android.os.Handler;
 import android.os.Looper;
@@ -9,6 +6,7 @@ import android.os.Looper;
 import androidx.annotation.MainThread;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
 import com.cooksync.app.CookSyncApplication;
 import com.cooksync.app.data.datasource.local.RecipeDraftStore;
@@ -23,6 +21,7 @@ import com.cooksync.app.domain.Event;
 import com.cooksync.app.ui.recipe.wizard.AddRecipeViewModel;
 import com.cooksync.app.data.model.recipe.RecipeDraft;
 import com.cooksync.app.data.model.recipe.RecipeDraftMapper;
+import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 import com.cooksync.app.util.CloudinaryUploader;
 import com.cooksync.app.util.SessionManager;
 import com.dtos.request.recipe.RecipeCreateRequestDTO;
@@ -215,6 +214,7 @@ public class RecipePublishManager {
                     // now that the recipe safely exists server-side. On any failure below or in
                     // the catch block, it stays put so the user's work is never lost.
                     RecipeDraftStore.remove(draft.draftId);
+                    com.cooksync.app.ui.recipe.wizard.RecipeImagePicker.clearCache(CookSyncApplication.getAppContext());
                     publishState.postValue(PublishState.success(response));
                     recipePublishedEvent.postValue(new Event<>(response));
                 } else {
@@ -253,18 +253,41 @@ public class RecipePublishManager {
         return result.get();
     }
 
+    /**
+     * Attaches a self-removing observer to a one-shot repository call, mirroring
+     * {@link com.cooksync.app.ui.base.BaseViewModel#observeOnce}: skips the initial
+     * {@link ApiResult.Loading} emission, invokes {@code onSettled} for the terminal
+     * Success/Error value, then detaches itself so {@code target} isn't held onto once the
+     * call has settled. Must be called on the main thread, since {@code observeForever}
+     * requires it.
+     *
+     * @param <T> the payload type carried by the result
+     * @param target the one-shot result stream to observe
+     * @param onSettled callback invoked with the first non-Loading value
+     */
+    private <T> void observeOnceForever(MutableLiveData<ApiResult<T>> target, java.util.function.Consumer<ApiResult<T>> onSettled) {
+        target.observeForever(new Observer<>() {
+            @Override
+            public void onChanged(ApiResult<T> value) {
+                if (value instanceof ApiResult.Loading) {
+                    return;
+                }
+                target.removeObserver(this);
+                onSettled.accept(value);
+            }
+        });
+    }
+
     private CloudinarySignatureResponse fetchSignatureSync(String folder, String publicId) throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
         AtomicReference<CloudinarySignatureResponse> result = new AtomicReference<>();
         MutableLiveData<ApiResult<CloudinarySignatureResponse>> target = new MutableLiveData<>();
 
-        mainHandler.post(() -> target.observeForever(res -> {
+        mainHandler.post(() -> observeOnceForever(target, res -> {
             if (res instanceof ApiResult.Success<CloudinarySignatureResponse> s) {
                 result.set(s.getData());
-                latch.countDown();
-            } else if (res instanceof ApiResult.Error) {
-                latch.countDown();
             }
+            latch.countDown();
         }));
 
         mediaRepository.getUploadSignature(folder, publicId, target);
@@ -277,13 +300,11 @@ public class RecipePublishManager {
         AtomicReference<TagResponse> result = new AtomicReference<>();
         MutableLiveData<ApiResult<TagResponse>> target = new MutableLiveData<>();
 
-        mainHandler.post(() -> target.observeForever(res -> {
+        mainHandler.post(() -> observeOnceForever(target, res -> {
             if (res instanceof ApiResult.Success<TagResponse> s) {
                 result.set(s.getData());
-                latch.countDown();
-            } else if (res instanceof ApiResult.Error) {
-                latch.countDown();
             }
+            latch.countDown();
         }));
 
         tagRepository.createTag(tag, target);
@@ -296,13 +317,11 @@ public class RecipePublishManager {
         AtomicReference<RecipeResponse> result = new AtomicReference<>();
         MutableLiveData<ApiResult<RecipeResponse>> target = new MutableLiveData<>();
 
-        mainHandler.post(() -> target.observeForever(res -> {
+        mainHandler.post(() -> observeOnceForever(target, res -> {
             if (res instanceof ApiResult.Success<RecipeResponse> s) {
                 result.set(s.getData());
-                latch.countDown();
-            } else if (res instanceof ApiResult.Error) {
-                latch.countDown();
             }
+            latch.countDown();
         }));
 
         recipeRepository.createRecipe(dto, target);
@@ -315,13 +334,11 @@ public class RecipePublishManager {
         AtomicReference<RecipeResponse> result = new AtomicReference<>();
         MutableLiveData<ApiResult<RecipeResponse>> target = new MutableLiveData<>();
 
-        mainHandler.post(() -> target.observeForever(res -> {
+        mainHandler.post(() -> observeOnceForever(target, res -> {
             if (res instanceof ApiResult.Success<RecipeResponse> s) {
                 result.set(s.getData());
-                latch.countDown();
-            } else if (res instanceof ApiResult.Error) {
-                latch.countDown();
             }
+            latch.countDown();
         }));
 
         recipeRepository.updateRecipe(recipeId, dto, target);

@@ -59,6 +59,7 @@ public class HomeActivity extends BaseActivity {
     private View btnClearAll;
     private List<String> loadedTagNames = new ArrayList<>();
     private BottomNavigationView bottomNav;
+    private RecyclerView.OnScrollListener feedScrollListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -147,7 +148,7 @@ public class HomeActivity extends BaseActivity {
             @Override
             public void onRecipeClick(String recipeId) {
                 Intent intent = new Intent();
-                intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
+                intent.putExtra(Navigator.EXTRA_RECIPE_ID, recipeId);
                 Navigator.start(HomeActivity.this, RecipeDetailActivity.class, intent);
             }
 
@@ -164,14 +165,8 @@ public class HomeActivity extends BaseActivity {
         });
         rvFeed.setAdapter(recipeAdapter);
 
-        rvFeed.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                if (!recyclerView.canScrollVertically(1)) {
-                    viewModel.loadNextPage();
-                }
-            }
-        });
+        feedScrollListener = com.cooksync.app.ui.common.PaginatingScrollListener.atBottom(viewModel::loadNextPage);
+        rvFeed.addOnScrollListener(feedScrollListener);
 
         RecyclerView rvTags = findViewById(R.id.rv_tags);
         tagAdapter = new TagChipAdapter();
@@ -241,8 +236,7 @@ public class HomeActivity extends BaseActivity {
         Double minRating = viewModel.getCurrentMinRating();
         Integer maxTotalTimeMinutes = viewModel.getCurrentMaxTotalTimeMinutes();
 
-        int count = (difficulty != null ? 1 : 0) + tags.size()
-                + (minRating != null ? 1 : 0) + (maxTotalTimeMinutes != null ? 1 : 0);
+        int count = viewModel.getActiveFilterCount();
         boolean active = count > 0;
 
         com.google.android.material.button.MaterialButton btn = findViewById(R.id.btn_filters);
@@ -316,35 +310,23 @@ public class HomeActivity extends BaseActivity {
         if (emptyStateView != null) emptyStateView.setVisibility(View.GONE);
         rvFeed.setVisibility(View.GONE);
         List<com.cooksync.app.ui.common.NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
-        if (difficulty != null) {
-            constraints.add(new com.cooksync.app.ui.common.NoResultsStateHelper.Constraint(difficulty, () -> {
-                viewModel.applyFilters(viewModel.getCurrentSort(), null, tags, minRating, maxTotalTimeMinutes);
+        for (com.cooksync.app.ui.common.NoResultsStateHelper.Constraint shared : viewModel.buildRemovableConstraints(
+                t -> getString(R.string.filters_applied_time_format, t),
+                r -> getString(R.string.filters_applied_rating_format, r))) {
+            constraints.add(new com.cooksync.app.ui.common.NoResultsStateHelper.Constraint(shared.label(), () -> {
+                shared.onRemove().run();
                 tagAdapter.setSelectedTags(viewModel.getSelectedTags());
             }));
-        }
-        for (String tag : tags) {
-            constraints.add(new com.cooksync.app.ui.common.NoResultsStateHelper.Constraint(tag, () -> {
-                java.util.Set<String> remaining = new java.util.LinkedHashSet<>(tags);
-                remaining.remove(tag);
-                viewModel.applyFilters(viewModel.getCurrentSort(), difficulty, remaining, minRating, maxTotalTimeMinutes);
-                tagAdapter.setSelectedTags(viewModel.getSelectedTags());
-            }));
-        }
-        if (maxTotalTimeMinutes != null) {
-            constraints.add(new com.cooksync.app.ui.common.NoResultsStateHelper.Constraint(
-                    getString(R.string.filters_applied_time_format, maxTotalTimeMinutes), () -> {
-                        viewModel.applyFilters(viewModel.getCurrentSort(), difficulty, tags, minRating, null);
-                        tagAdapter.setSelectedTags(viewModel.getSelectedTags());
-                    }));
-        }
-        if (minRating != null) {
-            constraints.add(new com.cooksync.app.ui.common.NoResultsStateHelper.Constraint(
-                    getString(R.string.filters_applied_rating_format, minRating), () -> {
-                        viewModel.applyFilters(viewModel.getCurrentSort(), difficulty, tags, null, maxTotalTimeMinutes);
-                        tagAdapter.setSelectedTags(viewModel.getSelectedTags());
-                    }));
         }
         com.cooksync.app.ui.common.NoResultsStateHelper.populate(getLayoutInflater(), cgRemovableConstraints, btnClearAll, constraints);
         noResultsState.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (feedScrollListener != null) {
+            rvFeed.removeOnScrollListener(feedScrollListener);
+        }
     }
 }

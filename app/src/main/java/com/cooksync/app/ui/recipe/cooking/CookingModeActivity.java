@@ -68,9 +68,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Full-screen, step-by-step cooking view. Shows one instruction at a time with the
@@ -97,6 +94,9 @@ public class CookingModeActivity extends BaseActivity {
 
     /** The "time's up" alert sound currently playing, if any; stopped when its dialog closes. */
     private Ringtone activeRingtone;
+    /** Tracked so {@link #onDestroy()} can dismiss it, avoiding a leaked window if the Activity
+     *  is destroyed while this dialog is still showing. */
+    private androidx.appcompat.app.AlertDialog timerFinishedDialog;
 
     private TextView tvTitle;
     private LinearLayout llProgressBars;
@@ -125,7 +125,7 @@ public class CookingModeActivity extends BaseActivity {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
 
-        recipeId = getIntent().getStringExtra(RecipeDetailActivity.EXTRA_RECIPE_ID);
+        recipeId = getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID);
         if (recipeId == null) {
             finish();
             return;
@@ -174,7 +174,7 @@ public class CookingModeActivity extends BaseActivity {
             int index = currentIndex();
             if (index >= steps.size() - 1) {
                 Intent intent = new Intent();
-                intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
+                intent.putExtra(Navigator.EXTRA_RECIPE_ID, recipeId);
                 Navigator.start(this, ReviewActivity.class, intent);
                 Navigator.finish(this);
             } else {
@@ -331,48 +331,38 @@ public class CookingModeActivity extends BaseActivity {
      * @param description the current step's instruction text
      */
     private void applyStepTextSize(@Nullable String description) {
-        int length = description == null ? 0 : description.length();
-        float sizeSp;
-        if (length <= 60) sizeSp = 34f;
-        else if (length <= 120) sizeSp = 29f;
-        else if (length <= 220) sizeSp = 25f;
-        else if (length <= 350) sizeSp = 22f;
-        else sizeSp = 19f;
-        tvStepText.setTextSize(TypedValue.COMPLEX_UNIT_SP, sizeSp);
+        tvStepText.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+                com.cooksync.app.util.InstructionTextFormatter.stepTextSizeSp(description));
     }
-
-    /** Matches a sentence boundary: punctuation immediately followed by whitespace and a capital
-     *  letter or an opening parenthesis. Deliberately does not match after decimals ("1.5 cups")
-     *  or abbreviations ("1 tbsp. sugar"), since the character following the space there is
-     *  lowercase or a digit, not the capital/paren this pattern requires. */
-    private static final Pattern SENTENCE_BOUNDARY = Pattern.compile("(?<=[.!?])\\s+(?=[A-Z(])");
 
     /**
      * Renders a step's instruction as short, scannable paragraphs instead of one dense block:
      * splits the description on sentence boundaries (a blank line between each), visually mutes
      * any sentence that's a parenthetical aside (e.g. an ingredient substitution note) so the
      * primary instruction reads first, and bolds/tints any mention of an ingredient this step
-     * uses so the running text ties back to the "this step uses" chips below it.
+     * uses so the running text ties back to the "this step uses" chips below it. The actual
+     * sentence-splitting and ingredient-mention-matching decisions live in
+     * {@link com.cooksync.app.util.InstructionTextFormatter}; this method only turns those plain
+     * results into {@code Spannable} styling, since that needs the Android framework and this
+     * Activity's colors.
      *
      * @param step the instruction step currently shown
      * @return the formatted, spannable instruction text
      */
     private CharSequence buildStepText(@NonNull InstructionResponse step) {
-        String description = step.description();
-        if (description == null || description.isBlank()) return "";
-        String[] sentences = SENTENCE_BOUNDARY.split(description.trim());
+        List<com.cooksync.app.util.InstructionTextFormatter.Sentence> sentences =
+                com.cooksync.app.util.InstructionTextFormatter.splitIntoSentences(step.description());
         SpannableStringBuilder builder = new SpannableStringBuilder();
-        for (int i = 0; i < sentences.length; i++) {
-            String sentence = sentences[i].trim();
-            if (sentence.isEmpty()) continue;
+        for (int i = 0; i < sentences.size(); i++) {
+            com.cooksync.app.util.InstructionTextFormatter.Sentence sentence = sentences.get(i);
             int start = builder.length();
-            builder.append(sentence);
+            builder.append(sentence.text());
             int end = builder.length();
-            if (sentence.startsWith("(")) {
+            if (sentence.parenthetical()) {
                 builder.setSpan(new RelativeSizeSpan(0.85f), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 builder.setSpan(new ForegroundColorSpan(getColor(R.color.color_accent_300)), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
-            if (i < sentences.length - 1) {
+            if (i < sentences.size() - 1) {
                 builder.append("\n\n");
             }
         }
@@ -383,32 +373,21 @@ public class CookingModeActivity extends BaseActivity {
     /**
      * Bolds and tints every mention of one of this step's ingredient names within the already
      * sentence-split instruction text, so a long paragraph gets visual anchor points the eye can
-     * latch onto instead of reading as undifferentiated prose. Matching is whole-word and
-     * case-insensitive; an ingredient whose name doesn't literally appear in the prose (or whose
-     * name is itself a long parenthetical, as recipe data occasionally has) is simply skipped —
-     * this is a readability aid, not a requirement that every ingredient be found.
+     * latch onto instead of reading as undifferentiated prose.
      *
      * @param builder the instruction text built so far, mutated in place
      * @param ingredients this step's ingredients, or {@code null}
      */
     private void highlightIngredientMentions(@NonNull SpannableStringBuilder builder, @Nullable Set<IngredientResponse> ingredients) {
         if (ingredients == null || ingredients.isEmpty()) return;
-        String text = builder.toString();
+        List<String> names = new ArrayList<>();
         for (IngredientResponse ingredient : ingredients) {
-            String name = ingredient.name() == null ? null : ingredient.name().trim();
-            if (name == null || name.isEmpty()) continue;
-            Matcher matcher;
-            try {
-                matcher = Pattern
-                        .compile("\\b" + Pattern.quote(name) + "\\b", Pattern.CASE_INSENSITIVE)
-                        .matcher(text);
-            } catch (PatternSyntaxException e) {
-                continue;
-            }
-            while (matcher.find()) {
-                builder.setSpan(new StyleSpan(Typeface.BOLD), matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-                builder.setSpan(new ForegroundColorSpan(getColor(R.color.color_accent_400)), matcher.start(), matcher.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-            }
+            names.add(ingredient.name());
+        }
+        for (com.cooksync.app.util.InstructionTextFormatter.Mention mention :
+                com.cooksync.app.util.InstructionTextFormatter.findIngredientMentions(builder.toString(), names)) {
+            builder.setSpan(new StyleSpan(Typeface.BOLD), mention.start(), mention.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            builder.setSpan(new ForegroundColorSpan(getColor(R.color.color_accent_400)), mention.start(), mention.end(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         }
     }
 
@@ -510,15 +489,16 @@ public class CookingModeActivity extends BaseActivity {
 
     private void updateTimerClock(Integer remainingSeconds) {
         if (remainingSeconds == null) return;
-        int hours = remainingSeconds / 3600;
-        int minutes = (remainingSeconds % 3600) / 60;
-        int seconds = remainingSeconds % 60;
+        int[] parts = viewModel.timerClockParts(remainingSeconds);
+        int hours = parts[0];
+        int minutes = parts[1];
+        int seconds = parts[2];
         if (hours > 0) tvTimerClock.setText(getString(R.string.cook_timer_clock_format_hours, hours, minutes, seconds));
         else if (minutes > 0) tvTimerClock.setText(getString(R.string.cook_timer_clock_format_minutes, minutes, seconds));
         else tvTimerClock.setText(getString(R.string.cook_timer_clock_format_seconds, seconds));
 
         int max = timerRing.getMax();
-        int elapsedFraction = currentStepTimerTotalSeconds <= 0 ? 0 : max - (int) ((remainingSeconds / (float) currentStepTimerTotalSeconds) * max);
+        int elapsedFraction = viewModel.timerRingProgress(remainingSeconds, currentStepTimerTotalSeconds, max);
         timerRing.setProgressCompat(elapsedFraction, true);
     }
 
@@ -550,7 +530,7 @@ public class CookingModeActivity extends BaseActivity {
             vibrate();
         }
 
-        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
+        timerFinishedDialog = new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_CookSync_Dialog)
                 .setTitle(R.string.dialog_timer_finished_title)
                 .setMessage(R.string.dialog_timer_finished_message)
                 .setPositiveButton(R.string.action_got_it, null)
@@ -598,5 +578,9 @@ public class CookingModeActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         stopTimerFinishedSound();
+        if (timerFinishedDialog != null && timerFinishedDialog.isShowing()) {
+            timerFinishedDialog.dismiss();
+        }
+        timerFinishedDialog = null;
     }
 }

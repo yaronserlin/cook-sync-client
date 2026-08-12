@@ -46,12 +46,10 @@ import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.review.ReviewResponse;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -68,10 +66,6 @@ import java.util.Objects;
  */
 public class RecipeDetailActivity extends BaseActivity {
 
-    public static final String EXTRA_RECIPE_ID = "extra_recipe_id";
-
-    /** Cyclic order the "Sort" button walks through on each tap. */
-    private static final String[] SORT_OPTIONS = {"Newest", "Highest rated", "Lowest rated"};
 
     /** Star values the review chip row offers, in the design's display order (5 down to 1). */
     private static final int[] STAR_VALUES = {5, 4, 3, 2, 1};
@@ -123,7 +117,7 @@ public class RecipeDetailActivity extends BaseActivity {
     private final List<NoteResponse> currentNotes = new ArrayList<>();
     private final Map<Integer, com.google.android.material.card.MaterialCardView> starChips = new HashMap<>();
     private Integer activeStarFilter = null;
-    private int sortIndex = 0;
+    private RecipeDetailViewModel.ReviewSort currentSort = RecipeDetailViewModel.ReviewSort.NEWEST;
     private boolean isInitialLoad = true;
 
     @Override
@@ -131,7 +125,7 @@ public class RecipeDetailActivity extends BaseActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe_detail);
 
-        String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+        String recipeId = getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID);
         if (recipeId == null) {
             finish();
             return;
@@ -165,7 +159,7 @@ public class RecipeDetailActivity extends BaseActivity {
             isInitialLoad = false;
             return;
         }
-        String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+        String recipeId = getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID);
         if (recipeId != null) {
             viewModel.loadRecipe(recipeId);
         }
@@ -217,7 +211,7 @@ public class RecipeDetailActivity extends BaseActivity {
         findViewById(R.id.btn_back).setOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 
         btnFavorite.setOnClickListener(v -> {
-            String recipeId1 = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+            String recipeId1 = getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID);
             boolean wasFavorite = isFavorite;
             viewModel.toggleFavorite(recipeId1, wasFavorite);
             isFavorite = !isFavorite;
@@ -239,19 +233,19 @@ public class RecipeDetailActivity extends BaseActivity {
 
         findViewById(R.id.btn_start_cooking).setOnClickListener(v -> {
             Intent intent = new Intent();
-            intent.putExtra(EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
+            intent.putExtra(Navigator.EXTRA_RECIPE_ID, getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID));
             Navigator.start(this, CookingModeActivity.class, intent);
         });
 
         findViewById(R.id.btn_review).setOnClickListener(v -> {
             Intent intent = new Intent();
-            intent.putExtra(ReviewActivity.EXTRA_RECIPE_ID, getIntent().getStringExtra(EXTRA_RECIPE_ID));
+            intent.putExtra(ReviewActivity.EXTRA_RECIPE_ID, getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID));
             Navigator.start(this, ReviewActivity.class, intent);
         });
 
         btnSortReviews.setOnClickListener(v -> {
-            sortIndex = (sortIndex + 1) % SORT_OPTIONS.length;
-            btnSortReviews.setText(SORT_OPTIONS[sortIndex]);
+            currentSort = currentSort.next();
+            btnSortReviews.setText(sortLabel(currentSort));
             refreshReviewsDisplay();
         });
 
@@ -271,7 +265,7 @@ public class RecipeDetailActivity extends BaseActivity {
         instructionAdapter.setOnNoteChangeListener(new InstructionAdapter.OnNoteChangeListener() {
             @Override
             public void onSaveNote(InstructionResponse step, String noteText) {
-                viewModel.saveNote(getIntent().getStringExtra(EXTRA_RECIPE_ID), step.id(), noteText);
+                viewModel.saveNote(getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID), step.id(), noteText);
             }
 
             @Override
@@ -303,6 +297,7 @@ public class RecipeDetailActivity extends BaseActivity {
             }
         });
         reviewAdapter.setOnAvatarClickListener(this::openFullscreenImage);
+        reviewAdapter.setOnAuthorClickListener(this::openUserProfile);
         rvReviews.setAdapter(reviewAdapter);
 
         RecyclerView rvDescriptionBlocks = findViewById(R.id.rv_description_blocks);
@@ -331,7 +326,7 @@ public class RecipeDetailActivity extends BaseActivity {
 
         viewModel.getFavoritesResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<RecipePreviewResponse>> success) {
-                String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+                String recipeId = getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID);
                 isFavorite = false;
                 for (RecipePreviewResponse fav : success.getData()) {
                     if (Objects.equals(fav.id(), recipeId)) {
@@ -354,7 +349,7 @@ public class RecipeDetailActivity extends BaseActivity {
 
         viewModel.getNoteSaveResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<Void>) {
-                viewModel.loadNotes(getIntent().getStringExtra(EXTRA_RECIPE_ID));
+                viewModel.loadNotes(getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID));
             } else if (result instanceof ApiResult.Error<Void> error) {
                 showError(error.getMessage(), null);
             }
@@ -458,7 +453,7 @@ public class RecipeDetailActivity extends BaseActivity {
         NoteResponse existing = viewModel.findRecipeNote(currentNotes);
         String currentText = existing != null ? existing.note() : "";
         if (!text.isEmpty() && !Objects.equals(text, currentText)) {
-            String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
+            String recipeId = getIntent().getStringExtra(Navigator.EXTRA_RECIPE_ID);
             viewModel.saveNote(recipeId, null, text);
         }
         closeRecipeNoteEditor();
@@ -527,7 +522,7 @@ public class RecipeDetailActivity extends BaseActivity {
         }
 
         title.setText(recipe.title());
-        rating.setText(recipe.averageRating() == null ? "0.0" : String.format(Locale.US, "%.1f", recipe.averageRating()));
+        rating.setText(viewModel.formatAverageRating(recipe.averageRating()));
         reviewCount.setText(getString(R.string.review_count_format, recipe.reviewCount()));
         prepTime.setText(getString(R.string.time_format_short, recipe.prepTimeMinutes()));
         cookTime.setText(getString(R.string.time_format_short, recipe.cookTimeMinutes()));
@@ -579,15 +574,29 @@ public class RecipeDetailActivity extends BaseActivity {
         allReviews.clear();
         if (recipe.reviews() != null) allReviews.addAll(recipe.reviews());
         activeStarFilter = null;
-        sortIndex = 0;
-        btnSortReviews.setText(SORT_OPTIONS[sortIndex]);
+        currentSort = RecipeDetailViewModel.ReviewSort.NEWEST;
+        btnSortReviews.setText(sortLabel(currentSort));
 
         bindRatingSummary(recipe);
         refreshReviewsDisplay();
     }
 
     /** Per-star review counts, index 1..5, recomputed each time {@link #allReviews} changes. */
-    private final int[] starCounts = new int[6];
+    private int[] starCounts = new int[6];
+
+    /**
+     * Maps a {@link RecipeDetailViewModel.ReviewSort} to its localized button label.
+     *
+     * @param sort the sort option to label
+     * @return the string to show on the sort button
+     */
+    private String sortLabel(RecipeDetailViewModel.ReviewSort sort) {
+        return switch (sort) {
+            case NEWEST -> getString(R.string.review_sort_newest);
+            case HIGHEST_RATED -> getString(R.string.review_sort_highest_rated);
+            case LOWEST_RATED -> getString(R.string.review_sort_lowest_rated);
+        };
+    }
 
     /**
      * Populates the average-rating headline and the five per-star breakdown bars from the
@@ -598,11 +607,10 @@ public class RecipeDetailActivity extends BaseActivity {
      * @param recipe the recipe whose reviews back the summary
      */
     private void bindRatingSummary(RecipeResponse recipe) {
-        summaryRating.setText(recipe.averageRating() == null ? "0.0" : String.format(Locale.US, "%.1f", recipe.averageRating()));
+        summaryRating.setText(viewModel.formatAverageRating(recipe.averageRating()));
         summaryStars.setText(viewModel.starsForRating(recipe.averageRating()));
 
-        java.util.Arrays.fill(starCounts, 0);
-        for (ReviewResponse review : allReviews) starCounts[viewModel.clampStars(review.rating())]++;
+        starCounts = viewModel.getStarBreakdown(allReviews);
 
         int total = allReviews.size();
         bindBarRow(R.id.bar_row_5, 5, total);
@@ -672,25 +680,13 @@ public class RecipeDetailActivity extends BaseActivity {
 
     /**
      * Recomputes the displayed review list from {@link #allReviews}: applies
-     * {@link #activeStarFilter} (if any) then sorts per the current {@link #SORT_OPTIONS}
-     * selection, and updates the "N reviews · ..." summary label to match. Shows the empty
-     * state card in place of the list when the active filter matches nothing.
+     * {@link #activeStarFilter} (if any) then sorts per {@link #currentSort}, and updates the
+     * "N reviews · ..." summary label to match. Shows the empty state card in place of the list
+     * when the active filter matches nothing.
      */
     private void refreshReviewsDisplay() {
         updateStarChipHighlight();
-        List<ReviewResponse> displayed = new ArrayList<>(allReviews);
-        if (activeStarFilter != null) displayed.removeIf(r -> viewModel.clampStars(r.rating()) != activeStarFilter);
-
-        Comparator<ReviewResponse> comparator;
-        String sortOption = SORT_OPTIONS[sortIndex];
-        if (Objects.equals(sortOption, "Highest rated")) {
-            comparator = Comparator.comparing((ReviewResponse r) -> r.rating() == null ? BigDecimal.ZERO : r.rating(), Comparator.reverseOrder());
-        } else if (Objects.equals(sortOption, "Lowest rated")) {
-            comparator = Comparator.comparing((ReviewResponse r) -> r.rating() == null ? BigDecimal.ZERO : r.rating());
-        } else {
-            comparator = Comparator.comparing((ReviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(), Comparator.reverseOrder());
-        }
-        displayed.sort(comparator);
+        List<ReviewResponse> displayed = viewModel.getDisplayedReviews(allReviews, activeStarFilter, currentSort);
         reviewAdapter.setReviews(displayed);
 
         reviewsSummaryLabel.setText(activeStarFilter == null

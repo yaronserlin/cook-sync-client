@@ -1,8 +1,4 @@
 package com.cooksync.app.ui.recipe.detail;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,7 +16,6 @@ import com.cooksync.app.ui.common.AvatarView;
 import com.dtos.response.review.ReviewResponse;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
@@ -54,9 +49,19 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
         void onAvatarClick(String avatarUrl);
     }
 
+    /** Notified when the viewer taps a review author's name/avatar to open their profile. */
+    public interface OnAuthorClickListener {
+        /**
+         * @param userId the tapped author's user ID
+         * @param authorName the tapped author's display name
+         */
+        void onAuthorClick(String userId, String authorName);
+    }
+
     private String currentUserId;
     private OnReviewActionListener actionListener;
     private OnAvatarClickListener avatarClickListener;
+    private OnAuthorClickListener authorClickListener;
 
     public void setReviews(List<ReviewResponse> newReviews) {
         setItems(newReviews);
@@ -80,6 +85,10 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
         this.avatarClickListener = listener;
     }
 
+    public void setOnAuthorClickListener(OnAuthorClickListener listener) {
+        this.authorClickListener = listener;
+    }
+
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -95,10 +104,8 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
         holder.authorName.setText(author);
         holder.avatar.setAvatar(review.authorAvatarUrl(), author);
         View.OnClickListener openProfile = v -> {
-            if (review.userId() != null) {
-                if (v.getContext() instanceof RecipeDetailActivity activity) {
-                    activity.openUserProfile(review.userId(), author);
-                }
+            if (review.userId() != null && authorClickListener != null) {
+                authorClickListener.onAuthorClick(review.userId(), author);
             }
         };
         holder.avatar.setOnClickListener(openProfile);
@@ -138,27 +145,23 @@ public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.Vie
      * @return a human-readable relative-time label, or "" if unparseable
      */
     private String formatRelativeDate(String isoTimestamp) {
-        if (isoTimestamp == null || isoTimestamp.isBlank()) {
+        LocalDate date = com.cooksync.app.util.DateFormatUtils.parseIsoDate(isoTimestamp);
+        if (date == null) {
             return "";
         }
-        try {
-            LocalDate date = LocalDate.parse(isoTimestamp.substring(0, 10));
-            long days = ChronoUnit.DAYS.between(date, LocalDate.now());
-            if (days <= 0) {
-                return "Today";
-            } else if (days == 1) {
-                return "1 day ago";
-            } else if (days < 30) {
-                return days + " days ago";
-            } else if (days < 365) {
-                long months = days / 30;
-                return months + (months == 1 ? " month ago" : " months ago");
-            } else {
-                long years = days / 365;
-                return years + (years == 1 ? " year ago" : " years ago");
-            }
-        } catch (DateTimeParseException | IndexOutOfBoundsException e) {
-            return "";
+        long days = ChronoUnit.DAYS.between(date, LocalDate.now());
+        if (days <= 0) {
+            return "Today";
+        } else if (days == 1) {
+            return "1 day ago";
+        } else if (days < 30) {
+            return days + " days ago";
+        } else if (days < 365) {
+            long months = days / 30;
+            return months + (months == 1 ? " month ago" : " months ago");
+        } else {
+            long years = days / 365;
+            return years + (years == 1 ? " year ago" : " years ago");
         }
     }
 

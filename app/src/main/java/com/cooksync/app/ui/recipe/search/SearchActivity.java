@@ -95,6 +95,7 @@ public class SearchActivity extends BaseActivity {
 
     private SearchView searchView;
     private RecyclerView rvResults;
+    private RecyclerView.OnScrollListener resultsScrollListener;
     private View matchingTagsSection;
     private TextView tvResultsSummary;
     private TextView tvEmptyState;
@@ -223,10 +224,7 @@ public class SearchActivity extends BaseActivity {
      * dimensions (difficulty, tags, rating, time) are currently active.
      */
     private void updateFiltersBadge() {
-        int count = (viewModel.getCurrentDifficulty() != null ? 1 : 0)
-                + viewModel.getSelectedTags().size()
-                + (viewModel.getCurrentMinRating() != null ? 1 : 0)
-                + (viewModel.getCurrentMaxTotalTimeMinutes() != null ? 1 : 0);
+        int count = viewModel.getActiveFilterCount();
         if (count > 0) {
             tvFiltersBadge.setText(String.valueOf(count));
             tvFiltersBadge.setVisibility(View.VISIBLE);
@@ -239,25 +237,22 @@ public class SearchActivity extends BaseActivity {
     protected void onDestroy() {
         super.onDestroy();
         cancelPendingSearch();
+        if (resultsScrollListener != null) {
+            rvResults.removeOnScrollListener(resultsScrollListener);
+        }
     }
 
     private void setupAdapters() {
         recipeAdapter = new SearchResultAdapter();
         recipeAdapter.setOnRecipeClickListener(recipeId -> {
             Intent intent = new Intent();
-            intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipeId);
+            intent.putExtra(Navigator.EXTRA_RECIPE_ID, recipeId);
             Navigator.start(SearchActivity.this, RecipeDetailActivity.class, intent);
         });
         rvResults.setAdapter(recipeAdapter);
         rvResults.addItemDecoration(new DividerItemDecoration(this, LinearLayoutManager.VERTICAL));
-        rvResults.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                if (!recyclerView.canScrollVertically(1)) {
-                    viewModel.loadNextPage();
-                }
-            }
-        });
+        resultsScrollListener = com.cooksync.app.ui.common.PaginatingScrollListener.atBottom(viewModel::loadNextPage);
+        rvResults.addOnScrollListener(resultsScrollListener);
 
         RecyclerView rvMatchingTags = findViewById(R.id.rv_matching_tags);
         matchingTagsAdapter = new TagChipAdapter(false);
@@ -369,34 +364,13 @@ public class SearchActivity extends BaseActivity {
             constraints.add(new NoResultsStateHelper.Constraint(
                     "\"" + query + "\"", () -> searchView.setQuery("", true)));
         }
-        String difficulty = viewModel.getCurrentDifficulty();
-        if (difficulty != null) {
-            constraints.add(new NoResultsStateHelper.Constraint(difficulty, () -> {
-                viewModel.removeDifficulty();
+        for (NoResultsStateHelper.Constraint shared : viewModel.buildRemovableConstraints(
+                t -> getString(R.string.filters_applied_time_format, t),
+                r -> getString(R.string.filters_applied_rating_format, r))) {
+            constraints.add(new NoResultsStateHelper.Constraint(shared.label(), () -> {
+                shared.onRemove().run();
                 updateFiltersBadge();
             }));
-        }
-        for (String tag : viewModel.getSelectedTags()) {
-            constraints.add(new NoResultsStateHelper.Constraint(tag, () -> {
-                viewModel.removeTag(tag);
-                updateFiltersBadge();
-            }));
-        }
-        Integer maxTotalTimeMinutes = viewModel.getCurrentMaxTotalTimeMinutes();
-        if (maxTotalTimeMinutes != null) {
-            constraints.add(new NoResultsStateHelper.Constraint(
-                    getString(R.string.filters_applied_time_format, maxTotalTimeMinutes), () -> {
-                        viewModel.removeMaxTotalTime();
-                        updateFiltersBadge();
-                    }));
-        }
-        Double minRating = viewModel.getCurrentMinRating();
-        if (minRating != null) {
-            constraints.add(new NoResultsStateHelper.Constraint(
-                    getString(R.string.filters_applied_rating_format, minRating), () -> {
-                        viewModel.removeMinRating();
-                        updateFiltersBadge();
-                    }));
         }
 
         NoResultsStateHelper.populate(getLayoutInflater(), cgRemovableConstraints, btnClearAll, constraints);

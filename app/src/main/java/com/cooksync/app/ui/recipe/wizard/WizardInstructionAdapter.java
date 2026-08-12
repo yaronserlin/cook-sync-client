@@ -9,7 +9,6 @@ import com.cooksync.app.data.model.recipe.RecipeDraftValidator;
 import com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper;
 
 import android.content.Context;
-import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -31,11 +30,12 @@ import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.cooksync.app.ui.base.BaseAdapter;
+import com.cooksync.app.util.TextWatchers;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 /**
  * Renders the editable instruction-step cards on the Create Recipe wizard's Instructions step:
@@ -50,7 +50,7 @@ import java.util.function.Consumer;
  * @version 1.1
  * @since 08/08/2026
  */
-public class WizardInstructionAdapter extends RecyclerView.Adapter<WizardInstructionAdapter.ViewHolder> {
+public class WizardInstructionAdapter extends BaseAdapter<RecipeDraft.DraftInstruction, WizardInstructionAdapter.ViewHolder> {
 
     /** Notified on row actions the host fragment needs to act on. */
     public interface Listener {
@@ -60,13 +60,12 @@ public class WizardInstructionAdapter extends RecyclerView.Adapter<WizardInstruc
         void onPhotoClick(RecipeDraft.DraftInstruction instruction, int position);
     }
 
-    private final List<RecipeDraft.DraftInstruction> instructions;
     private List<RecipeDraft.DraftIngredient> ingredients = new ArrayList<>();
     private Listener listener;
     private ItemTouchHelper itemTouchHelper;
 
     public WizardInstructionAdapter(@NonNull List<RecipeDraft.DraftInstruction> instructions) {
-        this.instructions = instructions;
+        super(instructions);
     }
 
     public void setListener(Listener listener) {
@@ -98,12 +97,7 @@ public class WizardInstructionAdapter extends RecyclerView.Adapter<WizardInstruc
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        holder.bind(instructions.get(position), position, ingredients, listener, this);
-    }
-
-    @Override
-    public int getItemCount() {
-        return instructions.size();
+        holder.bind(items.get(position), position, ingredients, listener, this);
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
@@ -143,7 +137,7 @@ public class WizardInstructionAdapter extends RecyclerView.Adapter<WizardInstruc
 
             if (descriptionWatcher != null) etDescription.removeTextChangedListener(descriptionWatcher);
             etDescription.setText(instruction.description);
-            descriptionWatcher = onChanged(value -> instruction.description = value);
+            descriptionWatcher = TextWatchers.onChanged(value -> instruction.description = value);
             etDescription.addTextChangedListener(descriptionWatcher);
 
             bindTimerPill(context, instruction);
@@ -269,23 +263,6 @@ public class WizardInstructionAdapter extends RecyclerView.Adapter<WizardInstruc
                     })
                     .setNegativeButton(R.string.action_cancel, null)
                     .show();
-        }
-
-        private static TextWatcher onChanged(Consumer<String> onChanged) {
-            return new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                }
-
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                }
-
-                @Override
-                public void afterTextChanged(Editable s) {
-                    onChanged.accept(s.toString());
-                }
-            };
         }
     }
 }

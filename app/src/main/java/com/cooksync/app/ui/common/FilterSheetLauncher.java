@@ -8,8 +8,10 @@ import androidx.fragment.app.FragmentManager;
 
 import com.cooksync.app.ui.recipe.common.FiltersBottomSheetDialogFragment;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Builds, seeds, and shows a {@link FiltersBottomSheetDialogFragment} against a ViewModel's
@@ -39,6 +41,78 @@ public final class FilterSheetLauncher {
         Double getCurrentMinRating();
 
         Integer getCurrentMaxTotalTimeMinutes();
+
+        /** Drops the active difficulty filter alone, leaving every other constraint untouched. */
+        void removeDifficulty();
+
+        /** Drops a single selected tag alone, leaving every other constraint untouched. */
+        void removeTag(String tagName);
+
+        /** Drops the active minimum-rating filter alone, leaving every other constraint untouched. */
+        void removeMinRating();
+
+        /** Drops the active total-time filter alone, leaving every other constraint untouched. */
+        void removeMaxTotalTime();
+
+        /**
+         * How many of the four shared filter dimensions (difficulty, tags, rating, time) are
+         * currently active — sort is deliberately excluded since one sort option is always
+         * selected. Every screen's "Filters · N" button badge reads this instead of
+         * recomputing the same sum itself.
+         *
+         * Complexity:
+         * Time: O(1)
+         * Space: O(1)
+         *
+         * @return the count of active shared filter dimensions
+         */
+        default int getActiveFilterCount() {
+            return (getCurrentDifficulty() != null ? 1 : 0) + getSelectedTags().size()
+                    + (getCurrentMinRating() != null ? 1 : 0)
+                    + (getCurrentMaxTotalTimeMinutes() != null ? 1 : 0);
+        }
+
+        /**
+         * Builds one removable {@link NoResultsStateHelper.Constraint} per active shared filter
+         * dimension (difficulty, each selected tag, total time, minimum rating), each wired to
+         * remove itself via this {@code FilterState}. Screen-specific extras that aren't part of
+         * this shared state (a search query, a visibility toggle, an "only with notes" flag) are
+         * the caller's responsibility to prepend/append, since those don't exist here.
+         *
+         * <p>Label formatting for time/rating is injected rather than done here, since a
+         * {@code FilterState} is implemented by a ViewModel and must stay free of Android
+         * {@code Context}/resource access.</p>
+         *
+         * Complexity:
+         * Time: O(k) where k is the number of active filter dimensions
+         * Space: O(k)
+         *
+         * @param timeLabel formats a total-time-minutes value into its chip label
+         * @param ratingLabel formats a minimum-rating value into its chip label
+         * @return the active shared constraints, in display order
+         */
+        default List<NoResultsStateHelper.Constraint> buildRemovableConstraints(
+                Function<Integer, String> timeLabel, Function<Double, String> ratingLabel) {
+            List<NoResultsStateHelper.Constraint> constraints = new ArrayList<>();
+            String difficulty = getCurrentDifficulty();
+            if (difficulty != null) {
+                constraints.add(new NoResultsStateHelper.Constraint(difficulty, this::removeDifficulty));
+            }
+            for (String tag : getSelectedTags()) {
+                constraints.add(new NoResultsStateHelper.Constraint(tag, () -> removeTag(tag)));
+            }
+            Integer maxTotalTimeMinutes = getCurrentMaxTotalTimeMinutes();
+            if (maxTotalTimeMinutes != null) {
+                constraints.add(new NoResultsStateHelper.Constraint(
+                        timeLabel.apply(maxTotalTimeMinutes), this::removeMaxTotalTime));
+            }
+            Double minRating = getCurrentMinRating();
+            if (minRating != null) {
+                constraints.add(new NoResultsStateHelper.Constraint(
+                        ratingLabel.apply(minRating), this::removeMinRating));
+            }
+            return constraints;
+        }
     }
 
     private FilterSheetLauncher() {

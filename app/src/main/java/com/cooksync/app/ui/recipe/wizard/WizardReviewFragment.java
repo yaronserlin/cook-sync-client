@@ -218,17 +218,8 @@ public class WizardReviewFragment extends Fragment {
 
     private void styleVisibilityChips() {
         String visibility = viewModel.getVisibility();
-        styleChip(chipPublic, "PUBLIC".equals(visibility));
-        styleChip(chipPrivate, "PRIVATE".equals(visibility));
-    }
-
-    private void styleChip(TextView chip, boolean active) {
-        chip.setBackgroundColor(active
-                ? getResources().getColor(R.color.color_accent, null)
-                : android.graphics.Color.TRANSPARENT);
-        chip.setTextColor(active
-                ? getResources().getColor(R.color.color_bg, null)
-                : getResources().getColor(R.color.color_text, null));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipPublic, "PUBLIC".equals(visibility));
+        com.cooksync.app.ui.common.ChipStyler.styleAccentChip(chipPrivate, "PRIVATE".equals(visibility));
     }
 
     private String humanDifficulty(String difficulty) {

@@ -7,7 +7,6 @@ import com.cooksync.app.ui.base.ViewModelFactory;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -421,18 +420,15 @@ public class AccountDetailsActivity extends BaseActivity {
      * @return true if any field or the avatar differs from what's actually saved
      */
     private boolean hasUnsavedChanges() {
-        if (pendingAvatarUri != null || avatarCleared) return true;
-        if (!etFirstName.getText().toString().trim().equals(loadedFirstName)) return true;
-        if (!etLastName.getText().toString().trim().equals(loadedLastName)) return true;
-        if (!etCity.getText().toString().trim().equals(loadedCity)) return true;
-        if (!etBio.getText().toString().trim().equals(loadedBio)) return true;
-        if (!etEmail.getText().toString().trim().equalsIgnoreCase(loadedEmail)) return true;
-        if (!TextUtils.isEmpty(etCurrentPassword.getText().toString())) return true;
-        if (!TextUtils.isEmpty(etNewPassword.getText().toString())) return true;
-        if (!TextUtils.isEmpty(etRepeatNewPassword.getText().toString())) return true;
-        if (cbShowRecipesPublicly.isChecked() != loadedShowRecipesPublicly) return true;
-        if (cbShowFavoritesPublicly.isChecked() != loadedShowFavoritesPublicly) return true;
-        return false;
+        return viewModel.hasUnsavedAccountChanges(
+                etFirstName.getText().toString(), etLastName.getText().toString(),
+                etCity.getText().toString(), etBio.getText().toString(), etEmail.getText().toString(),
+                etCurrentPassword.getText().toString(), etNewPassword.getText().toString(),
+                etRepeatNewPassword.getText().toString(),
+                cbShowRecipesPublicly.isChecked(), cbShowFavoritesPublicly.isChecked(),
+                pendingAvatarUri != null || avatarCleared,
+                loadedFirstName, loadedLastName, loadedCity, loadedBio, loadedEmail,
+                loadedShowRecipesPublicly, loadedShowFavoritesPublicly);
     }
 
     private static String nullToEmpty(String value) {

@@ -16,11 +16,14 @@ import com.cooksync.app.util.PendingActionScheduler;
 import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
+import com.dtos.response.review.ReviewResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -260,6 +263,87 @@ public class RecipeDetailViewModel extends BaseViewModel {
     }
 
     /**
+     * Formats a recipe's average rating to one decimal place for display, matching the design's
+     * "4.3" style summary numbers.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param averageRating the recipe's average rating, or {@code null} if it has no reviews yet
+     * @return a "0.0"-formatted string, or the literal {@code "0.0"} if {@code averageRating} is {@code null}
+     */
+    public String formatAverageRating(Double averageRating) {
+        return averageRating == null ? "0.0" : String.format(Locale.US, "%.1f", averageRating);
+    }
+
+    /** How the reviews list can be ordered, cycled by tapping the reviews sort button. */
+    public enum ReviewSort {
+        NEWEST, HIGHEST_RATED, LOWEST_RATED;
+
+        /**
+         * The next sort option in the cycle, wrapping back to {@link #NEWEST} after
+         * {@link #LOWEST_RATED}.
+         *
+         * @return the sort option to switch to
+         */
+        public ReviewSort next() {
+            ReviewSort[] values = values();
+            return values[(ordinal() + 1) % values.length];
+        }
+    }
+
+    /**
+     * Counts how many of {@code reviews} carry each whole-star rating, for the rating-breakdown
+     * bars on the reviews-summary card.
+     *
+     * Complexity:
+     * Time: O(n) where n is the number of reviews
+     * Space: O(1)
+     *
+     * @param reviews every review on the recipe, unfiltered
+     * @return a 6-element array indexed 1..5 by star value (index 0 is unused)
+     */
+    public int[] getStarBreakdown(List<ReviewResponse> reviews) {
+        int[] counts = new int[6];
+        for (ReviewResponse review : reviews) {
+            counts[clampStars(review.rating())]++;
+        }
+        return counts;
+    }
+
+    /**
+     * Filters {@code reviews} to the given star rating (if any) and sorts the result per
+     * {@code sort}, for the reviews list shown below the rating-breakdown card.
+     *
+     * Complexity:
+     * Time: O(n log n) where n is the number of reviews
+     * Space: O(n)
+     *
+     * @param reviews every review on the recipe, unfiltered
+     * @param starFilter show only reviews with this exact whole-star rating, or {@code null} for all
+     * @param sort the order to display the filtered reviews in
+     * @return the filtered, sorted review list
+     */
+    public List<ReviewResponse> getDisplayedReviews(List<ReviewResponse> reviews, Integer starFilter, ReviewSort sort) {
+        List<ReviewResponse> displayed = new ArrayList<>(reviews);
+        if (starFilter != null) {
+            displayed.removeIf(r -> clampStars(r.rating()) != starFilter);
+        }
+
+        Comparator<ReviewResponse> comparator = switch (sort) {
+            case HIGHEST_RATED -> Comparator.comparing(
+                    (ReviewResponse r) -> r.rating() == null ? BigDecimal.ZERO : r.rating(), Comparator.reverseOrder());
+            case LOWEST_RATED -> Comparator.comparing(
+                    (ReviewResponse r) -> r.rating() == null ? BigDecimal.ZERO : r.rating());
+            case NEWEST -> Comparator.comparing(
+                    (ReviewResponse r) -> r.createdAt() == null ? "" : r.createdAt(), Comparator.reverseOrder());
+        };
+        displayed.sort(comparator);
+        return displayed;
+    }
+
+    /**
      * Rounds a single review's rating to the nearest whole star and clamps it into the
      * displayable 1–5 range, for the rating-breakdown bars and star-filter chips.
      *
@@ -291,12 +375,9 @@ public class RecipeDetailViewModel extends BaseViewModel {
     public String formatPublishedDate(String isoTimestamp) {
         if (isoTimestamp == null || isoTimestamp.isBlank()) return "";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                LocalDate date = LocalDate.parse(isoTimestamp.substring(0, 10));
-                return date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
-            } catch (DateTimeParseException | IndexOutOfBoundsException e) {
-                return "";
-            }
+            LocalDate date = com.cooksync.app.util.DateFormatUtils.parseIsoDate(isoTimestamp);
+            if (date == null) return "";
+            return date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
         }
         return isoTimestamp.substring(0, 10); // Fallback for older APIs
     }

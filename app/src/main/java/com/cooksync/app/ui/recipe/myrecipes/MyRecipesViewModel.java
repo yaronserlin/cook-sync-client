@@ -1,18 +1,16 @@
 package com.cooksync.app.ui.recipe.myrecipes;
-import com.cooksync.app.ui.recipe.common.*;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.Observer;
 
+import com.cooksync.app.data.repository.BaseRepository;
 import com.cooksync.app.data.repository.RecipeRepository;
 import com.cooksync.app.data.repository.TagRepository;
+import com.cooksync.app.data.service.RecipePublishManager;
 import com.cooksync.app.domain.ApiResult;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.common.FilterSheetLauncher;
+import com.cooksync.app.domain.Event;
+import com.cooksync.app.ui.base.AbstractFilterableListViewModel;
 import com.cooksync.app.util.PendingActionScheduler;
 import com.cooksync.app.util.RecipeFilterUtils;
 import com.dtos.response.recipe.RecipePreviewResponse;
@@ -20,12 +18,9 @@ import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.tags.TagResponse;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * Manages data state for {@link MyRecipesActivity}: the current user's own recipes, search/
@@ -34,17 +29,10 @@ import java.util.Set;
  * triggered from the list.
  *
  * @author Yaron Serlin
- * @version 1.1
+ * @version 1.2
  * @since 04/08/2026
  */
-public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLauncher.FilterState {
-
-    /**
-     * How long a delete/visibility change waits before actually reaching the server, giving the
-     * "Undo" toast action a window to cancel it. Matches {@code OrganicToast}'s auto-dismiss
-     * duration, since the undo action stops being reachable once the toast itself is gone.
-     */
-    private static final long UNDO_WINDOW_MS = 3200;
+public class MyRecipesViewModel extends AbstractFilterableListViewModel {
 
     private final RecipeRepository repository;
     private final TagRepository tagRepository;
@@ -55,18 +43,23 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
     private final MutableLiveData<ApiResult<RecipeResponse>> visibilityResult = new MutableLiveData<>();
 
     private final List<RecipePreviewResponse> allRecipes = new ArrayList<>();
-    /** Thread-safe since filter changes and background repository callbacks can both touch it. */
-    private final Set<String> selectedTags = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     private final PendingActionScheduler pendingActions = new PendingActionScheduler();
 
     private String currentQuery = null;
     /** One of "ALL", "PUBLIC", "PRIVATE". */
     private String visibilityFilter = "ALL";
-    private String currentSort = "Newest";
-    private String currentDifficulty = null;
-    private Double currentMinRating = null;
-    private Integer currentMaxTotalTimeMinutes = null;
+
+    /**
+     * Kept as a field so it can be detached in {@link #onCleared()} — {@link RecipePublishManager}
+     * is a process-wide singleton, so an observer registered via {@code observeForever} and never
+     * removed would keep this ViewModel (and everything it references) alive indefinitely.
+     */
+    private final Observer<Event<RecipeResponse>> recipePublishedObserver = event -> {
+        if (event != null && event.getContentIfNotHandled() != null) {
+            loadMyRecipes();
+        }
+    };
 
     /**
      * Constructs the ViewModel with the given repositories, injected by
@@ -82,11 +75,7 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
     public MyRecipesViewModel(RecipeRepository repository, TagRepository tagRepository) {
         this.repository = repository;
         this.tagRepository = tagRepository;
-        com.cooksync.app.data.service.RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(event -> {
-            if (event != null && event.getContentIfNotHandled() != null) {
-                loadMyRecipes();
-            }
-        });
+        RecipePublishManager.getInstance().getRecipePublishedEvent().observeForever(recipePublishedObserver);
     }
 
     public LiveData<ApiResult<List<RecipePreviewResponse>>> getRecipesResult() { return recipesResult; }
@@ -109,12 +98,7 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
      */
     public LiveData<ApiResult<RecipeResponse>> getVisibilityResult() { return visibilityResult; }
 
-    public String getCurrentSort() { return currentSort; }
-    public String getCurrentDifficulty() { return currentDifficulty; }
-    public Double getCurrentMinRating() { return currentMinRating; }
-    public Integer getCurrentMaxTotalTimeMinutes() { return currentMaxTotalTimeMinutes; }
     public String getVisibilityFilter() { return visibilityFilter; }
-    public Set<String> getSelectedTags() { return Collections.unmodifiableSet(selectedTags); }
 
     /**
      * How many of the user's recipes (across the whole library, ignoring the active search/
@@ -175,49 +159,11 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
     }
 
     /**
-     * Applies the sort/difficulty/tags chosen in the shared filters sheet.
-     *
-     * @param sortBy one of "Newest", "Top Rated", "Shortest Time"
-     * @param difficulty one of "Easy", "Medium", "Hard", or {@code null}
-     * @param tags the selected tag names, possibly empty
-     * @param minRating minimum average rating threshold, or {@code null} for no filter
-     * @param maxTotalTimeMinutes maximum prep+cook time in minutes, or {@code null} for no filter
+     * Re-filters {@link #allRecipes} against the new filter state — this list is already fully
+     * loaded client-side, so no new network call is needed.
      */
-    public void applyFilters(String sortBy, String difficulty, Collection<String> tags,
-                              Double minRating, Integer maxTotalTimeMinutes) {
-        this.currentSort = sortBy;
-        this.currentDifficulty = difficulty;
-        this.currentMinRating = minRating;
-        this.currentMaxTotalTimeMinutes = maxTotalTimeMinutes;
-        this.selectedTags.clear();
-        if (tags != null) {
-            this.selectedTags.addAll(tags);
-        }
-        publishFiltered();
-    }
-
-    /** Drops the active difficulty filter alone, leaving query/tags/rating/time untouched. */
-    public void removeDifficulty() {
-        currentDifficulty = null;
-        publishFiltered();
-    }
-
-    /** Drops a single selected tag alone. */
-    public void removeTag(String tagName) {
-        if (selectedTags.remove(tagName)) {
-            publishFiltered();
-        }
-    }
-
-    /** Drops the active minimum-rating filter alone. */
-    public void removeMinRating() {
-        currentMinRating = null;
-        publishFiltered();
-    }
-
-    /** Drops the active total-time filter alone. */
-    public void removeMaxTotalTime() {
-        currentMaxTotalTimeMinutes = null;
+    @Override
+    protected void onFiltersChanged() {
         publishFiltered();
     }
 
@@ -253,7 +199,7 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
         replaceRecipe(recipeId, withVisibility(recipe, newVisibility));
         publishFiltered();
 
-        pendingActions.schedule(recipeId, UNDO_WINDOW_MS, () -> {
+        pendingActions.schedule(recipeId, BaseRepository.UNDO_WINDOW_MS, () -> {
             MutableLiveData<ApiResult<RecipeResponse>> result = new MutableLiveData<>();
             observeOnce(result, apiResult -> {
                 if (apiResult instanceof ApiResult.Error<RecipeResponse>) {
@@ -307,6 +253,7 @@ public class MyRecipesViewModel extends BaseViewModel implements FilterSheetLaun
     protected void onCleared() {
         super.onCleared();
         pendingActions.flushAll();
+        RecipePublishManager.getInstance().getRecipePublishedEvent().removeObserver(recipePublishedObserver);
     }
 
     /**

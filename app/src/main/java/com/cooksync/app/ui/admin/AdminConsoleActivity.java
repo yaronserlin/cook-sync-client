@@ -24,9 +24,9 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import java.util.List;
 
 /**
- * Admin-only moderation console: reported-reviews queue, duplicate-tag consolidation, and the
- * user directory, behind three tabs. Reachable only from the Settings screen's "Admin console"
- * row, which is itself hidden for non-admins; this Activity re-checks
+ * Admin-only moderation console: reported-reviews queue, duplicate-tag consolidation, the user
+ * directory, and measurement units, behind four tabs. Reachable only from the Settings screen's
+ * "Admin console" row, which is itself hidden for non-admins; this Activity re-checks
  * {@link SessionManager#isAdmin()} on its own as defense in depth against a direct launch.
  *
  * @author Yaron Serlin

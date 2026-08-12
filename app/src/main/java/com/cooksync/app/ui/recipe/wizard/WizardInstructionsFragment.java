@@ -40,6 +40,7 @@ public class WizardInstructionsFragment extends Fragment {
     private AddRecipeViewModel viewModel;
     private WizardInstructionAdapter adapter;
     private RecipeImagePicker imagePicker;
+    private ItemTouchHelper touchHelper;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -84,7 +85,7 @@ public class WizardInstructionsFragment extends Fragment {
         recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         recyclerView.setAdapter(adapter);
 
-        ItemTouchHelper touchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback(new DragReorderTouchHelperCallback.OnMoveListener() {
+        touchHelper = new ItemTouchHelper(new DragReorderTouchHelperCallback(new DragReorderTouchHelperCallback.OnMoveListener() {
             @Override
             public void onMove(int from, int to) {
                 Collections.swap(viewModel.getInstructions(), from, to);
@@ -121,5 +122,21 @@ public class WizardInstructionsFragment extends Fragment {
         if (adapter != null) {
             adapter.setIngredients(viewModel.getIngredients());
         }
+    }
+
+    /**
+     * Detaches the drag helper and drops the adapter reference before the wizard's ViewPager2
+     * recycles this step's view (e.g. swiping to another step and back) — the adapter/helper
+     * are rebuilt fresh in {@link #onViewCreated} against the new view tree, so nothing carries
+     * over a reference to the destroyed one.
+     */
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (touchHelper != null) {
+            touchHelper.attachToRecyclerView(null);
+            touchHelper = null;
+        }
+        adapter = null;
     }
 }

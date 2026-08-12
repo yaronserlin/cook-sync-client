@@ -1,9 +1,4 @@
 package com.cooksync.app.ui.recipe.favorites;
-import com.cooksync.app.ui.recipe.common.*;
-import com.cooksync.app.ui.base.BaseActivity;
-import com.cooksync.app.ui.base.BaseViewModel;
-import com.cooksync.app.ui.base.Navigator;
-import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.content.Intent;
 import android.content.res.ColorStateList;
@@ -21,6 +16,8 @@ import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.common.NoResultsStateHelper;
 import com.cooksync.app.ui.common.OrganicToast;
 import com.cooksync.app.ui.base.ViewModelFactory;
+import com.cooksync.app.ui.recipe.common.RecipeListActivity;
+import com.cooksync.app.ui.recipe.common.RecipeRowCardAdapter;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailActivity;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.tags.TagResponse;
@@ -83,7 +80,7 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
             @Override
             public void onRecipeClick(RecipePreviewResponse recipe) {
                 Intent intent = new Intent();
-                intent.putExtra(RecipeDetailActivity.EXTRA_RECIPE_ID, recipe.id());
+                intent.putExtra(Navigator.EXTRA_RECIPE_ID, recipe.id());
                 Navigator.start(FavoriteRecipesActivity.this, RecipeDetailActivity.class, intent);
             }
 
@@ -165,10 +162,7 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
      * option is always selected). Reads the active filters directly from {@link #viewModel}.
      */
     private void updateFilterButton() {
-        int count = (viewModel.getCurrentDifficulty() != null ? 1 : 0)
-                + viewModel.getSelectedTags().size()
-                + (viewModel.getCurrentMinRating() != null ? 1 : 0)
-                + (viewModel.getCurrentMaxTotalTimeMinutes() != null ? 1 : 0);
+        int count = viewModel.getActiveFilterCount();
         boolean active = count > 0;
 
         btnFilters.setText(getString(R.string.filters_count_format, count));
@@ -192,34 +186,13 @@ public class FavoriteRecipesActivity extends RecipeListActivity {
             constraints.add(new NoResultsStateHelper.Constraint(
                     "\"" + query + "\"", () -> searchView.setQuery("", true)));
         }
-        String difficulty = viewModel.getCurrentDifficulty();
-        if (difficulty != null) {
-            constraints.add(new NoResultsStateHelper.Constraint(difficulty, () -> {
-                viewModel.removeDifficulty();
+        for (NoResultsStateHelper.Constraint shared : viewModel.buildRemovableConstraints(
+                t -> getString(R.string.filters_applied_time_format, t),
+                r -> getString(R.string.filters_applied_rating_format, r))) {
+            constraints.add(new NoResultsStateHelper.Constraint(shared.label(), () -> {
+                shared.onRemove().run();
                 updateFilterButton();
             }));
-        }
-        for (String tag : viewModel.getSelectedTags()) {
-            constraints.add(new NoResultsStateHelper.Constraint(tag, () -> {
-                viewModel.removeTag(tag);
-                updateFilterButton();
-            }));
-        }
-        Integer maxTotalTimeMinutes = viewModel.getCurrentMaxTotalTimeMinutes();
-        if (maxTotalTimeMinutes != null) {
-            constraints.add(new NoResultsStateHelper.Constraint(
-                    getString(R.string.filters_applied_time_format, maxTotalTimeMinutes), () -> {
-                        viewModel.removeMaxTotalTime();
-                        updateFilterButton();
-                    }));
-        }
-        Double minRating = viewModel.getCurrentMinRating();
-        if (minRating != null) {
-            constraints.add(new NoResultsStateHelper.Constraint(
-                    getString(R.string.filters_applied_rating_format, minRating), () -> {
-                        viewModel.removeMinRating();
-                        updateFilterButton();
-                    }));
         }
         return constraints;
     }
