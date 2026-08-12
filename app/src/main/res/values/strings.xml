@@ -80,6 +80,7 @@
     <string name="action_cancel">Cancel</string>
     <string name="action_save">Save</string>
     <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
     <string name="action_set">Set</string>
     <string name="action_got_it">Got it</string>
     <string name="action_reset">Reset</string>
@@ -142,6 +143,8 @@
     <!-- Home -->
     <string name="home_title">Discover</string>
     <string name="home_search_hint">Search recipes&#8230;</string>
+    <string name="home_empty_title">No recipes yet</string>
+    <string name="home_empty_subtitle">Be the first to publish a recipe!</string>
 
     <!-- Favorites -->
     <string name="favorites_title">Favorites</string>
@@ -339,6 +342,7 @@
     <string name="admin_badge_tags">%1$d pairs</string>
     <string name="admin_badge_users">%1$d total</string>
     <string name="admin_badge_units">%1$d total</string>
+    <string name="admin_units_add_new">Add new measurement unit</string>
     <string name="admin_units_validation_required">Name and code are required</string>
     <string name="admin_units_create_success">Unit created successfully</string>
     <string name="admin_units_deleted_format">Unit \"%1$s\" deleted</string>
@@ -448,6 +452,18 @@
     <string name="wizard_action_keep_editing">Keep editing</string>
     <string name="wizard_draft_saved_toast">Draft saved</string>
     <string name="wizard_published_toast">Recipe published</string>
+
+    <!-- Publish progress card (layout_publish_progress_card.xml, driven by RecipePublishManager) -->
+    <string name="wizard_publish_title">Publishing recipe&#8230;</string>
+    <string name="wizard_publish_uploading_media">Uploading media&#8230;</string>
+    <string name="wizard_publish_processing_details">Processing recipe details&#8230;</string>
+    <string name="wizard_publish_percent_initial">0%</string>
+    <string name="wizard_publish_percent_format">%1$d%%</string>
+    <string name="wizard_publish_success_title">Recipe published!</string>
+    <string name="wizard_publish_success_subtitle">Available in My Recipes</string>
+    <string name="wizard_publish_failed_title">Publishing failed</string>
+    <string name="wizard_publish_failed_default_reason">Failed to publish recipe</string>
+    <string name="wizard_publish_failed_subtitle_format">%1$s — your recipe was saved as a draft, nothing was lost.</string>
 
     <string name="wizard_basics_title_label">Recipe title</string>
     <string name="wizard_basics_title_hint">e.g. Shakshuka with feta</string>

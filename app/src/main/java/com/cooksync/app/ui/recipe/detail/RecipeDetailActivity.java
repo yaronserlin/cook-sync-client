@@ -5,7 +5,6 @@ import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -48,9 +47,6 @@ import com.dtos.response.recipe.RecipeResponse;
 import com.dtos.response.review.ReviewResponse;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.format.DateTimeParseException;
-import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -280,7 +276,7 @@ public class RecipeDetailActivity extends BaseActivity {
 
             @Override
             public void onDeleteNote(InstructionResponse step) {
-                NoteResponse existing = findStepNote(step.id());
+                NoteResponse existing = viewModel.findStepNote(currentNotes, step.id());
                 if (existing != null) viewModel.deleteNote(existing.id());
             }
         });
@@ -417,18 +413,8 @@ public class RecipeDetailActivity extends BaseActivity {
                 });
     }
 
-    private NoteResponse findRecipeNote() {
-        for (NoteResponse note : currentNotes) if (note.instructionId() == null) return note;
-        return null;
-    }
-
-    private NoteResponse findStepNote(String instructionId) {
-        for (NoteResponse note : currentNotes) if (Objects.equals(instructionId, note.instructionId())) return note;
-        return null;
-    }
-
     private void renderRecipeNote() {
-        NoteResponse note = findRecipeNote();
+        NoteResponse note = viewModel.findRecipeNote(currentNotes);
         boolean hasNote = note != null;
         tvNote.setText(hasNote ? note.note() : getString(R.string.recipe_add_note_hint));
         tvNote.setAlpha(hasNote ? 1f : 0.7f);
@@ -439,7 +425,7 @@ public class RecipeDetailActivity extends BaseActivity {
      * pre-filling the {@link EditText} with the existing note text, if any.
      */
     private void openRecipeNoteEditor() {
-        NoteResponse existing = findRecipeNote();
+        NoteResponse existing = viewModel.findRecipeNote(currentNotes);
         String text = existing != null ? existing.note() : "";
         etNote.setText(text);
         etNote.setSelection(text.length());
@@ -469,7 +455,7 @@ public class RecipeDetailActivity extends BaseActivity {
         if (noteEditCommitted) return;
         noteEditCommitted = true;
         String text = etNote.getText() == null ? "" : etNote.getText().toString().trim();
-        NoteResponse existing = findRecipeNote();
+        NoteResponse existing = viewModel.findRecipeNote(currentNotes);
         String currentText = existing != null ? existing.note() : "";
         if (!text.isEmpty() && !Objects.equals(text, currentText)) {
             String recipeId = getIntent().getStringExtra(EXTRA_RECIPE_ID);
@@ -481,7 +467,7 @@ public class RecipeDetailActivity extends BaseActivity {
     private void deleteRecipeNoteInline() {
         if (noteEditCommitted) return;
         noteEditCommitted = true;
-        NoteResponse existing = findRecipeNote();
+        NoteResponse existing = viewModel.findRecipeNote(currentNotes);
         if (existing != null) viewModel.deleteNote(existing.id());
         closeRecipeNoteEditor();
     }
@@ -521,7 +507,7 @@ public class RecipeDetailActivity extends BaseActivity {
         String authorName = recipe.createdBy() != null
                 ? recipe.createdBy().firstName() + " " + recipe.createdBy().lastName()
                 : getString(R.string.anonymous);
-        kicker.setText(getString(R.string.recipe_kicker_format, authorName, formatPublishedDate(recipe.createdAt())));
+        kicker.setText(getString(R.string.recipe_kicker_format, authorName, viewModel.formatPublishedDate(recipe.createdAt())));
         if (recipe.createdBy() != null && recipe.createdBy().id() != null) {
             kicker.setOnClickListener(v -> com.cooksync.app.ui.auth.UserProfileDialogFragment.show(getSupportFragmentManager(), recipe.createdBy().id(), authorName));
         }
@@ -599,10 +585,10 @@ public class RecipeDetailActivity extends BaseActivity {
      */
     private void bindRatingSummary(RecipeResponse recipe) {
         summaryRating.setText(recipe.averageRating() == null ? "0.0" : String.format(Locale.US, "%.1f", recipe.averageRating()));
-        summaryStars.setText(starsForRating(recipe.averageRating()));
+        summaryStars.setText(viewModel.starsForRating(recipe.averageRating()));
 
         java.util.Arrays.fill(starCounts, 0);
-        for (ReviewResponse review : allReviews) starCounts[clampStars(review.rating())]++;
+        for (ReviewResponse review : allReviews) starCounts[viewModel.clampStars(review.rating())]++;
 
         int total = allReviews.size();
         bindBarRow(R.id.bar_row_5, 5, total);
@@ -679,7 +665,7 @@ public class RecipeDetailActivity extends BaseActivity {
     private void refreshReviewsDisplay() {
         updateStarChipHighlight();
         List<ReviewResponse> displayed = new ArrayList<>(allReviews);
-        if (activeStarFilter != null) displayed.removeIf(r -> clampStars(r.rating()) != activeStarFilter);
+        if (activeStarFilter != null) displayed.removeIf(r -> viewModel.clampStars(r.rating()) != activeStarFilter);
 
         Comparator<ReviewResponse> comparator;
         String sortOption = SORT_OPTIONS[sortIndex];
@@ -698,43 +684,6 @@ public class RecipeDetailActivity extends BaseActivity {
                 : getString(R.string.reviews_count_filtered_summary, displayed.size(), activeStarFilter));
 
         reviewsEmptyState.setVisibility(displayed.isEmpty() ? View.VISIBLE : View.GONE);
-    }
-
-    private String starsForRating(Double averageRating) {
-        int filled = averageRating == null ? 0 : (int) Math.round(averageRating);
-        StringBuilder stars = new StringBuilder();
-        int j = 0;
-        while (j < 5) {
-            stars.append(j < filled ? "★" : "☆");
-            j++;
-        }
-        return stars.toString();
-    }
-
-    private int clampStars(BigDecimal rating) {
-        if (rating == null) return 1;
-        int rounded = Math.round(rating.floatValue());
-        return Math.max(1, Math.min(5, rounded));
-    }
-
-    /**
-     * Formats an ISO-8601 timestamp into a "Month yyyy" label for the recipe kicker
-     * (e.g. "April 2026"). Falls back to an empty string if the timestamp can't be parsed.
-     *
-     * @param isoTimestamp the recipe's {@code createdAt} value
-     * @return a human-readable "Month yyyy" string, or "" if unparseable
-     */
-    private String formatPublishedDate(String isoTimestamp) {
-        if (isoTimestamp == null || isoTimestamp.isBlank()) return "";
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            try {
-                LocalDate date = LocalDate.parse(isoTimestamp.substring(0, 10));
-                return date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
-            } catch (DateTimeParseException | IndexOutOfBoundsException e) {
-                return "";
-            }
-        }
-        return isoTimestamp.substring(0, 10); // Fallback for older APIs
     }
 
     private void updateFavoriteIcon() {

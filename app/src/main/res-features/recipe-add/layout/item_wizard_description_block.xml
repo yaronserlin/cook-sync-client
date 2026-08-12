@@ -11,15 +11,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="8dp"
+    android:layout_marginBottom="@dimen/dp_8"
     android:gravity="top"
     android:orientation="horizontal">
 
     <ImageView
         android:id="@+id/iv_block_drag_handle"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="6dp"
+        android:layout_width="@dimen/dp_20"
+        android:layout_height="@dimen/dp_20"
+        android:layout_marginTop="@dimen/dp_6"
         android:alpha="0.35"
         android:contentDescription="@null"
         android:src="@drawable/ic_drag_handle"
@@ -27,25 +27,25 @@
 
     <EditText
         android:id="@+id/et_block_text"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="@dimen/dp_8"
         android:layout_weight="1"
         android:background="@null"
         android:gravity="top|start"
         android:hint="@string/wizard_basics_description_hint"
         android:inputType="textCapSentences|textMultiLine"
         android:minLines="2"
-        android:padding="0dp"
+        android:padding="@dimen/dp_0"
         android:textColor="@color/color_text"
-        android:textColorHint="#73201E1D"
-        android:textSize="14sp" />
+        android:textColorHint="@color/color_text_hint"
+        android:textSize="@dimen/sp_14" />
 
     <LinearLayout
         android:id="@+id/ll_block_image"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_marginStart="@dimen/dp_8"
         android:layout_weight="1"
         android:gravity="center_vertical"
         android:orientation="horizontal"
@@ -53,11 +53,11 @@
         tools:visibility="visible">
 
         <com.google.android.material.card.MaterialCardView
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            android:layout_width="@dimen/dp_56"
+            android:layout_height="@dimen/dp_56"
+            app:cardCornerRadius="@dimen/dp_12"
+            app:cardElevation="@dimen/dp_0"
+            app:strokeWidth="@dimen/dp_0">
 
             <ImageView
                 android:id="@+id/iv_block_image"
@@ -70,23 +70,23 @@
 
         <EditText
             android:id="@+id/et_block_caption"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="@dimen/dp_8"
             android:layout_weight="1"
             android:background="@null"
             android:hint="@string/wizard_photo_caption_label"
             android:maxLines="1"
-            android:padding="0dp"
+            android:padding="@dimen/dp_0"
             android:textColor="@color/color_text"
-            android:textColorHint="#73201E1D"
-            android:textSize="12sp" />
+            android:textColorHint="@color/color_text_hint"
+            android:textSize="@dimen/sp_12" />
 
         <ImageButton
             android:id="@+id/btn_block_remove"
-            android:layout_width="28dp"
-            android:layout_height="28dp"
-            android:layout_marginStart="4dp"
+            android:layout_width="@dimen/dp_28"
+            android:layout_height="@dimen/dp_28"
+            android:layout_marginStart="@dimen/dp_4"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/action_delete"
             android:scaleType="centerInside"

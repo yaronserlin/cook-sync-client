@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:background="@color/color_bg"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingTop="16dp">
+    android:paddingHorizontal="@dimen/dp_16"
+    android:paddingTop="@dimen/dp_16">
 
     <HorizontalScrollView
         android:layout_width="match_parent"
@@ -31,7 +31,7 @@
                 style="@style/CookSync.Button.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/dp_6"
                 android:text="@string/admin_reason_spam" />
 
             <com.google.android.material.button.MaterialButton
@@ -39,7 +39,7 @@
                 style="@style/CookSync.Button.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/dp_6"
                 android:text="@string/admin_reason_abuse" />
 
             <com.google.android.material.button.MaterialButton
@@ -47,7 +47,7 @@
                 style="@style/CookSync.Button.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/dp_6"
                 android:text="@string/admin_reason_off_topic" />
 
         </LinearLayout>
@@ -58,33 +58,33 @@
         android:id="@+id/tv_reports_section_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="@dimen/dp_13"
+        android:layout_marginBottom="@dimen/dp_8"
         android:alpha="0.55"
         android:letterSpacing="0.12"
         android:text="@string/admin_reports_section_label"
         android:textAllCaps="true"
         android:textColor="@color/color_text"
-        android:textSize="10.5sp"
+        android:textSize="@dimen/sp_10_5"
         android:textStyle="bold" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_admin_reports"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="16dp" />
+        android:paddingBottom="@dimen/dp_16" />
 
     <TextView
         android:id="@+id/tv_reports_empty"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/admin_reports_empty"
         android:textColor="@color/color_text"
-        android:textSize="13sp"
+        android:textSize="@dimen/sp_13"
         android:visibility="gone" />
 
 </LinearLayout>

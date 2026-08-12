@@ -31,7 +31,7 @@ import java.util.Map;
 
 /**
  * The Admin Console's Reports tab: reason-filter chips and the queued report cards with
- * Remove/Keep/ban-user actions. Shares {@link AdminViewModel} with the other two tabs via an
+ * Remove/Keep/ban-user actions. Shares {@link AdminReportsViewModel} with the other two tabs via an
  * activity-scoped {@link ViewModelProvider}.
  *
  * @author Yaron Serlin
@@ -40,7 +40,7 @@ import java.util.Map;
  */
 public class AdminReportsFragment extends Fragment implements AdminReportAdapter.OnReportActionListener {
 
-    private AdminViewModel viewModel;
+    private AdminReportsViewModel viewModel;
     private AdminReportAdapter adapter;
     private TextView tvEmpty;
     private RecyclerView recyclerView;
@@ -59,7 +59,7 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminReportsViewModel.class);
 
         tvEmpty = view.findViewById(R.id.tv_reports_empty);
         recyclerView = view.findViewById(R.id.rv_admin_reports);
@@ -86,7 +86,7 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
             }
         });
 
-        chipAll.setOnClickListener(v -> selectReason(AdminViewModel.REASON_ALL));
+        chipAll.setOnClickListener(v -> selectReason(AdminReportsViewModel.REASON_ALL));
         chipSpam.setOnClickListener(v -> selectReason("SPAM"));
         chipAbuse.setOnClickListener(v -> selectReason("ABUSE"));
         chipOffTopic.setOnClickListener(v -> selectReason("OFF_TOPIC"));
@@ -130,7 +130,7 @@ public class AdminReportsFragment extends Fragment implements AdminReportAdapter
 
     private void styleChips() {
         String selected = viewModel.getReasonFilter();
-        styleChip(chipAll, AdminViewModel.REASON_ALL.equals(selected));
+        styleChip(chipAll, AdminReportsViewModel.REASON_ALL.equals(selected));
         styleChip(chipSpam, "SPAM".equals(selected));
         styleChip(chipAbuse, "ABUSE".equals(selected));
         styleChip(chipOffTopic, "OFF_TOPIC".equals(selected));

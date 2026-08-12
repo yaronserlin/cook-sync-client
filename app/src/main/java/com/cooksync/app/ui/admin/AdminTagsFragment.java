@@ -36,7 +36,7 @@ import java.util.Locale;
 /**
  * The Admin Console's Tags tab: a client-side search over the loaded duplicate-tag groups
  * (there is no full-catalog tag search endpoint) and the merge flow for each group. Shares
- * {@link AdminViewModel} with the other two tabs via an activity-scoped
+ * {@link AdminTagsViewModel} with the other two tabs via an activity-scoped
  * {@link ViewModelProvider}.
  *
  * @author Yaron Serlin
@@ -45,7 +45,7 @@ import java.util.Locale;
  */
 public class AdminTagsFragment extends Fragment implements AdminTagGroupAdapter.OnMergeRequestListener {
 
-    private AdminViewModel viewModel;
+    private AdminTagsViewModel viewModel;
     private AdminTagGroupAdapter adapter;
     private RecyclerView recyclerView;
     private TextView tvEmpty;
@@ -62,7 +62,7 @@ public class AdminTagsFragment extends Fragment implements AdminTagGroupAdapter.
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminTagsViewModel.class);
 
         recyclerView = view.findViewById(R.id.rv_admin_tag_groups);
         tvEmpty = view.findViewById(R.id.tv_tags_empty);

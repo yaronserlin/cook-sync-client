@@ -16,11 +16,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.ui.common.AvatarView;
 import com.dtos.response.user.UserResponse;
 import com.google.android.material.button.MaterialButton;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +31,7 @@ import java.util.List;
  * @version 1.0
  * @since 07/08/2026
  */
-public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.ViewHolder> {
+public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter.ViewHolder> {
 
     /** Notified when the moderator acts on a user row. */
     public interface OnUserActionListener {
@@ -45,13 +45,10 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         void onEmail(UserResponse user);
     }
 
-    private final List<UserResponse> users = new ArrayList<>();
     private OnUserActionListener listener;
 
     public void setUsers(List<UserResponse> newUsers) {
-        users.clear();
-        users.addAll(newUsers);
-        notifyDataSetChanged();
+        setItems(newUsers);
     }
 
     public void setOnUserActionListener(OnUserActionListener listener) {
@@ -67,7 +64,7 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        UserResponse user = users.get(position);
+        UserResponse user = getItem(position);
         String fullName = ((user.firstName() == null ? "" : user.firstName()) + " "
                 + (user.lastName() == null ? "" : user.lastName())).trim();
 
@@ -120,11 +117,6 @@ public class AdminUserAdapter extends RecyclerView.Adapter<AdminUserAdapter.View
         holder.emailButton.setOnClickListener(v -> {
             if (listener != null) listener.onEmail(user);
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return users.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

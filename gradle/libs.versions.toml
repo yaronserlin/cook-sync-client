@@ -14,6 +14,8 @@ okhttp = "4.12.0"
 gson = "2.11.0"
 securityCrypto = "1.1.0-alpha06"
 lifecycle = "2.8.0"
+archCoreTesting = "2.2.0"
+mockito = "5.14.2"
 glide = "4.16.0"
 cloudinary = "3.1.2"
 fresco = "3.7.0"
@@ -46,6 +48,12 @@ security-crypto = { group = "androidx.security", name = "security-crypto-ktx", v
 # Lifecycle — MVVM ViewModel + LiveData
 lifecycle-viewmodel = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
 lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-ktx", version.ref = "lifecycle" }
+# Test-only: InstantTaskExecutorRule, makes LiveData.setValue/postValue run synchronously
+# in plain JUnit tests instead of requiring a real main-thread Looper.
+arch-core-testing = { group = "androidx.arch.core", name = "core-testing", version.ref = "archCoreTesting" }
+# Test-only: mocks repository interfaces so ViewModel tests don't hand-roll fakes for
+# every method on wide interfaces like RecipeRepository.
+mockito-core = { group = "org.mockito", name = "mockito-core", version.ref = "mockito" }
 
 # Images
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }

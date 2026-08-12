@@ -37,7 +37,7 @@ import java.util.List;
 
 /**
  * The Admin Console's Users tab: search + enabled-filter chips over a paginated user
- * directory, with per-row enable/disable actions. Shares {@link AdminViewModel} with the
+ * directory, with per-row enable/disable actions. Shares {@link AdminUsersViewModel} with the
  * other two tabs via an activity-scoped {@link ViewModelProvider}.
  *
  * @author Yaron Serlin
@@ -49,7 +49,7 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
     /** Matches {@code SearchActivity}'s live search-as-you-type debounce window. */
     private static final long SEARCH_DEBOUNCE_MS = 350L;
 
-    private AdminViewModel viewModel;
+    private AdminUsersViewModel viewModel;
     private AdminUserAdapter adapter;
     private RecyclerView recyclerView;
     private TextView tvEmpty;
@@ -81,7 +81,7 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminUsersViewModel.class);
 
         recyclerView = view.findViewById(R.id.rv_admin_users);
         tvEmpty = view.findViewById(R.id.tv_users_empty);

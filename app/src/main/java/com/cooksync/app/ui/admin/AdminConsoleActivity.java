@@ -35,7 +35,11 @@ import java.util.List;
  */
 public class AdminConsoleActivity extends BaseActivity {
 
-    private AdminViewModel viewModel;
+    private AdminStatsViewModel statsViewModel;
+    private AdminReportsViewModel reportsViewModel;
+    private AdminTagsViewModel tagsViewModel;
+    private AdminUsersViewModel usersViewModel;
+    private AdminUnitsViewModel unitsViewModel;
     private TabLayout tabLayout;
     private TextView tvHeading;
     private TextView tvBadge;
@@ -54,7 +58,12 @@ public class AdminConsoleActivity extends BaseActivity {
         WindowCompat.getInsetsController(getWindow(), getWindow().getDecorView())
                 .setAppearanceLightStatusBars(false);
 
-        viewModel = new ViewModelProvider(this, new ViewModelFactory()).get(AdminViewModel.class);
+        ViewModelProvider provider = new ViewModelProvider(this, new ViewModelFactory());
+        statsViewModel = provider.get(AdminStatsViewModel.class);
+        reportsViewModel = provider.get(AdminReportsViewModel.class);
+        tagsViewModel = provider.get(AdminTagsViewModel.class);
+        usersViewModel = provider.get(AdminUsersViewModel.class);
+        unitsViewModel = provider.get(AdminUnitsViewModel.class);
 
         tvHeading = findViewById(R.id.tv_admin_heading);
         tvBadge = findViewById(R.id.tv_admin_badge);
@@ -100,11 +109,11 @@ public class AdminConsoleActivity extends BaseActivity {
 
         observeViewModel();
 
-        viewModel.loadStats();
-        viewModel.loadReportedReviews();
-        viewModel.loadDuplicateTagGroups();
-        viewModel.refreshUsers(null, null);
-        viewModel.loadUnits();
+        statsViewModel.loadStats();
+        reportsViewModel.loadReportedReviews();
+        tagsViewModel.loadDuplicateTagGroups();
+        usersViewModel.refreshUsers(null, null);
+        unitsViewModel.loadUnits();
     }
 
     /**
@@ -135,13 +144,31 @@ public class AdminConsoleActivity extends BaseActivity {
      * exclusively by {@link AdminStatsResponse} (the system-wide, unfiltered totals from
      * {@code GET /api/admin/stats}) rather than by each tab's own filtered/paginated list, so
      * selecting a reason chip or an enabled-status chip never changes the badge — only actions
-     * that actually change the underlying data (handled by a future {@code loadStats()} refresh)
-     * would. The Tags badge is the one exception: there is no "total duplicate pairs" stat, so it
-     * is driven by the duplicates list itself, which is unaffected by the Tags tab's client-side
-     * search filter anyway.
+     * that actually change the underlying data do, via {@link AdminReportsViewModel#getStatsResyncNeeded()}
+     * re-triggering {@code loadStats()} once a remove/keep/ban actually settles server-side (the
+     * Users badge shows the total registered-account count, which suspending doesn't change, so
+     * it has no equivalent resync hook). The Tags badge is the one exception to the
+     * stats-endpoint rule: there is no "total duplicate pairs" stat, so it is driven directly by
+     * the duplicates list itself, which already updates optimistically on merge.
      */
     private void observeViewModel() {
-        viewModel.getStatsResult().observe(this, result -> {
+        usersViewModel.getUserDisabledEvent().observe(this, event -> {
+            String userId = event.getContentIfNotHandled();
+            if (userId != null) {
+                reportsViewModel.removeReportsForUser(userId);
+            }
+        });
+        usersViewModel.getReportsResyncNeeded().observe(this, event -> {
+            if (event.getContentIfNotHandled() != null) {
+                reportsViewModel.loadReportedReviews();
+            }
+        });
+        reportsViewModel.getStatsResyncNeeded().observe(this, event -> {
+            if (event.getContentIfNotHandled() != null) {
+                statsViewModel.loadStats();
+            }
+        });
+        statsViewModel.getStatsResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<AdminStatsResponse> success) {
                 AdminStatsResponse stats = success.getData();
 
@@ -158,7 +185,7 @@ public class AdminConsoleActivity extends BaseActivity {
                 }
             }
         });
-        viewModel.getTagGroupsResult().observe(this, result -> {
+        tagsViewModel.getTagGroupsResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<DuplicateTagGroupResponse>> success) {
                 String badge = getString(R.string.admin_badge_tags, success.getData().size());
                 setTabCount(AdminPagerAdapter.TAB_TAGS, badge);
@@ -167,7 +194,7 @@ public class AdminConsoleActivity extends BaseActivity {
                 }
             }
         });
-        viewModel.getUnitsResult().observe(this, result -> {
+        unitsViewModel.getUnitsResult().observe(this, result -> {
             if (result instanceof ApiResult.Success<List<com.dtos.response.unit.UnitResponse>> success) {
                 String badge = getString(R.string.admin_badge_units, success.getData().size());
                 setTabCount(AdminPagerAdapter.TAB_UNITS, badge);

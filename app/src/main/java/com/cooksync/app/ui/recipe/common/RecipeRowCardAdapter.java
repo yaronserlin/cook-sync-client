@@ -16,9 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -32,7 +32,7 @@ import java.util.Locale;
  * @version 1.0
  * @since 04/08/2026
  */
-public class RecipeRowCardAdapter extends RecyclerView.Adapter<RecipeRowCardAdapter.ViewHolder> {
+public class RecipeRowCardAdapter extends BaseAdapter<RecipePreviewResponse, RecipeRowCardAdapter.ViewHolder> {
 
     /** What the trailing icon does/shows for each row. */
     public enum TrailingAction {
@@ -49,15 +49,12 @@ public class RecipeRowCardAdapter extends RecyclerView.Adapter<RecipeRowCardAdap
         void onTrailingActionClick(RecipePreviewResponse recipe, View anchor);
     }
 
-    private final List<RecipePreviewResponse> recipes = new ArrayList<>();
     private Listener listener;
     private TrailingAction trailingAction = TrailingAction.OPTIONS_MENU;
     private boolean showVisibilityBadge = true;
 
     public void setRecipes(List<RecipePreviewResponse> newRecipes) {
-        recipes.clear();
-        recipes.addAll(newRecipes);
-        notifyDataSetChanged();
+        setItems(newRecipes);
     }
 
     public void setListener(Listener listener) {
@@ -93,7 +90,7 @@ public class RecipeRowCardAdapter extends RecyclerView.Adapter<RecipeRowCardAdap
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        RecipePreviewResponse recipe = recipes.get(position);
+        RecipePreviewResponse recipe = getItem(position);
         android.content.Context context = holder.itemView.getContext();
 
         holder.title.setText(recipe.title());
@@ -138,11 +135,6 @@ public class RecipeRowCardAdapter extends RecyclerView.Adapter<RecipeRowCardAdap
                 listener.onTrailingActionClick(recipe, v);
             }
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return recipes.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

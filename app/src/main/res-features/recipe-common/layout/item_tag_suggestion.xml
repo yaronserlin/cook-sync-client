@@ -7,27 +7,27 @@
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
-    android:minHeight="46dp"
+    android:minHeight="@dimen/dp_46"
     android:orientation="horizontal"
-    android:paddingHorizontal="14dp"
-    android:paddingVertical="10dp">
+    android:paddingHorizontal="@dimen/dp_14"
+    android:paddingVertical="@dimen/dp_10">
 
     <ImageView
         android:id="@+id/iv_tag_suggestion_icon"
-        android:layout_width="14dp"
-        android:layout_height="14dp"
+        android:layout_width="@dimen/dp_14"
+        android:layout_height="@dimen/dp_14"
         android:src="@drawable/ic_tag"
         app:tint="@color/color_accent_700" />
 
     <TextView
         android:id="@+id/tv_tag_suggestion_name"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginStart="9dp"
+        android:layout_marginStart="@dimen/dp_9"
         android:layout_weight="1"
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="@color/color_text"
-        android:textSize="13.5sp" />
+        android:textSize="@dimen/sp_13_5" />
 
 </LinearLayout>

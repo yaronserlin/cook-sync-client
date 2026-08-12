@@ -9,30 +9,30 @@
     android:id="@+id/star_chip_card"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="6dp"
+    android:layout_marginEnd="@dimen/dp_6"
     android:clickable="true"
     android:focusable="true"
     app:cardBackgroundColor="@color/color_neutral_300"
-    app:cardCornerRadius="999dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="0dp">
+    app:cardCornerRadius="@dimen/dp_999"
+    app:cardElevation="@dimen/dp_0"
+    app:strokeWidth="@dimen/dp_0">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="14dp"
-        android:paddingTop="8dp"
-        android:paddingEnd="14dp"
-        android:paddingBottom="8dp">
+        android:paddingStart="@dimen/dp_14"
+        android:paddingTop="@dimen/dp_8"
+        android:paddingEnd="@dimen/dp_14"
+        android:paddingBottom="@dimen/dp_8">
 
         <TextView
             android:id="@+id/star_chip_label"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/color_text"
-            android:textSize="12.5sp"
+            android:textSize="@dimen/sp_12_5"
             android:textStyle="bold"
             tools:text="5★" />
 
@@ -40,10 +40,10 @@
             android:id="@+id/star_chip_count"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
+            android:layout_marginStart="@dimen/dp_6"
             android:alpha="0.65"
             android:textColor="@color/color_text"
-            android:textSize="12.5sp"
+            android:textSize="@dimen/sp_12_5"
             tools:text="2" />
 
     </LinearLayout>

@@ -24,26 +24,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="28dp"
-            android:paddingEnd="28dp"
-            android:paddingTop="24dp"
-            android:paddingBottom="32dp">
+            android:paddingStart="@dimen/dp_28"
+            android:paddingEnd="@dimen/dp_28"
+            android:paddingTop="@dimen/dp_24"
+            android:paddingBottom="@dimen/dp_32">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:layout_marginBottom="32dp">
+                android:layout_marginBottom="@dimen/dp_32">
 
                 <ImageButton
                     android:id="@+id/btn_back"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="8dp"
+                    android:layout_width="@dimen/dp_40"
+                    android:layout_height="@dimen/dp_40"
+                    android:layout_marginEnd="@dimen/dp_8"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:contentDescription="@null"
-                    android:padding="8dp"
+                    android:padding="@dimen/dp_8"
                     android:src="@drawable/ic_arrow_back"
                     app:tint="@color/color_text" />
 
@@ -52,7 +52,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/register_title"
-                    android:textSize="26sp"
+                    android:textSize="@dimen/sp_26"
                     android:fontFamily="@font/caprasimo"
                     android:textColor="@color/color_text" />
 
@@ -81,7 +81,7 @@
                 style="@style/CookSync.ErrorText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/dp_16"
                 android:visibility="gone" />
 
             <TextView
@@ -107,7 +107,7 @@
                 style="@style/CookSync.ErrorText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/dp_16"
                 android:visibility="gone" />
 
             <TextView
@@ -133,7 +133,7 @@
                 style="@style/CookSync.ErrorText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/dp_16"
                 android:visibility="gone" />
 
             <TextView
@@ -158,7 +158,7 @@
                 style="@style/CookSync.ErrorText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/dp_16"
                 android:visibility="gone" />
 
             <TextView
@@ -183,7 +183,7 @@
                 style="@style/CookSync.ErrorText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginBottom="@dimen/dp_16"
                 android:visibility="gone" />
 
             <com.google.android.material.checkbox.MaterialCheckBox
@@ -192,7 +192,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/label_terms_accepted"
                 android:textColor="@color/color_text"
-                android:textSize="13sp"
+                android:textSize="@dimen/sp_13"
                 app:buttonTint="@color/color_accent" />
 
             <TextView
@@ -200,17 +200,17 @@
                 style="@style/CookSync.ErrorText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="36dp"
+                android:layout_marginStart="@dimen/dp_36"
                 android:visibility="gone" />
 
             <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/cb_marketing"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="@dimen/dp_20"
                 android:text="@string/label_marketing_opt_in"
                 android:textColor="@color/color_text"
-                android:textSize="13sp"
+                android:textSize="@dimen/sp_13"
                 app:buttonTint="@color/color_accent" />
 
             <com.google.android.material.button.MaterialButton
@@ -219,7 +219,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/action_create_account_submit"
-                android:layout_marginBottom="12dp" />
+                android:layout_marginBottom="@dimen/dp_12" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_have_account"
@@ -227,12 +227,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/action_already_have_account"
-                android:layout_marginBottom="24dp" />
+                android:layout_marginBottom="@dimen/dp_24" />
 
             <ProgressBar
                 android:id="@+id/progress"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="@dimen/dp_36"
+                android:layout_height="@dimen/dp_36"
                 android:layout_gravity="center_horizontal"
                 android:indeterminateTint="@color/color_accent"
                 android:visibility="gone" />

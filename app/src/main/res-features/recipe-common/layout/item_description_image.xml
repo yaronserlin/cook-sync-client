@@ -9,19 +9,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginTop="10dp">
+    android:layout_marginTop="@dimen/dp_10">
 
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/description_image_card"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
+        android:layout_width="@dimen/dp_0"
+        android:layout_height="@dimen/dp_0"
+        app:cardCornerRadius="@dimen/dp_16"
+        app:cardElevation="@dimen/dp_0"
         app:layout_constraintDimensionRatio="16:9"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:strokeWidth="0dp">
+        app:strokeWidth="@dimen/dp_0">
 
         <ImageView
             android:id="@+id/description_image"
@@ -34,13 +34,13 @@
 
     <TextView
         android:id="@+id/description_image_caption"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginTop="7dp"
+        android:layout_marginTop="@dimen/dp_7"
         android:alpha="0.6"
         android:lineSpacingMultiplier="1.4"
         android:textColor="@color/color_text"
-        android:textSize="12sp"
+        android:textSize="@dimen/sp_12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/description_image_card"

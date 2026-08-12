@@ -120,6 +120,8 @@ dependencies {
     implementation(libs.recyclerview)
     implementation(libs.viewpager2)
     testImplementation(libs.junit)
+    testImplementation(libs.arch.core.testing)
+    testImplementation(libs.mockito.core)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(libs.ext.junit)
 

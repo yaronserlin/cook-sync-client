@@ -14,28 +14,28 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="8dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="8dp">
+        android:paddingStart="@dimen/dp_8"
+        android:paddingEnd="@dimen/dp_20"
+        android:paddingTop="@dimen/dp_8">
 
         <ImageButton
             android:id="@+id/btn_back"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_40"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@null"
-            android:padding="8dp"
+            android:padding="@dimen/dp_8"
             android:src="@drawable/ic_arrow_back"
             app:tint="@color/color_text" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="@dimen/dp_4"
             android:fontFamily="@font/caprasimo"
             android:text="@string/cooking_preferences_title"
             android:textColor="@color/color_text"
-            android:textSize="18sp" />
+            android:textSize="@dimen/sp_18" />
 
     </LinearLayout>
 
@@ -43,26 +43,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/dp_16">
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardBackgroundColor="@color/color_surface"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            app:cardCornerRadius="@dimen/dp_18"
+            app:cardElevation="@dimen/dp_0"
+            app:strokeWidth="@dimen/dp_0">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="16dp">
+                android:paddingHorizontal="@dimen/dp_16"
+                android:paddingVertical="@dimen/dp_16">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/dp_0"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical">
@@ -72,17 +72,17 @@
                         android:layout_height="wrap_content"
                         android:text="@string/cooking_preferences_screen_awake_label"
                         android:textColor="@color/color_text"
-                        android:textSize="14.5sp"
+                        android:textSize="@dimen/sp_14_5"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginTop="@dimen/dp_2"
                         android:alpha="0.6"
                         android:text="@string/cooking_preferences_screen_awake_sub"
                         android:textColor="@color/color_text"
-                        android:textSize="12sp" />
+                        android:textSize="@dimen/sp_12" />
 
                 </LinearLayout>
 
@@ -90,7 +90,7 @@
                     android:id="@+id/switch_screen_awake"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="@dimen/dp_12"
                     app:showText="false" />
 
             </LinearLayout>
@@ -100,22 +100,22 @@
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             app:cardBackgroundColor="@color/color_surface"
-            app:cardCornerRadius="18dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp">
+            app:cardCornerRadius="@dimen/dp_18"
+            app:cardElevation="@dimen/dp_0"
+            app:strokeWidth="@dimen/dp_0">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="16dp"
-                android:paddingVertical="16dp">
+                android:paddingHorizontal="@dimen/dp_16"
+                android:paddingVertical="@dimen/dp_16">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/dp_0"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical">
@@ -125,17 +125,17 @@
                         android:layout_height="wrap_content"
                         android:text="@string/cooking_preferences_timer_sound_label"
                         android:textColor="@color/color_text"
-                        android:textSize="14.5sp"
+                        android:textSize="@dimen/sp_14_5"
                         android:textStyle="bold" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginTop="@dimen/dp_2"
                         android:alpha="0.6"
                         android:text="@string/cooking_preferences_timer_sound_sub"
                         android:textColor="@color/color_text"
-                        android:textSize="12sp" />
+                        android:textSize="@dimen/sp_12" />
 
                 </LinearLayout>
 
@@ -143,7 +143,7 @@
                     android:id="@+id/switch_timer_sound"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="@dimen/dp_12"
                     app:showText="false" />
 
             </LinearLayout>

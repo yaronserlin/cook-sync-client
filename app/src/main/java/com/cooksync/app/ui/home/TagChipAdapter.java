@@ -14,6 +14,7 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.tags.TagResponse;
 import com.google.android.material.card.MaterialCardView;
 
@@ -33,9 +34,8 @@ import java.util.Set;
  * @version 1.2
  * @since 04/08/2026
  */
-public class TagChipAdapter extends RecyclerView.Adapter<TagChipAdapter.ViewHolder> {
+public class TagChipAdapter extends BaseAdapter<TagResponse, TagChipAdapter.ViewHolder> {
 
-    private final List<TagResponse> tags = new ArrayList<>();
     private final boolean includeAllOption;
     private final Set<String> selectedTagNames = new HashSet<>();
     private OnTagClickListener listener;
@@ -67,12 +67,12 @@ public class TagChipAdapter extends RecyclerView.Adapter<TagChipAdapter.ViewHold
     }
 
     public void setTags(List<TagResponse> newTags) {
-        tags.clear();
+        List<TagResponse> combined = new ArrayList<>();
         if (includeAllOption) {
-            tags.add(new TagResponse(null, null, null, null)); // name is null, will be handled in onBindViewHolder
+            combined.add(new TagResponse(null, null, null, null)); // name is null, will be handled in onBindViewHolder
         }
-        tags.addAll(newTags);
-        notifyDataSetChanged();
+        combined.addAll(newTags);
+        setItems(combined);
     }
 
     /**
@@ -98,7 +98,7 @@ public class TagChipAdapter extends RecyclerView.Adapter<TagChipAdapter.ViewHold
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        TagResponse tag = tags.get(position);
+        TagResponse tag = getItem(position);
         boolean isAllOption = tag.id() == null;
 
         if (isAllOption) {
@@ -124,11 +124,6 @@ public class TagChipAdapter extends RecyclerView.Adapter<TagChipAdapter.ViewHold
                 listener.onTagClick(tag.id() == null ? null : tag.name());
             }
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return tags.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

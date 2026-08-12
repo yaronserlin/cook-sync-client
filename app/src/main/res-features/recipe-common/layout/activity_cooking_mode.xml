@@ -11,8 +11,8 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="12dp">
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingTop="@dimen/dp_12">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_exit"
@@ -21,17 +21,17 @@
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
+            android:insetTop="@dimen/dp_0"
+            android:insetBottom="@dimen/dp_0"
+            android:minWidth="@dimen/dp_0"
+            android:minHeight="@dimen/dp_0"
             android:text="@string/action_exit"
             android:textAllCaps="false"
             android:textColor="@color/color_accent_200"
-            android:textSize="13sp"
+            android:textSize="@dimen/sp_13"
             app:icon="@drawable/ic_close"
             app:iconGravity="textStart"
-            app:iconSize="16dp"
+            app:iconSize="@dimen/dp_16"
             app:iconTint="@color/color_accent_200" />
 
         <TextView
@@ -41,12 +41,12 @@
             android:layout_centerInParent="true"
             android:fontFamily="@font/caprasimo"
             android:textColor="@color/color_accent_100"
-            android:textSize="16sp"
+            android:textSize="@dimen/sp_16"
             tools:text="Shakshuka with feta" />
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="@dimen/dp_24"
+            android:layout_height="@dimen/dp_24"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:contentDescription="@null"
@@ -58,18 +58,18 @@
     <LinearLayout
         android:id="@+id/ll_progress_bars"
         android:layout_width="match_parent"
-        android:layout_height="5dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginHorizontal="16dp"
+        android:layout_height="@dimen/dp_5"
+        android:layout_marginTop="@dimen/dp_16"
+        android:layout_marginHorizontal="@dimen/dp_16"
         android:orientation="horizontal" />
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingHorizontal="16dp"
-        android:paddingTop="20dp">
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingTop="@dimen/dp_20">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -82,7 +82,7 @@
                 android:layout_height="wrap_content"
                 android:letterSpacing="0.16"
                 android:textColor="@color/color_accent_300"
-                android:textSize="12sp"
+                android:textSize="@dimen/sp_12"
                 android:textStyle="bold"
                 tools:text="STEP 1 OF 5" />
 
@@ -90,31 +90,31 @@
                 android:id="@+id/tv_step_text"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="@dimen/dp_14"
                 android:fontFamily="@font/figtree"
                 android:lineSpacingMultiplier="1.3"
                 android:textColor="@color/color_accent_100"
-                android:textSize="34sp"
+                android:textSize="@dimen/sp_34"
                 tools:text="Whisk the cornflour into a little cold milk until smooth." />
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/step_image_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/dp_16"
                 android:visibility="gone"
                 tools:visibility="visible">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
+                    android:layout_width="@dimen/dp_0"
+                    android:layout_height="@dimen/dp_0"
+                    app:cardCornerRadius="@dimen/dp_16"
+                    app:cardElevation="@dimen/dp_0"
                     app:layout_constraintDimensionRatio="16:9"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:strokeWidth="0dp">
+                    app:strokeWidth="@dimen/dp_0">
 
                     <ImageView
                         android:id="@+id/step_image"
@@ -131,10 +131,10 @@
                 android:id="@+id/uses_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="@dimen/dp_18"
                 android:background="@drawable/bg_uses_card"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="@dimen/dp_16">
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -142,16 +142,16 @@
                     android:letterSpacing="0.1"
                     android:text="@string/cook_this_step_uses"
                     android:textColor="@color/color_accent_300"
-                    android:textSize="11.5sp"
+                    android:textSize="@dimen/sp_11_5"
                     android:textStyle="bold" />
 
                 <com.google.android.material.chip.ChipGroup
                     android:id="@+id/cg_uses"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    app:chipSpacingHorizontal="8dp"
-                    app:chipSpacingVertical="8dp" />
+                    android:layout_marginTop="@dimen/dp_10"
+                    app:chipSpacingHorizontal="@dimen/dp_8"
+                    app:chipSpacingVertical="@dimen/dp_8" />
 
             </LinearLayout>
 
@@ -159,40 +159,42 @@
                 android:id="@+id/tv_step_note"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="@dimen/dp_14"
                 android:background="@drawable/bg_note_dashed"
                 android:lineSpacingMultiplier="1.3"
-                android:padding="14dp"
+                android:padding="@dimen/dp_14"
                 android:textColor="@color/color_accent_2_300"
-                android:textSize="14sp"
+                android:textSize="@dimen/sp_14"
                 android:visibility="gone"
                 tools:text="My note — only 10 minutes on my stove." />
 
-            <LinearLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/timer_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:layout_marginBottom="16dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/dp_20"
+                android:layout_marginBottom="@dimen/dp_16"
                 android:visibility="gone">
 
                 <FrameLayout
-                    android:layout_width="120dp"
-                    android:layout_height="120dp">
+                    android:id="@+id/timer_ring_frame"
+                    android:layout_width="@dimen/dp_120"
+                    android:layout_height="@dimen/dp_120"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <com.google.android.material.progressindicator.CircularProgressIndicator
                         android:id="@+id/timer_ring"
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
+                        android:layout_width="@dimen/dp_120"
+                        android:layout_height="@dimen/dp_120"
                         android:indeterminate="false"
                         android:max="1000"
                         app:indicatorColor="@color/color_accent_400"
-                        app:indicatorSize="112dp"
+                        app:indicatorSize="@dimen/dp_112"
                         app:trackColor="@color/color_accent_800"
-                        app:trackCornerRadius="4dp"
-                        app:trackThickness="6dp" />
+                        app:trackCornerRadius="@dimen/dp_4"
+                        app:trackThickness="@dimen/dp_6" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
@@ -205,14 +207,14 @@
                             android:id="@+id/tv_timer_clock"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:maxWidth="84dp"
+                            android:maxWidth="@dimen/dp_84"
                             android:maxLines="1"
                             android:fontFamily="@font/caprasimo"
                             android:textColor="@color/color_accent_100"
                             android:autoSizeTextType="uniform"
-                            android:autoSizeMinTextSize="14sp"
-                            android:autoSizeMaxTextSize="27sp"
-                            android:autoSizeStepGranularity="1sp"
+                            android:autoSizeMinTextSize="@dimen/sp_14"
+                            android:autoSizeMaxTextSize="@dimen/sp_27"
+                            android:autoSizeStepGranularity="@dimen/sp_1"
                             tools:text="08:00" />
 
                         <TextView
@@ -221,61 +223,64 @@
                             android:letterSpacing="0.1"
                             android:text="@string/cook_remaining"
                             android:textColor="@color/color_accent_300"
-                            android:textSize="10.5sp"
+                            android:textSize="@dimen/sp_10_5"
                             android:textStyle="bold" />
 
                     </LinearLayout>
 
                     <ImageView
                         android:id="@+id/btn_timer_edit"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="@dimen/dp_30"
+                        android:layout_height="@dimen/dp_30"
                         android:layout_gravity="bottom|end"
                         android:background="@drawable/bg_uses_card"
                         android:contentDescription="@string/cook_edit_timer_description"
-                        android:padding="6dp"
+                        android:padding="@dimen/dp_6"
                         android:src="@drawable/ic_edit"
                         app:tint="@color/color_accent_100" />
 
                 </FrameLayout>
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/dp_0"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:layout_weight="1"
-                    android:orientation="vertical">
+                    android:layout_marginStart="@dimen/dp_16"
+                    android:orientation="vertical"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@id/timer_ring_frame"
+                    app:layout_constraintTop_toTopOf="parent">
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_timer_toggle"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
+                        android:layout_height="@dimen/dp_48"
+                        android:insetTop="@dimen/dp_0"
+                        android:insetBottom="@dimen/dp_0"
                         android:text="@string/timer_pause"
                         android:textAllCaps="false"
                         android:textColor="@color/color_accent_100"
                         app:backgroundTint="@color/color_accent_800"
-                        app:cornerRadius="12dp"
+                        app:cornerRadius="@dimen/dp_12"
                         app:icon="@drawable/ic_pause"
                         app:iconTint="@color/color_accent_100" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_timer_add"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="8dp"
-                        android:insetTop="0dp"
-                        android:insetBottom="0dp"
+                        android:layout_height="@dimen/dp_48"
+                        android:layout_marginTop="@dimen/dp_8"
+                        android:insetTop="@dimen/dp_0"
+                        android:insetBottom="@dimen/dp_0"
                         android:text="@string/cook_timer_add_minute"
                         android:textAllCaps="false"
                         android:textColor="@color/color_accent_100"
                         app:backgroundTint="@color/color_accent_800"
-                        app:cornerRadius="12dp" />
+                        app:cornerRadius="@dimen/dp_12" />
 
                 </LinearLayout>
 
-            </LinearLayout>
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </LinearLayout>
 
@@ -284,37 +289,37 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/dp_12"
         android:orientation="horizontal"
-        android:padding="16dp">
+        android:padding="@dimen/dp_16">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_prev"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
+            android:insetTop="@dimen/dp_0"
+            android:insetBottom="@dimen/dp_0"
             android:text="@string/action_prev"
             android:textAllCaps="false"
             android:textColor="@color/color_accent_100"
             app:backgroundTint="@color/color_accent_800"
-            app:cornerRadius="16dp"
+            app:cornerRadius="@dimen/dp_16"
             app:icon="@drawable/ic_arrow_back"
             app:iconTint="@color/color_accent_100" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_primary_action"
-            android:layout_width="0dp"
-            android:layout_height="58dp"
-            android:layout_marginStart="12dp"
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="@dimen/dp_58"
+            android:layout_marginStart="@dimen/dp_12"
             android:layout_weight="1"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
+            android:insetTop="@dimen/dp_0"
+            android:insetBottom="@dimen/dp_0"
             android:text="@string/cook_next_action"
             android:textAllCaps="false"
-            android:textSize="17sp"
+            android:textSize="@dimen/sp_17"
             app:backgroundTint="@color/color_accent"
-            app:cornerRadius="16dp"
+            app:cornerRadius="@dimen/dp_16"
             app:icon="@drawable/ic_arrow_forward"
             app:iconGravity="end"
             app:iconTint="@color/color_bg" />

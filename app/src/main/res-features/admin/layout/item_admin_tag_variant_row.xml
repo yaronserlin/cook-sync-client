@@ -5,15 +5,15 @@
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingVertical="7dp">
+    android:paddingVertical="@dimen/dp_7">
 
     <TextView
         android:id="@+id/tv_variant_name"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textColor="@color/color_text"
-        android:textSize="13sp"
+        android:textSize="@dimen/sp_13"
         tools:text="Vegan " />
 
     <TextView
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:alpha="0.55"
         android:textColor="@color/color_text"
-        android:textSize="11.5sp"
+        android:textSize="@dimen/sp_11_5"
         tools:text="96 recipes" />
 
 </LinearLayout>

@@ -15,35 +15,35 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="8dp"
-        android:paddingEnd="20dp"
-        android:paddingTop="8dp">
+        android:paddingStart="@dimen/dp_8"
+        android:paddingEnd="@dimen/dp_20"
+        android:paddingTop="@dimen/dp_8">
 
         <ImageButton
             android:id="@+id/btn_back"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_40"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@null"
-            android:padding="8dp"
+            android:padding="@dimen/dp_8"
             android:src="@drawable/ic_arrow_back"
             app:tint="@color/color_text" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
+            android:layout_marginStart="@dimen/dp_4"
             android:fontFamily="@font/caprasimo"
             android:text="@string/account_details_title"
             android:textColor="@color/color_text"
-            android:textSize="18sp" />
+            android:textSize="@dimen/sp_18" />
 
     </LinearLayout>
 
     <!-- ── Form ──────────────────────────────────────────────────────────── -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:clipToPadding="false">
 
@@ -51,9 +51,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="24dp">
+            android:paddingHorizontal="@dimen/dp_16"
+            android:paddingTop="@dimen/dp_12"
+            android:paddingBottom="@dimen/dp_24">
 
             <!-- Avatar -->
             <FrameLayout
@@ -63,45 +63,45 @@
 
                 <ImageView
                     android:id="@+id/iv_avatar"
-                    android:layout_width="88dp"
-                    android:layout_height="88dp"
+                    android:layout_width="@dimen/dp_88"
+                    android:layout_height="@dimen/dp_88"
                     android:background="@drawable/bg_avatar_circle"
                     android:contentDescription="@string/settings_avatar_content_description"
                     android:scaleType="centerCrop" />
 
                 <TextView
                     android:id="@+id/tv_avatar_initials"
-                    android:layout_width="88dp"
-                    android:layout_height="88dp"
+                    android:layout_width="@dimen/dp_88"
+                    android:layout_height="@dimen/dp_88"
                     android:layout_gravity="center"
                     android:fontFamily="@font/caprasimo"
                     android:gravity="center"
                     android:textColor="@color/color_accent_800"
-                    android:textSize="26sp"
+                    android:textSize="@dimen/sp_26"
                     tools:text="YS" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_edit_avatar"
                     style="@style/Widget.MaterialComponents.Button.TextButton"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="@dimen/dp_32"
+                    android:layout_height="@dimen/dp_32"
                     android:layout_gravity="bottom|end"
                     android:background="@drawable/bg_white_circle"
-                    android:insetTop="0dp"
-                    android:insetBottom="0dp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:padding="0dp"
+                    android:insetTop="@dimen/dp_0"
+                    android:insetBottom="@dimen/dp_0"
+                    android:minWidth="@dimen/dp_0"
+                    android:minHeight="@dimen/dp_0"
+                    android:padding="@dimen/dp_0"
                     app:icon="@drawable/ic_edit"
                     app:iconGravity="textStart"
-                    app:iconPadding="0dp"
-                    app:iconSize="15dp"
+                    app:iconPadding="@dimen/dp_0"
+                    app:iconSize="@dimen/dp_15"
                     app:iconTint="@color/color_accent" />
 
                 <ProgressBar
                     android:id="@+id/avatar_progress"
-                    android:layout_width="88dp"
-                    android:layout_height="88dp"
+                    android:layout_width="@dimen/dp_88"
+                    android:layout_height="@dimen/dp_88"
                     android:layout_gravity="center"
                     android:visibility="gone"
                     tools:visibility="visible" />
@@ -113,7 +113,7 @@
                 style="@style/CookSync.Button.Secondary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/dp_16"
                 android:text="@string/account_details_upload_photo" />
 
             <com.google.android.material.button.MaterialButton
@@ -127,11 +127,11 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/dp_12"
                 android:orientation="horizontal">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/dp_0"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:orientation="vertical">
@@ -152,9 +152,9 @@
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/dp_0"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
+                    android:layout_marginStart="@dimen/dp_12"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -180,7 +180,7 @@
                 style="@style/CookSync.FieldLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="@dimen/dp_14"
                 android:text="@string/label_email" />
 
             <EditText
@@ -193,18 +193,18 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/dp_4"
                 android:alpha="0.6"
                 android:text="@string/account_details_email_helper"
                 android:textColor="@color/color_text"
-                android:textSize="12sp" />
+                android:textSize="@dimen/sp_12" />
 
             <!-- City -->
             <TextView
                 style="@style/CookSync.FieldLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="@dimen/dp_14"
                 android:text="@string/label_city" />
 
             <EditText
@@ -219,7 +219,7 @@
                 style="@style/CookSync.FieldLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="@dimen/dp_14"
                 android:text="@string/label_bio" />
 
             <EditText
@@ -229,8 +229,8 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_multiline"
                 android:gravity="top|start"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
+                android:paddingTop="@dimen/dp_12"
+                android:paddingBottom="@dimen/dp_12"
                 android:inputType="textMultiLine"
                 android:minLines="3" />
 
@@ -238,17 +238,17 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="@dimen/dp_24"
                 android:text="@string/account_details_password_section"
                 android:textColor="@color/color_text"
-                android:textSize="15sp"
+                android:textSize="@dimen/sp_15"
                 android:textStyle="bold" />
 
             <TextView
                 style="@style/CookSync.FieldLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/dp_12"
                 android:text="@string/label_current_password" />
 
             <com.cooksync.app.ui.common.PasswordEditText
@@ -261,7 +261,7 @@
                 style="@style/CookSync.FieldLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="@dimen/dp_14"
                 android:text="@string/label_new_password" />
 
             <com.cooksync.app.ui.common.PasswordEditText
@@ -274,7 +274,7 @@
                 style="@style/CookSync.FieldLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="@dimen/dp_14"
                 android:text="@string/label_repeat_new_password" />
 
             <com.cooksync.app.ui.common.PasswordEditText
@@ -287,30 +287,30 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="@dimen/dp_24"
                 android:text="@string/account_details_privacy_section"
                 android:textColor="@color/color_text"
-                android:textSize="15sp"
+                android:textSize="@dimen/sp_15"
                 android:textStyle="bold" />
 
             <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/cb_show_recipes_publicly"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="@dimen/dp_10"
                 android:text="@string/account_details_privacy_recipes"
                 android:textColor="@color/color_text"
-                android:textSize="13.5sp"
+                android:textSize="@dimen/sp_13_5"
                 app:buttonTint="@color/color_accent" />
 
             <com.google.android.material.checkbox.MaterialCheckBox
                 android:id="@+id/cb_show_favorites_publicly"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
+                android:layout_marginTop="@dimen/dp_6"
                 android:text="@string/account_details_privacy_favorites"
                 android:textColor="@color/color_text"
-                android:textSize="13.5sp"
+                android:textSize="@dimen/sp_13_5"
                 app:buttonTint="@color/color_accent" />
 
             <!-- Delete account -->
@@ -319,7 +319,7 @@
                 style="@style/CookSync.Button.Ghost"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="@dimen/dp_24"
                 android:text="@string/account_details_delete_account"
                 android:textColor="@color/color_accent_700" />
 
@@ -333,15 +333,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/color_surface"
-        android:elevation="8dp"
+        android:elevation="@dimen/dp_8"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp">
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingVertical="@dimen/dp_12">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_cancel"
             style="@style/CookSync.Button.Secondary"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/action_cancel" />
@@ -349,9 +349,9 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_save"
             style="@style/CookSync.Button.Primary"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/dp_12"
             android:layout_weight="1"
             android:text="@string/account_details_save" />
 

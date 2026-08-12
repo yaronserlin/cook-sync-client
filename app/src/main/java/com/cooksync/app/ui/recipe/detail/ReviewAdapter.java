@@ -15,13 +15,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.ui.common.AvatarView;
 import com.dtos.response.review.ReviewResponse;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -31,7 +31,7 @@ import java.util.List;
  * @version 1.1
  * @since 04/08/2026
  */
-public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder> {
+public class ReviewAdapter extends BaseAdapter<ReviewResponse, ReviewAdapter.ViewHolder> {
 
     /** Notified when the viewer chooses an action from a review's overflow menu. */
     public interface OnReviewActionListener {
@@ -54,15 +54,12 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         void onAvatarClick(String avatarUrl);
     }
 
-    private final List<ReviewResponse> reviews = new ArrayList<>();
     private String currentUserId;
     private OnReviewActionListener actionListener;
     private OnAvatarClickListener avatarClickListener;
 
     public void setReviews(List<ReviewResponse> newReviews) {
-        reviews.clear();
-        reviews.addAll(newReviews);
-        notifyDataSetChanged();
+        setItems(newReviews);
     }
 
     /**
@@ -92,7 +89,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ReviewResponse review = reviews.get(position);
+        ReviewResponse review = getItem(position);
 
         String author = review.authorName();
         holder.authorName.setText(author);
@@ -108,6 +105,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         holder.authorName.setOnClickListener(openProfile);
 
         holder.rating.setText(review.rating() != null ? review.rating().toString() : "0.0");
+        holder.title.setText(review.title());
         holder.content.setText(review.comment());
         holder.date.setText(formatRelativeDate(review.createdAt()));
 
@@ -164,16 +162,12 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
         }
     }
 
-    @Override
-    public int getItemCount() {
-        return reviews.size();
-    }
-
     static class ViewHolder extends RecyclerView.ViewHolder {
         AvatarView avatar;
         TextView authorName;
         TextView date;
         TextView rating;
+        TextView title;
         TextView content;
         ImageButton overflow;
 
@@ -183,6 +177,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ViewHolder
             authorName = view.findViewById(R.id.review_author_name);
             date = view.findViewById(R.id.review_date);
             rating = view.findViewById(R.id.review_rating);
+            title = view.findViewById(R.id.review_title);
             content = view.findViewById(R.id.review_content);
             overflow = view.findViewById(R.id.btn_review_overflow);
         }

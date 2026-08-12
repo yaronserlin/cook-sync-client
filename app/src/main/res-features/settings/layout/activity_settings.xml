@@ -12,14 +12,14 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="88dp">
+        android:paddingBottom="@dimen/dp_88">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="16dp"
-            android:paddingTop="20dp">
+            android:paddingHorizontal="@dimen/dp_16"
+            android:paddingTop="@dimen/dp_20">
 
             <TextView
                 style="@style/CookSync.Heading.H2"
@@ -32,33 +32,33 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="20dp">
+                android:layout_marginTop="@dimen/dp_20">
 
                 <ImageView
                     android:id="@+id/iv_avatar"
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
+                    android:layout_width="@dimen/dp_96"
+                    android:layout_height="@dimen/dp_96"
                     android:background="@drawable/bg_avatar_circle"
                     android:contentDescription="@string/settings_avatar_content_description"
                     android:scaleType="centerCrop" />
 
                 <TextView
                     android:id="@+id/tv_avatar_initials"
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
+                    android:layout_width="@dimen/dp_96"
+                    android:layout_height="@dimen/dp_96"
                     android:layout_gravity="center"
                     android:fontFamily="@font/caprasimo"
                     android:gravity="center"
                     android:textColor="@color/color_accent_800"
-                    android:textSize="28sp"
+                    android:textSize="@dimen/sp_28"
                     tools:text="YS" />
 
 
 
                 <ProgressBar
                     android:id="@+id/avatar_progress"
-                    android:layout_width="96dp"
-                    android:layout_height="96dp"
+                    android:layout_width="@dimen/dp_96"
+                    android:layout_height="@dimen/dp_96"
                     android:layout_gravity="center"
                     android:visibility="gone"
                     tools:visibility="visible" />
@@ -70,10 +70,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="@dimen/dp_12"
                 android:fontFamily="@font/caprasimo"
                 android:textColor="@color/color_text"
-                android:textSize="18sp"
+                android:textSize="@dimen/sp_18"
                 tools:text="Yaron Serlin" />
 
             <TextView
@@ -81,17 +81,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/dp_4"
                 android:alpha="0.6"
                 android:textColor="@color/color_text"
-                android:textSize="13.5sp"
+                android:textSize="@dimen/sp_13_5"
                 tools:text="yaron@example.com" />
 
             <!-- ── Settings rows ─────────────────────────────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="@dimen/dp_24"
                 android:orientation="vertical">
 
                 <include
@@ -105,28 +105,28 @@
                     layout="@layout/item_settings_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp" />
+                    android:layout_marginTop="@dimen/dp_8" />
 
                 <include
                     android:id="@+id/row_cooking_preferences"
                     layout="@layout/item_settings_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp" />
+                    android:layout_marginTop="@dimen/dp_8" />
 
                 <include
                     android:id="@+id/row_account_details"
                     layout="@layout/item_settings_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp" />
+                    android:layout_marginTop="@dimen/dp_8" />
 
                 <include
                     android:id="@+id/row_admin_console"
                     layout="@layout/item_settings_row"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="@dimen/dp_8"
                     android:visibility="gone"
                     tools:visibility="visible" />
 
@@ -138,7 +138,7 @@
                 style="@style/CookSync.Button.Secondary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="@dimen/dp_24"
                 android:text="@string/settings_action_logout" />
 
             <TextView
@@ -146,10 +146,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/dp_16"
                 android:gravity="center"
                 android:textColor="@color/color_text"
-                android:textSize="12sp"
+                android:textSize="@dimen/sp_12"
                 tools:text="Terms of Use · Privacy Policy" />
 
         </LinearLayout>
@@ -171,8 +171,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="88dp"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:layout_marginBottom="@dimen/dp_88"
         android:contentDescription="@string/wizard_title"
         android:src="@drawable/ic_add" />
 

@@ -8,12 +8,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="16dp"
-    android:layout_marginBottom="12dp"
+    android:layout_marginHorizontal="@dimen/dp_16"
+    android:layout_marginBottom="@dimen/dp_12"
     app:cardBackgroundColor="@color/color_surface"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="0dp">
+    app:cardCornerRadius="@dimen/dp_20"
+    app:cardElevation="@dimen/dp_0"
+    app:strokeWidth="@dimen/dp_0">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -25,14 +25,14 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="12dp">
+            android:padding="@dimen/dp_12">
 
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                android:layout_width="@dimen/dp_72"
+                android:layout_height="@dimen/dp_72"
+                app:cardCornerRadius="@dimen/dp_14"
+                app:cardElevation="@dimen/dp_0"
+                app:strokeWidth="@dimen/dp_0">
 
                 <ImageView
                     android:id="@+id/recipe_image"
@@ -44,9 +44,9 @@
             </com.google.android.material.card.MaterialCardView>
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:layout_width="@dimen/dp_0"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="@dimen/dp_12"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -58,31 +58,31 @@
                     android:fontFamily="@font/caprasimo"
                     android:maxLines="1"
                     android:textColor="@color/color_text"
-                    android:textSize="17sp"
+                    android:textSize="@dimen/sp_17"
                     tools:text="Shakshuka with feta" />
 
                 <TextView
                     android:id="@+id/recipe_subtitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="@dimen/dp_2"
                     android:alpha="0.65"
                     android:ellipsize="end"
                     android:maxLines="1"
                     android:textColor="@color/color_text"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/sp_12"
                     tools:text="6 reviews" />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/dp_6"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
                     <ImageView
-                        android:layout_width="13dp"
-                        android:layout_height="13dp"
+                        android:layout_width="@dimen/dp_13"
+                        android:layout_height="@dimen/dp_13"
                         android:src="@drawable/ic_star"
                         app:tint="@color/color_accent_700" />
 
@@ -90,10 +90,10 @@
                         android:id="@+id/rating_text"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="4dp"
-                        android:layout_marginEnd="10dp"
+                        android:layout_marginStart="@dimen/dp_4"
+                        android:layout_marginEnd="@dimen/dp_10"
                         android:textColor="@color/color_accent_700"
-                        android:textSize="12sp"
+                        android:textSize="@dimen/sp_12"
                         android:textStyle="bold"
                         tools:text="3.8" />
 
@@ -102,10 +102,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:background="@drawable/bg_tag_public"
-                        android:paddingHorizontal="9dp"
-                        android:paddingVertical="3dp"
+                        android:paddingHorizontal="@dimen/dp_9"
+                        android:paddingVertical="@dimen/dp_3"
                         android:textColor="@color/color_accent_2_800"
-                        android:textSize="10.5sp"
+                        android:textSize="@dimen/sp_10_5"
                         android:textStyle="bold"
                         android:visibility="gone"
                         tools:text="Public"
@@ -117,8 +117,8 @@
 
             <ImageButton
                 android:id="@+id/btn_trailing_action"
-                android:layout_width="34dp"
-                android:layout_height="34dp"
+                android:layout_width="@dimen/dp_34"
+                android:layout_height="@dimen/dp_34"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/recipe_options_description"
                 android:scaleType="centerInside"
@@ -134,11 +134,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_note_strip"
-            android:drawablePadding="7dp"
+            android:drawablePadding="@dimen/dp_7"
             android:lineSpacingMultiplier="1.35"
-            android:padding="12dp"
+            android:padding="@dimen/dp_12"
             android:textColor="@color/color_accent_2_800"
-            android:textSize="12.5sp"
+            android:textSize="@dimen/sp_12_5"
             android:visibility="gone"
             app:drawableStartCompat="@drawable/ic_edit"
             app:drawableTint="@color/color_accent_2_800"

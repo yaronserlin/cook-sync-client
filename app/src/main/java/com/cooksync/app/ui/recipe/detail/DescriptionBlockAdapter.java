@@ -21,9 +21,9 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.recipe.DescriptionBlockDTO;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,7 +37,7 @@ import java.util.List;
  * @version 2.0
  * @since 04/08/2026
  */
-public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class DescriptionBlockAdapter extends BaseAdapter<DescriptionBlockDTO, RecyclerView.ViewHolder> {
 
     /** Notified when the viewer taps a description image block to view it full-screen. */
     public interface OnImageClickListener {
@@ -52,7 +52,6 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
     private static final int VIEW_TYPE_TEXT = 0;
     private static final int VIEW_TYPE_IMAGE = 1;
 
-    private final List<DescriptionBlockDTO> blocks = new ArrayList<>();
     private OnImageClickListener imageClickListener;
 
     /**
@@ -62,11 +61,7 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
      * @param descriptionBlocks the recipe's ordered description blocks
      */
     public void setBlocks(List<DescriptionBlockDTO> descriptionBlocks) {
-        blocks.clear();
-        if (descriptionBlocks != null) {
-            blocks.addAll(descriptionBlocks);
-        }
-        notifyDataSetChanged();
+        setItems(descriptionBlocks);
     }
 
     public void setOnImageClickListener(OnImageClickListener listener) {
@@ -75,7 +70,7 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     @Override
     public int getItemViewType(int position) {
-        return TYPE_IMAGE.equalsIgnoreCase(blocks.get(position).type()) ? VIEW_TYPE_IMAGE : VIEW_TYPE_TEXT;
+        return TYPE_IMAGE.equalsIgnoreCase(getItem(position).type()) ? VIEW_TYPE_IMAGE : VIEW_TYPE_TEXT;
     }
 
     @NonNull
@@ -93,7 +88,7 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
-        DescriptionBlockDTO block = blocks.get(position);
+        DescriptionBlockDTO block = getItem(position);
         if (holder instanceof ImageViewHolder imageHolder) {
             // Stays hidden until the load actually succeeds, rather than showing a placeholder
             // tile, so a slow or failed fetch never renders as a gray box or broken image.
@@ -119,11 +114,6 @@ public class DescriptionBlockAdapter extends RecyclerView.Adapter<RecyclerView.V
         } else if (holder instanceof TextViewHolder textHolder) {
             textHolder.text.setText(block.text());
         }
-    }
-
-    @Override
-    public int getItemCount() {
-        return blocks.size();
     }
 
     static class ImageViewHolder extends RecyclerView.ViewHolder {

@@ -11,28 +11,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingBottom="24dp">
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingBottom="@dimen/dp_24">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:letterSpacing="0.12"
             android:text="@string/wizard_step1_of4"
             android:textColor="@color/color_accent_2_700"
-            android:textSize="11sp"
+            android:textSize="@dimen/sp_11"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginTop="@dimen/dp_4"
+            android:layout_marginBottom="@dimen/dp_16"
             android:fontFamily="@font/caprasimo"
             android:text="@string/wizard_step1_heading"
             android:textColor="@color/color_text"
-            android:textSize="26sp" />
+            android:textSize="@dimen/sp_26" />
 
         <TextView
             style="@style/CookSync.FieldLabel"
@@ -42,16 +42,16 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="190dp">
+            android:layout_height="@dimen/dp_190">
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/card_cover_preview"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:visibility="gone"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp"
+                app:cardCornerRadius="@dimen/dp_20"
+                app:cardElevation="@dimen/dp_0"
+                app:strokeWidth="@dimen/dp_0"
                 tools:visibility="visible">
 
                 <ImageView
@@ -75,19 +75,19 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
+                    android:layout_width="@dimen/dp_26"
+                    android:layout_height="@dimen/dp_26"
                     android:src="@drawable/ic_add"
                     app:tint="@color/color_text" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="@dimen/dp_6"
                     android:alpha="0.7"
                     android:text="@string/wizard_action_add_cover_photo"
                     android:textColor="@color/color_text"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/sp_13"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -98,7 +98,7 @@
             style="@style/CookSync.FieldLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/dp_16"
             android:text="@string/wizard_basics_title_label" />
 
         <EditText
@@ -114,16 +114,16 @@
             style="@style/CookSync.FieldLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/dp_16"
             android:text="@string/wizard_basics_description_label" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="@dimen/dp_8"
             android:alpha="0.6"
             android:textColor="@color/color_text"
-            android:textSize="12sp"
+            android:textSize="@dimen/sp_12"
             android:text="@string/wizard_basics_description_helper" />
 
         <androidx.recyclerview.widget.RecyclerView
@@ -132,8 +132,8 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_input_multiline"
             android:nestedScrollingEnabled="false"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="10dp"
+            android:paddingHorizontal="@dimen/dp_12"
+            android:paddingVertical="@dimen/dp_10"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="1"
             tools:listitem="@layout/item_wizard_description_block" />
@@ -143,25 +143,29 @@
             style="@style/CookSync.Button.Ghost"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:minWidth="0dp"
-            android:paddingHorizontal="0dp"
+            android:layout_marginTop="@dimen/dp_4"
+            android:minWidth="@dimen/dp_0"
+            android:paddingHorizontal="@dimen/dp_0"
             android:text="@string/wizard_action_add_description_photo"
             app:icon="@drawable/ic_add"
             app:iconGravity="textStart"
-            app:iconSize="16dp" />
+            app:iconSize="@dimen/dp_16" />
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="@dimen/dp_16">
 
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/wizard_prep_field"
+                android:layout_width="@dimen/dp_0"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                app:layout_constraintEnd_toStartOf="@id/wizard_cook_field"
+                app:layout_constraintHorizontal_chainStyle="spread"
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
                     style="@style/CookSync.FieldLabel"
@@ -184,15 +188,16 @@
 
             </LinearLayout>
 
-            <View
-                android:layout_width="8dp"
-                android:layout_height="0dp" />
-
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/wizard_cook_field"
+                android:layout_width="@dimen/dp_0"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:layout_marginStart="@dimen/dp_8"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toStartOf="@id/wizard_serves_field"
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toEndOf="@id/wizard_prep_field"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
                     style="@style/CookSync.FieldLabel"
@@ -215,15 +220,16 @@
 
             </LinearLayout>
 
-            <View
-                android:layout_width="8dp"
-                android:layout_height="0dp" />
-
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/wizard_serves_field"
+                android:layout_width="@dimen/dp_0"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:layout_marginStart="@dimen/dp_8"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_weight="1"
+                app:layout_constraintStart_toEndOf="@id/wizard_cook_field"
+                app:layout_constraintTop_toTopOf="parent">
 
                 <TextView
                     style="@style/CookSync.FieldLabel"
@@ -242,23 +248,23 @@
 
             </LinearLayout>
 
-        </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
             style="@style/CookSync.FieldLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/dp_16"
             android:text="@string/wizard_basics_difficulty_label" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
+            android:layout_height="@dimen/dp_44"
             app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
+            app:cardCornerRadius="@dimen/dp_16"
+            app:cardElevation="@dimen/dp_0"
             app:strokeColor="@color/color_divider"
-            app:strokeWidth="1dp">
+            app:strokeWidth="@dimen/dp_1">
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -270,9 +276,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:paddingHorizontal="18dp"
+                    android:paddingHorizontal="@dimen/dp_18"
                     android:text="@string/filter_difficulty_easy"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/sp_13"
                     android:textStyle="bold" />
 
                 <TextView
@@ -280,9 +286,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:paddingHorizontal="18dp"
+                    android:paddingHorizontal="@dimen/dp_18"
                     android:text="@string/filter_difficulty_medium"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/sp_13"
                     android:textStyle="bold" />
 
                 <TextView
@@ -290,9 +296,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
                     android:gravity="center"
-                    android:paddingHorizontal="18dp"
+                    android:paddingHorizontal="@dimen/dp_18"
                     android:text="@string/filter_difficulty_hard"
-                    android:textSize="13sp"
+                    android:textSize="@dimen/sp_13"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -303,7 +309,7 @@
             style="@style/CookSync.FieldLabel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/dp_16"
             android:text="@string/wizard_basics_tags_label" />
 
         <LinearLayout
@@ -315,10 +321,10 @@
             <AutoCompleteTextView
                 android:id="@+id/actv_tag_input"
                 style="@style/CookSync.Input"
-                android:layout_width="0dp"
+                android:layout_width="@dimen/dp_0"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:dropDownVerticalOffset="6dp"
+                android:dropDownVerticalOffset="@dimen/dp_6"
                 android:hint="@string/wizard_basics_tags_hint"
                 android:imeOptions="actionDone"
                 android:inputType="text"
@@ -326,9 +332,9 @@
 
             <ImageButton
                 android:id="@+id/btn_add_tag"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="8dp"
+                android:layout_width="@dimen/dp_44"
+                android:layout_height="@dimen/dp_44"
+                android:layout_marginStart="@dimen/dp_8"
                 android:background="@drawable/bg_input"
                 android:contentDescription="@string/wizard_action_add_tag"
                 android:scaleType="centerInside"
@@ -341,27 +347,27 @@
             android:id="@+id/cg_selected_tags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            app:chipSpacingHorizontal="6dp"
+            android:layout_marginTop="@dimen/dp_8"
+            app:chipSpacingHorizontal="@dimen/dp_6"
             app:singleLine="false" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="@dimen/dp_16"
             android:alpha="0.55"
             android:letterSpacing="0.1"
             android:text="@string/wizard_popular_tags_label"
             android:textColor="@color/color_text"
-            android:textSize="11sp"
+            android:textSize="@dimen/sp_11"
             android:textStyle="bold" />
 
         <com.google.android.material.chip.ChipGroup
             android:id="@+id/cg_popular_tags"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            app:chipSpacingHorizontal="6dp"
+            android:layout_marginTop="@dimen/dp_6"
+            app:chipSpacingHorizontal="@dimen/dp_6"
             app:singleLine="false" />
 
     </LinearLayout>

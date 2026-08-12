@@ -4,6 +4,8 @@ import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
+import android.os.Build;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
@@ -15,7 +17,13 @@ import com.dtos.response.note.NoteResponse;
 import com.dtos.response.recipe.RecipePreviewResponse;
 import com.dtos.response.recipe.RecipeResponse;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
 
 /**
  * Manages data state for {@link RecipeDetailActivity}.
@@ -191,6 +199,106 @@ public class RecipeDetailViewModel extends BaseViewModel {
      */
     public boolean undoReportReview(String reviewId) {
         return pendingActions.cancel(REPORT_KEY_PREFIX + reviewId);
+    }
+
+    /**
+     * Finds the recipe-wide private note (as opposed to a per-instruction-step note) in a
+     * loaded notes list.
+     *
+     * Complexity:
+     * Time: O(n) where n is the number of loaded notes
+     * Space: O(1)
+     *
+     * @param notes the currently loaded notes for this recipe (see {@link #getNotesResult()})
+     * @return the recipe-wide note, or {@code null} if none exists
+     */
+    public NoteResponse findRecipeNote(List<NoteResponse> notes) {
+        for (NoteResponse note : notes) {
+            if (note.instructionId() == null) return note;
+        }
+        return null;
+    }
+
+    /**
+     * Finds the private note attached to a specific instruction step in a loaded notes list.
+     *
+     * Complexity:
+     * Time: O(n) where n is the number of loaded notes
+     * Space: O(1)
+     *
+     * @param notes the currently loaded notes for this recipe (see {@link #getNotesResult()})
+     * @param instructionId the instruction step to find the note for
+     * @return the step's note, or {@code null} if none exists
+     */
+    public NoteResponse findStepNote(List<NoteResponse> notes, String instructionId) {
+        for (NoteResponse note : notes) {
+            if (Objects.equals(instructionId, note.instructionId())) return note;
+        }
+        return null;
+    }
+
+    /**
+     * Renders an average rating as a five-character filled/outline star string (e.g.
+     * {@code "★★★★☆"}) for the reviews-summary card headline.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param averageRating the recipe's average rating, or {@code null} if it has no reviews yet
+     * @return a 5-character string of {@code ★}/{@code ☆} characters
+     */
+    public String starsForRating(Double averageRating) {
+        int filled = averageRating == null ? 0 : (int) Math.round(averageRating);
+        StringBuilder stars = new StringBuilder();
+        int j = 0;
+        while (j < 5) {
+            stars.append(j < filled ? "★" : "☆");
+            j++;
+        }
+        return stars.toString();
+    }
+
+    /**
+     * Rounds a single review's rating to the nearest whole star and clamps it into the
+     * displayable 1–5 range, for the rating-breakdown bars and star-filter chips.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param rating a single review's raw rating, or {@code null}
+     * @return a whole-star value between 1 and 5 inclusive
+     */
+    public int clampStars(BigDecimal rating) {
+        if (rating == null) return 1;
+        int rounded = Math.round(rating.floatValue());
+        return Math.max(1, Math.min(5, rounded));
+    }
+
+    /**
+     * Formats an ISO-8601 timestamp into a "Month yyyy" label for the recipe kicker
+     * (e.g. "April 2026"). Falls back to a raw date substring on API levels below 26, where
+     * {@code java.time} isn't available without desugaring.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param isoTimestamp the recipe's {@code createdAt} value
+     * @return a human-readable "Month yyyy" string, or "" if unparseable
+     */
+    public String formatPublishedDate(String isoTimestamp) {
+        if (isoTimestamp == null || isoTimestamp.isBlank()) return "";
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            try {
+                LocalDate date = LocalDate.parse(isoTimestamp.substring(0, 10));
+                return date.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH) + " " + date.getYear();
+            } catch (DateTimeParseException | IndexOutOfBoundsException e) {
+                return "";
+            }
+        }
+        return isoTimestamp.substring(0, 10); // Fallback for older APIs
     }
 
     /**

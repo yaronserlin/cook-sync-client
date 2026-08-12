@@ -10,15 +10,15 @@
     android:background="?attr/selectableItemBackground"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="12dp">
+    android:paddingHorizontal="@dimen/dp_16"
+    android:paddingVertical="@dimen/dp_12">
 
     <com.google.android.material.card.MaterialCardView
-        android:layout_width="76dp"
-        android:layout_height="76dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
-        app:strokeWidth="0dp">
+        android:layout_width="@dimen/dp_76"
+        android:layout_height="@dimen/dp_76"
+        app:cardCornerRadius="@dimen/dp_16"
+        app:cardElevation="@dimen/dp_0"
+        app:strokeWidth="@dimen/dp_0">
 
         <ImageView
             android:id="@+id/recipe_image"
@@ -30,9 +30,9 @@
     </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="@dimen/dp_12"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -44,31 +44,31 @@
             android:fontFamily="@font/caprasimo"
             android:maxLines="1"
             android:textColor="@color/color_text"
-            android:textSize="17sp"
+            android:textSize="@dimen/sp_17"
             tools:text="Shakshuka with feta" />
 
         <TextView
             android:id="@+id/recipe_subtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
+            android:layout_marginTop="@dimen/dp_3"
             android:alpha="0.65"
             android:ellipsize="end"
             android:maxLines="1"
             android:textColor="@color/color_text"
-            android:textSize="12sp"
+            android:textSize="@dimen/sp_12"
             tools:text="Yaron Serlin · 6 reviews" />
 
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="@dimen/dp_6"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="12dp"
-                android:layout_height="12dp"
+                android:layout_width="@dimen/dp_12"
+                android:layout_height="@dimen/dp_12"
                 android:src="@drawable/ic_star"
                 app:tint="@color/color_accent_700" />
 
@@ -76,10 +76,10 @@
                 android:id="@+id/rating_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:layout_marginEnd="10dp"
+                android:layout_marginStart="@dimen/dp_4"
+                android:layout_marginEnd="@dimen/dp_10"
                 android:textColor="@color/color_accent_700"
-                android:textSize="12sp"
+                android:textSize="@dimen/sp_12"
                 android:textStyle="bold"
                 tools:text="3.8" />
 
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:alpha="0.65"
                 android:textColor="@color/color_text"
-                android:textSize="12sp"
+                android:textSize="@dimen/sp_12"
                 android:textStyle="bold"
                 tools:text="25 mins" />
 
@@ -98,9 +98,9 @@
     </LinearLayout>
 
     <ImageView
-        android:layout_width="18dp"
-        android:layout_height="18dp"
-        android:layout_marginStart="8dp"
+        android:layout_width="@dimen/dp_18"
+        android:layout_height="@dimen/dp_18"
+        android:layout_marginStart="@dimen/dp_8"
         android:alpha="0.4"
         android:contentDescription="@null"
         android:src="@drawable/ic_arrow_forward" />

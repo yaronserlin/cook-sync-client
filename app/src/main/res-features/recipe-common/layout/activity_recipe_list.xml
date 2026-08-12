@@ -13,21 +13,21 @@
         style="@style/CookSync.Heading.H2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_20"
+        android:layout_marginEnd="@dimen/dp_16"
         tools:text="My recipes · 3 published" />
 
     <TextView
         android:id="@+id/tv_list_subtitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="2dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginStart="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_2"
+        android:layout_marginEnd="@dimen/dp_16"
         android:alpha="0.65"
         android:textColor="@color/color_text"
-        android:textSize="13sp"
+        android:textSize="@dimen/sp_13"
         android:visibility="gone"
         tools:text="12 recipes · 4 with private notes"
         tools:visibility="visible" />
@@ -36,8 +36,8 @@
         android:id="@+id/search_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_12"
         android:background="@drawable/bg_input"
         app:iconifiedByDefault="false"
         app:queryBackground="@android:color/transparent" />
@@ -45,7 +45,7 @@
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/dp_12"
         android:clipToPadding="false"
         android:scrollbars="none">
 
@@ -54,22 +54,22 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="16dp">
+            android:paddingHorizontal="@dimen/dp_16">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_filters"
                 style="@style/CookSync.Button.FilterChip"
                 android:layout_width="wrap_content"
-                android:layout_height="48dp"
-                android:paddingHorizontal="16dp"
+                android:layout_height="@dimen/dp_48"
+                android:paddingHorizontal="@dimen/dp_16"
                 android:text="@string/filters_count_format"
                 app:icon="@drawable/ic_filter"
-                app:iconPadding="8dp"
-                app:iconSize="18dp" />
+                app:iconPadding="@dimen/dp_8"
+                app:iconSize="@dimen/dp_18" />
 
             <View
-                android:layout_width="10dp"
-                android:layout_height="0dp" />
+                android:layout_width="@dimen/dp_10"
+                android:layout_height="@dimen/dp_0" />
 
             <LinearLayout
                 android:id="@+id/chip_container"
@@ -95,13 +95,13 @@
         android:id="@+id/drafts_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="12dp"
+        android:layout_marginHorizontal="@dimen/dp_16"
+        android:layout_marginTop="@dimen/dp_12"
         android:orientation="vertical" />
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1">
 
         <androidx.recyclerview.widget.RecyclerView
@@ -109,8 +109,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp"
+            android:paddingTop="@dimen/dp_16"
+            android:paddingBottom="@dimen/dp_16"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_recipe_row_card" />
 
@@ -125,13 +125,13 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingHorizontal="40dp"
+            android:paddingHorizontal="@dimen/dp_40"
             android:visibility="gone">
 
             <ImageView
                 android:id="@+id/iv_empty_icon"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="@dimen/dp_56"
+                android:layout_height="@dimen/dp_56"
                 app:tint="@color/color_accent_700"
                 tools:src="@drawable/ic_book" />
 
@@ -140,18 +140,18 @@
                 style="@style/CookSync.Heading.H2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/dp_16"
                 tools:text="No recipes yet" />
 
             <TextView
                 android:id="@+id/tv_empty_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/dp_8"
                 android:alpha="0.7"
                 android:gravity="center"
                 android:textColor="@color/color_text"
-                android:textSize="14sp"
+                android:textSize="@dimen/sp_14"
                 tools:text="Recipes you publish will show up here." />
 
         </LinearLayout>
@@ -166,8 +166,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginEnd="@dimen/dp_16"
+            android:layout_marginBottom="@dimen/dp_16"
             android:contentDescription="@string/wizard_title"
             android:src="@drawable/ic_add"
             android:visibility="gone"

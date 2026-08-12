@@ -14,12 +14,12 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.cooksync.app.ui.common.AvatarView;
 import com.cooksync.app.ui.auth.UserProfileDialogFragment;
 import com.dtos.response.admin.ReportedReviewResponse;
 import com.google.android.material.button.MaterialButton;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +30,7 @@ import java.util.List;
  * @version 1.0
  * @since 07/08/2026
  */
-public class AdminReportAdapter extends RecyclerView.Adapter<AdminReportAdapter.ViewHolder> {
+public class AdminReportAdapter extends BaseAdapter<ReportedReviewResponse, AdminReportAdapter.ViewHolder> {
 
     /** Notified when the moderator taps one of a report card's row actions. */
     public interface OnReportActionListener {
@@ -44,13 +44,10 @@ public class AdminReportAdapter extends RecyclerView.Adapter<AdminReportAdapter.
         void onBan(ReportedReviewResponse report);
     }
 
-    private final List<ReportedReviewResponse> reports = new ArrayList<>();
     private OnReportActionListener listener;
 
     public void setReports(List<ReportedReviewResponse> newReports) {
-        reports.clear();
-        reports.addAll(newReports);
-        notifyDataSetChanged();
+        setItems(newReports);
     }
 
     public void setOnReportActionListener(OnReportActionListener listener) {
@@ -66,7 +63,7 @@ public class AdminReportAdapter extends RecyclerView.Adapter<AdminReportAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        ReportedReviewResponse report = reports.get(position);
+        ReportedReviewResponse report = getItem(position);
 
         holder.reviewer.setText(report.reviewerName());
         holder.avatar.setAvatar(report.reviewerAvatarUrl(), report.reviewerName());
@@ -102,11 +99,6 @@ public class AdminReportAdapter extends RecyclerView.Adapter<AdminReportAdapter.
         holder.ban.setOnClickListener(v -> {
             if (listener != null) listener.onBan(report);
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return reports.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

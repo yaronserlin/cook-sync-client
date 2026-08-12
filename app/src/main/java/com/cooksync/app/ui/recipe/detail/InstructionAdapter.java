@@ -23,10 +23,10 @@ import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.instruction.InstructionResponse;
 import com.google.android.material.button.MaterialButton;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +40,7 @@ import java.util.Objects;
  * @version 2.0
  * @since 04/08/2026
  */
-public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.ViewHolder> {
+public class InstructionAdapter extends BaseAdapter<InstructionResponse, InstructionAdapter.ViewHolder> {
 
     /** Notified when the viewer saves or deletes a step's private note from inline editing. */
     public interface OnNoteChangeListener {
@@ -64,7 +64,6 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
         void onImageClick(String imageUrl);
     }
 
-    private final List<InstructionResponse> instructions = new ArrayList<>();
     private final Map<String, String> notesByInstructionId = new HashMap<>();
     private OnNoteChangeListener noteChangeListener;
     private OnImageClickListener imageClickListener;
@@ -73,9 +72,7 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
     private String editingInstructionId;
 
     public void setInstructions(List<InstructionResponse> newInstructions) {
-        instructions.clear();
-        instructions.addAll(newInstructions);
-        notifyDataSetChanged();
+        setItems(newInstructions);
     }
 
     /**
@@ -106,7 +103,7 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        InstructionResponse step = instructions.get(position);
+        InstructionResponse step = getItem(position);
         holder.stepNumber.setText(String.valueOf(step.stepNumber()));
         holder.description.setText(step.description());
 
@@ -197,11 +194,6 @@ public class InstructionAdapter extends RecyclerView.Adapter<InstructionAdapter.
             editingInstructionId = null;
             notifyDataSetChanged();
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return instructions.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

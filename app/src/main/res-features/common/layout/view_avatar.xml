@@ -18,7 +18,7 @@
         android:background="@drawable/bg_accent_2_circle"
         android:gravity="center"
         android:textColor="@color/color_bg"
-        android:textSize="14sp"
+        android:textSize="@dimen/sp_14"
         android:textStyle="bold"
         tools:text="JD" />
 

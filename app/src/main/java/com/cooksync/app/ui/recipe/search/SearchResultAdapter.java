@@ -15,9 +15,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -30,9 +30,8 @@ import java.util.Locale;
  * @version 1.0
  * @since 05/08/2026
  */
-public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapter.ViewHolder> {
+public class SearchResultAdapter extends BaseAdapter<RecipePreviewResponse, SearchResultAdapter.ViewHolder> {
 
-    private final List<RecipePreviewResponse> recipes = new ArrayList<>();
     private OnRecipeClickListener listener;
 
     public interface OnRecipeClickListener {
@@ -44,9 +43,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
     }
 
     public void setRecipes(List<RecipePreviewResponse> newRecipes) {
-        recipes.clear();
-        recipes.addAll(newRecipes);
-        notifyDataSetChanged();
+        setItems(newRecipes);
     }
 
     @NonNull
@@ -58,7 +55,7 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        RecipePreviewResponse recipe = recipes.get(position);
+        RecipePreviewResponse recipe = getItem(position);
 
         holder.title.setText(recipe.title());
         holder.subtitle.setText(holder.itemView.getContext()
@@ -80,11 +77,6 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
                 listener.onRecipeClick(recipe.id());
             }
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return recipes.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

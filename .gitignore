@@ -24,7 +24,3 @@ proguard/
 keystore/
 keystore.properties
 *.jks
-
-# Test results
-app/src/test/
-app/src/androidTest/

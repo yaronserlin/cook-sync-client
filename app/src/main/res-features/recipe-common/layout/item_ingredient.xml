@@ -9,15 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:paddingVertical="8dp">
+        android:paddingVertical="@dimen/dp_8">
 
         <TextView
             android:id="@+id/ingredient_name"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@color/color_text"
-            android:textSize="15sp"
+            android:textSize="@dimen/sp_15"
             tools:text="All-purpose flour" />
 
         <TextView
@@ -26,14 +26,14 @@
             android:layout_height="wrap_content"
             android:alpha="0.6"
             android:textColor="@color/color_text"
-            android:textSize="14sp"
+            android:textSize="@dimen/sp_14"
             tools:text="2 cups" />
 
     </LinearLayout>
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="1dp"
+        android:layout_height="@dimen/dp_1"
         android:background="@color/color_divider" />
 
 </LinearLayout>

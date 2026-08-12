@@ -10,9 +10,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.unit.UnitResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,34 +22,24 @@ import java.util.List;
  * @version 1.0
  * @since 10/08/2026
  */
-public class AdminUnitAdapter extends RecyclerView.Adapter<AdminUnitAdapter.ViewHolder> {
+public class AdminUnitAdapter extends BaseAdapter<UnitResponse, AdminUnitAdapter.ViewHolder> {
 
     public interface Listener {
         void onDeleteUnit(UnitResponse unit);
     }
 
-    private final List<UnitResponse> units = new ArrayList<>();
     private Listener listener;
 
     public void setUnits(List<UnitResponse> newUnits) {
-        units.clear();
-        if (newUnits != null) {
-            units.addAll(newUnits);
-        }
-        notifyDataSetChanged();
+        setItems(newUnits);
     }
 
     public void removeUnit(UnitResponse unit) {
-        int index = units.indexOf(unit);
-        if (index != -1) {
-            units.remove(index);
-            notifyItemRemoved(index);
-        }
+        removeItem(unit);
     }
 
     public void restoreUnit(UnitResponse unit) {
-        units.add(unit);
-        notifyItemInserted(units.size() - 1);
+        addItem(unit);
     }
 
     public void setListener(Listener listener) {
@@ -65,7 +55,7 @@ public class AdminUnitAdapter extends RecyclerView.Adapter<AdminUnitAdapter.View
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        UnitResponse unit = units.get(position);
+        UnitResponse unit = getItem(position);
         holder.tvCode.setText(unit.code());
         holder.tvName.setText(unit.name());
         holder.btnDelete.setOnClickListener(v -> {
@@ -73,11 +63,6 @@ public class AdminUnitAdapter extends RecyclerView.Adapter<AdminUnitAdapter.View
                 listener.onDeleteUnit(unit);
             }
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return units.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

@@ -13,9 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.ingredient.IngredientResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,14 +25,10 @@ import java.util.List;
  * @version 1.0
  * @since 04/08/2026
  */
-public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.ViewHolder> {
-
-    private final List<IngredientResponse> ingredients = new ArrayList<>();
+public class IngredientAdapter extends BaseAdapter<IngredientResponse, IngredientAdapter.ViewHolder> {
 
     public void setIngredients(List<IngredientResponse> newIngredients) {
-        ingredients.clear();
-        ingredients.addAll(newIngredients);
-        notifyDataSetChanged();
+        setItems(newIngredients);
     }
 
     @NonNull
@@ -44,17 +40,12 @@ public class IngredientAdapter extends RecyclerView.Adapter<IngredientAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        IngredientResponse ingredient = ingredients.get(position);
+        IngredientResponse ingredient = getItem(position);
         holder.name.setText(ingredient.name());
-        
+
         String unitName = ingredient.unit() != null ? ingredient.unit().code() : "";
         String amount = ingredient.quantity() + " " + unitName;
         holder.amount.setText(amount.trim());
-    }
-
-    @Override
-    public int getItemCount() {
-        return ingredients.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

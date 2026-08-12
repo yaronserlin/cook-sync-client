@@ -42,4 +42,12 @@
          rotated toward true red so it's still unmistakably "danger" next to the terracotta accent. -->
     <color name="color_danger">#A8412E</color>
     <color name="color_danger_dark">#7A2E20</color>
+
+    <!-- color_text at ~45% opacity, for EditText hint text (textColorHint can't share the
+         android:alpha view-property trick other dimmed color_text usages rely on). -->
+    <color name="color_text_hint">#73201E1D</color>
+    <!-- color_neutral_800 at ~55% opacity, the broken-image icon's fill. -->
+    <color name="color_image_failed_icon">#8C474238</color>
+    <!-- 50% black, the opaque end of a fade-to-transparent scrim gradient. -->
+    <color name="color_scrim_gradient_start">#80000000</color>
 </resources>

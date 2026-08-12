@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:background="@color/color_bg"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingTop="16dp">
+    android:paddingHorizontal="@dimen/dp_16"
+    android:paddingTop="@dimen/dp_16">
 
     <EditText
         android:id="@+id/et_tag_search"
@@ -23,59 +23,59 @@
         android:id="@+id/tv_tags_section_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="@dimen/dp_13"
+        android:layout_marginBottom="@dimen/dp_8"
         android:alpha="0.55"
         android:letterSpacing="0.12"
         android:textAllCaps="true"
         android:textColor="@color/color_text"
-        android:textSize="10.5sp"
+        android:textSize="@dimen/sp_10_5"
         android:textStyle="bold"
         tools:text="Likely duplicates · 3 pairs" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_admin_tag_groups"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:clipToPadding="false" />
 
     <TextView
         android:id="@+id/tv_tags_empty"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/admin_tags_empty"
         android:textColor="@color/color_text"
-        android:textSize="13sp"
+        android:textSize="@dimen/sp_13"
         android:visibility="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="@dimen/dp_16"
         android:background="@drawable/bg_info_card"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="12dp">
+        android:padding="@dimen/dp_12">
 
         <ImageView
-            android:layout_width="16dp"
-            android:layout_height="16dp"
+            android:layout_width="@dimen/dp_16"
+            android:layout_height="@dimen/dp_16"
             android:contentDescription="@null"
             android:src="@drawable/ic_info"
             app:tint="@color/color_text" />
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="@dimen/dp_10"
             android:layout_weight="1"
             android:alpha="0.75"
             android:text="@string/admin_merge_dialog_message"
             android:textColor="@color/color_text"
-            android:textSize="11.5sp" />
+            android:textSize="@dimen/sp_11_5" />
 
     </LinearLayout>
 

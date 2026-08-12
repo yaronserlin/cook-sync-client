@@ -12,35 +12,35 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@color/color_bg"
-    android:paddingStart="28dp"
-    android:paddingEnd="28dp"
-    android:paddingTop="64dp"
-    android:paddingBottom="32dp">
+    android:paddingStart="@dimen/dp_28"
+    android:paddingEnd="@dimen/dp_28"
+    android:paddingTop="@dimen/dp_64"
+    android:paddingBottom="@dimen/dp_32">
 
     <!-- ── Brand wordmark bone ──────────────────────────────────────── -->
     <View
-        android:layout_width="160dp"
-        android:layout_height="42dp"
-        android:layout_marginBottom="32dp"
+        android:layout_width="@dimen/dp_160"
+        android:layout_height="@dimen/dp_42"
+        android:layout_marginBottom="@dimen/dp_32"
         android:background="@drawable/bg_skeleton_bone" />
 
     <!-- ── Headline bone ────────────────────────────────────────────── -->
     <View
-        android:layout_width="240dp"
-        android:layout_height="28dp"
-        android:layout_marginBottom="10dp"
+        android:layout_width="@dimen/dp_240"
+        android:layout_height="@dimen/dp_28"
+        android:layout_marginBottom="@dimen/dp_10"
         android:background="@drawable/bg_skeleton_bone" />
 
     <!-- ── Subtitle bones (two lines) ───────────────────────────────── -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="12dp"
-        android:layout_marginBottom="6dp"
+        android:layout_height="@dimen/dp_12"
+        android:layout_marginBottom="@dimen/dp_6"
         android:background="@drawable/bg_skeleton_bone" />
     <View
-        android:layout_width="200dp"
-        android:layout_height="12dp"
-        android:layout_marginBottom="36dp"
+        android:layout_width="@dimen/dp_200"
+        android:layout_height="@dimen/dp_12"
+        android:layout_marginBottom="@dimen/dp_36"
         android:background="@drawable/bg_skeleton_bone" />
 
     <!-- ── Email field ───────────────────────────────────────────────── -->
@@ -52,15 +52,15 @@
     <!-- ── Primary button bone ──────────────────────────────────────── -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:layout_marginBottom="12dp"
+        android:layout_height="@dimen/dp_54"
+        android:layout_marginBottom="@dimen/dp_12"
         android:background="@drawable/bg_skeleton_bone_dark" />
 
     <!-- ── Secondary button bone ─────────────────────────────────────── -->
     <View
         android:layout_width="match_parent"
-        android:layout_height="54dp"
-        android:layout_marginBottom="0dp"
+        android:layout_height="@dimen/dp_54"
+        android:layout_marginBottom="@dimen/dp_0"
         android:background="@drawable/bg_skeleton_bone" />
 
 </LinearLayout>

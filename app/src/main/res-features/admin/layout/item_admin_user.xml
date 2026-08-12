@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="@dimen/dp_10"
     android:background="@drawable/bg_card_outline"
     android:orientation="vertical"
-    android:padding="13dp">
+    android:padding="@dimen/dp_13">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -17,13 +17,13 @@
 
         <com.cooksync.app.ui.common.AvatarView
             android:id="@+id/user_avatar"
-            android:layout_width="36dp"
-            android:layout_height="36dp" />
+            android:layout_width="@dimen/dp_36"
+            android:layout_height="@dimen/dp_36" />
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/dp_12"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -40,7 +40,7 @@
                     android:maxLines="1"
                     android:ellipsize="end"
                     android:textColor="@color/color_text"
-                    android:textSize="13.5sp"
+                    android:textSize="@dimen/sp_13_5"
                     android:textStyle="bold"
                     tools:text="Dana Cohen" />
 
@@ -48,13 +48,13 @@
                     android:id="@+id/tv_user_admin_tag"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
+                    android:layout_marginStart="@dimen/dp_6"
                     android:background="@drawable/bg_pill_solid"
                     android:backgroundTint="@color/color_neutral_900"
-                    android:paddingHorizontal="7dp"
-                    android:paddingVertical="2dp"
+                    android:paddingHorizontal="@dimen/dp_7"
+                    android:paddingVertical="@dimen/dp_2"
                     android:textColor="@color/color_neutral_100"
-                    android:textSize="9sp"
+                    android:textSize="@dimen/sp_9"
                     android:textStyle="bold"
                     android:visibility="gone"
                     tools:text="ADMIN"
@@ -66,12 +66,12 @@
                 android:id="@+id/tv_user_email"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="@dimen/dp_1"
                 android:alpha="0.6"
                 android:ellipsize="end"
                 android:maxLines="1"
                 android:textColor="@color/color_text"
-                android:textSize="11.5sp"
+                android:textSize="@dimen/sp_11_5"
                 tools:text="dana.cohen@example.com" />
 
         </LinearLayout>
@@ -81,9 +81,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_pill_solid"
-            android:paddingHorizontal="9dp"
-            android:paddingVertical="3dp"
-            android:textSize="9.5sp"
+            android:paddingHorizontal="@dimen/dp_9"
+            android:paddingVertical="@dimen/dp_3"
+            android:textSize="@dimen/sp_9_5"
             android:textStyle="bold"
             tools:backgroundTint="@color/color_accent_2_200"
             tools:text="ACTIVE"
@@ -94,34 +94,34 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="@dimen/dp_10"
         android:gravity="center_vertical"
         android:orientation="horizontal">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_user_toggle_enabled"
             style="@style/CookSync.Button.Secondary"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="@dimen/dp_36"
             android:layout_weight="1"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:minHeight="0dp"
-            android:textSize="12sp"
-            app:cornerRadius="18dp"
-            app:strokeWidth="1.5dp"
+            android:insetTop="@dimen/dp_0"
+            android:insetBottom="@dimen/dp_0"
+            android:minHeight="@dimen/dp_0"
+            android:textSize="@dimen/sp_12"
+            app:cornerRadius="@dimen/dp_18"
+            app:strokeWidth="@dimen/dp_1_5"
             tools:strokeColor="@color/color_danger"
             tools:text="Suspend"
             tools:textColor="@color/color_danger" />
 
         <ImageButton
             android:id="@+id/btn_user_email"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginStart="6dp"
+            android:layout_width="@dimen/dp_36"
+            android:layout_height="@dimen/dp_36"
+            android:layout_marginStart="@dimen/dp_6"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/admin_email_user_desc"
-            android:padding="8dp"
+            android:padding="@dimen/dp_8"
             android:src="@drawable/ic_mail"
             app:tint="@color/color_text" />
 

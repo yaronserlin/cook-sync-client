@@ -16,9 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.recipe.RecipePreviewResponse;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,9 +30,8 @@ import java.util.Set;
  * @version 1.0
  * @since 04/08/2026
  */
-public class RecipeCardAdapter extends RecyclerView.Adapter<RecipeCardAdapter.ViewHolder> {
+public class RecipeCardAdapter extends BaseAdapter<RecipePreviewResponse, RecipeCardAdapter.ViewHolder> {
 
-    private final List<RecipePreviewResponse> recipes = new ArrayList<>();
     private final Set<String> favoriteIds = new HashSet<>();
     private OnRecipeClickListener listener;
 
@@ -53,9 +52,7 @@ public class RecipeCardAdapter extends RecyclerView.Adapter<RecipeCardAdapter.Vi
     }
 
     public void setRecipes(List<RecipePreviewResponse> newRecipes) {
-        recipes.clear();
-        recipes.addAll(newRecipes);
-        notifyDataSetChanged();
+        setItems(newRecipes);
     }
 
     public void setFavorites(List<RecipePreviewResponse> favorites) {
@@ -75,7 +72,7 @@ public class RecipeCardAdapter extends RecyclerView.Adapter<RecipeCardAdapter.Vi
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        RecipePreviewResponse recipe = recipes.get(position);
+        RecipePreviewResponse recipe = getItem(position);
 
         holder.title.setText(recipe.title());
         holder.author.setText(recipe.authorName());
@@ -105,11 +102,6 @@ public class RecipeCardAdapter extends RecyclerView.Adapter<RecipeCardAdapter.Vi
                 listener.onFavoriteClick(recipe.id(), isFavorite);
             }
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return recipes.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

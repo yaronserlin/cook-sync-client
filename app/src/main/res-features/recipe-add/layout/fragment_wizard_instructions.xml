@@ -11,39 +11,39 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingBottom="24dp">
+        android:paddingBottom="@dimen/dp_24">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginHorizontal="@dimen/dp_16"
+            android:layout_marginTop="@dimen/dp_8"
             android:letterSpacing="0.12"
             android:text="@string/wizard_step3_of4"
             android:textColor="@color/color_accent_2_700"
-            android:textSize="11sp"
+            android:textSize="@dimen/sp_11"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginHorizontal="@dimen/dp_16"
+            android:layout_marginTop="@dimen/dp_4"
             android:fontFamily="@font/caprasimo"
             android:text="@string/wizard_step3_heading"
             android:textColor="@color/color_text"
-            android:textSize="26sp" />
+            android:textSize="@dimen/sp_26" />
 
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginHorizontal="@dimen/dp_16"
+            android:layout_marginTop="@dimen/dp_6"
+            android:layout_marginBottom="@dimen/dp_12"
             android:alpha="0.7"
             android:textColor="@color/color_text"
             android:text="@string/wizard_step3_helper"
-            android:textSize="13sp" />
+            android:textSize="@dimen/sp_13" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_instructions"
@@ -51,37 +51,37 @@
             android:layout_height="wrap_content"
             android:clipToPadding="false"
             android:nestedScrollingEnabled="false"
-            android:paddingHorizontal="16dp"
+            android:paddingHorizontal="@dimen/dp_16"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_wizard_instruction" />
 
         <LinearLayout
             android:id="@+id/btn_add_instruction"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_margin="16dp"
+            android:layout_height="@dimen/dp_52"
+            android:layout_margin="@dimen/dp_16"
             android:background="@drawable/bg_dashed_add_row"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="14dp">
+            android:paddingHorizontal="@dimen/dp_14">
 
             <ImageView
-                android:layout_width="16dp"
-                android:layout_height="16dp"
+                android:layout_width="@dimen/dp_16"
+                android:layout_height="@dimen/dp_16"
                 android:src="@drawable/ic_add"
                 app:tint="@color/color_accent_700" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="@dimen/dp_8"
                 android:alpha="0.6"
                 android:text="@string/wizard_action_add_step"
                 android:textColor="@color/color_text"
-                android:textSize="14sp"
+                android:textSize="@dimen/sp_14"
                 android:textStyle="bold" />
 
         </LinearLayout>

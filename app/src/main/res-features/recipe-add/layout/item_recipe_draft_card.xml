@@ -12,16 +12,16 @@
     android:background="@drawable/bg_dashed_draft_card"
     android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:padding="12dp">
+    android:padding="@dimen/dp_12">
 
     <FrameLayout
-        android:layout_width="56dp"
-        android:layout_height="56dp"
+        android:layout_width="@dimen/dp_56"
+        android:layout_height="@dimen/dp_56"
         android:background="@drawable/bg_accent_circle_200">
 
         <ImageView
-            android:layout_width="22dp"
-            android:layout_height="22dp"
+            android:layout_width="@dimen/dp_22"
+            android:layout_height="@dimen/dp_22"
             android:layout_gravity="center"
             android:src="@drawable/ic_edit"
             app:tint="@color/color_accent_700" />
@@ -29,9 +29,9 @@
     </FrameLayout>
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="@dimen/dp_12"
         android:layout_weight="1"
         android:orientation="vertical">
 
@@ -43,16 +43,16 @@
             android:fontFamily="@font/caprasimo"
             android:maxLines="1"
             android:textColor="@color/color_accent_800"
-            android:textSize="15sp"
+            android:textSize="@dimen/sp_15"
             tools:text="Shakshuka with feta" />
 
         <TextView
             android:id="@+id/tv_draft_subtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
+            android:layout_marginTop="@dimen/dp_2"
             android:textColor="@color/color_accent_700"
-            android:textSize="12sp"
+            android:textSize="@dimen/sp_12"
             tools:text="Draft · step 2 of 4 · saved 2 days ago" />
 
     </LinearLayout>
@@ -62,12 +62,12 @@
         style="@style/CookSync.Button.Primary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:minWidth="0dp"
-        android:minHeight="0dp"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="10dp"
+        android:layout_marginStart="@dimen/dp_8"
+        android:minWidth="@dimen/dp_0"
+        android:minHeight="@dimen/dp_0"
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingVertical="@dimen/dp_10"
         android:text="@string/wizard_action_resume"
-        android:textSize="12.5sp" />
+        android:textSize="@dimen/sp_12_5" />
 
 </LinearLayout>

@@ -7,7 +7,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="44dp"
+    android:layout_height="@dimen/dp_44"
     android:background="@drawable/bg_pill_solid"
     android:gravity="center"
     android:orientation="vertical">
@@ -16,7 +16,7 @@
         android:id="@+id/tv_admin_tab_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="13sp"
+        android:textSize="@dimen/sp_13"
         android:textStyle="bold"
         tools:text="Reports" />
 
@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:alpha="0.7"
-        android:textSize="10sp"
+        android:textSize="@dimen/sp_10"
         tools:text="3 open" />
 
 </LinearLayout>

@@ -4,8 +4,11 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.cooksync.app.data.datasource.local.RecipeDraftStore;
 import com.cooksync.app.data.datasource.local.TokenStore;
 import com.dtos.response.auth.AuthResponse;
+
+import java.util.Objects;
 
 /**
  * Process-wide, observable holder of the current authentication state. Wraps
@@ -105,7 +108,12 @@ public final class SessionManager {
     }
 
     /**
-     * Clears the stored session as the result of an explicit, user-initiated logout.
+     * Clears the stored session as the result of an explicit, user-initiated logout. Also
+     * discards any locally-stored recipe drafts: they're device-local scratch state, not
+     * per-account, and an explicit logout is this app's only "switch accounts" flow, so
+     * whoever signs in next on this device must not see the outgoing user's drafts. A forced
+     * logout ({@link #forceLogout()}, e.g. an expired refresh token) does not clear drafts,
+     * since the same person is expected to sign back in as themselves.
      *
      * Complexity:
      * Time: O(1)
@@ -113,6 +121,7 @@ public final class SessionManager {
      */
     public void logout() {
         TokenStore.clear();
+        RecipeDraftStore.clearAll();
         lastLogoutWasForced = false;
         loggedIn.postValue(false);
     }

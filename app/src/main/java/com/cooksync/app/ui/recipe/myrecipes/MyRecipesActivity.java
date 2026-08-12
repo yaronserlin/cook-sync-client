@@ -246,25 +246,25 @@ public class MyRecipesActivity extends RecipeListActivity {
                 case UPLOADING -> {
                     spinner.setVisibility(View.VISIBLE);
                     checkIcon.setVisibility(View.GONE);
-                    tvTitle.setText("Publishing recipe...");
-                    tvSubtitle.setText(state.message != null ? state.message : "Uploading media...");
-                    tvPercent.setText(state.progress + "%");
+                    tvTitle.setText(R.string.wizard_publish_title);
+                    tvSubtitle.setText(state.message != null ? state.message : getString(R.string.wizard_publish_uploading_media));
+                    tvPercent.setText(getString(R.string.wizard_publish_percent_format, state.progress));
                     bar.setProgress(state.progress);
                 }
                 case PUBLISHING -> {
                     spinner.setVisibility(View.VISIBLE);
                     checkIcon.setVisibility(View.GONE);
-                    tvTitle.setText("Publishing recipe...");
-                    tvSubtitle.setText(state.message != null ? state.message : "Processing recipe details...");
-                    tvPercent.setText(state.progress + "%");
+                    tvTitle.setText(R.string.wizard_publish_title);
+                    tvSubtitle.setText(state.message != null ? state.message : getString(R.string.wizard_publish_processing_details));
+                    tvPercent.setText(getString(R.string.wizard_publish_percent_format, state.progress));
                     bar.setProgress(state.progress);
                 }
                 case SUCCESS -> {
                     spinner.setVisibility(View.GONE);
                     checkIcon.setVisibility(View.VISIBLE);
-                    tvTitle.setText("Recipe published!");
-                    tvSubtitle.setText("Available in My Recipes");
-                    tvPercent.setText("100%");
+                    tvTitle.setText(R.string.wizard_publish_success_title);
+                    tvSubtitle.setText(R.string.wizard_publish_success_subtitle);
+                    tvPercent.setText(getString(R.string.wizard_publish_percent_format, 100));
                     bar.setProgress(100);
 
                     viewModel.loadMyRecipes();
@@ -280,9 +280,9 @@ public class MyRecipesActivity extends RecipeListActivity {
                 case ERROR -> {
                     spinner.setVisibility(View.GONE);
                     checkIcon.setVisibility(View.GONE);
-                    tvTitle.setText("Publishing failed");
-                    String reason = state.error != null ? state.error : "Failed to publish recipe";
-                    tvSubtitle.setText(reason + " — your recipe was saved as a draft, nothing was lost.");
+                    tvTitle.setText(R.string.wizard_publish_failed_title);
+                    String reason = state.error != null ? state.error : getString(R.string.wizard_publish_failed_default_reason);
+                    tvSubtitle.setText(getString(R.string.wizard_publish_failed_subtitle_format, reason));
                     tvPercent.setText("");
                     bar.setProgress(0);
 

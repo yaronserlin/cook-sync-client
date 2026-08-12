@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class AdminUnitsFragment extends Fragment {
 
-    private AdminViewModel viewModel;
+    private AdminUnitsViewModel viewModel;
     private AdminUnitAdapter adapter;
     private EditText etName;
     private EditText etCode;
@@ -52,7 +52,7 @@ public class AdminUnitsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity(), new ViewModelFactory()).get(AdminUnitsViewModel.class);
 
         etName = view.findViewById(R.id.et_unit_name);
         etCode = view.findViewById(R.id.et_unit_code);

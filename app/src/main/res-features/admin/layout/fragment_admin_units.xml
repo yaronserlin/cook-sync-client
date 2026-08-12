@@ -5,59 +5,59 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingTop="12dp">
+    android:paddingHorizontal="@dimen/dp_16"
+    android:paddingTop="@dimen/dp_12">
 
     <!-- Form card to add new measurement unit -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="@dimen/dp_16"
         android:background="@drawable/bg_info_card"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/dp_16">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-medium"
-            android:text="Add new measurement unit"
+            android:text="@string/admin_units_add_new"
             android:textColor="@color/color_text"
-            android:textSize="15sp" />
+            android:textSize="@dimen/sp_15" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="@dimen/dp_10"
             android:orientation="horizontal">
 
             <EditText
                 android:id="@+id/et_unit_name"
-                android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_width="@dimen/dp_0"
+                android:layout_height="@dimen/dp_44"
                 android:layout_weight="1"
                 android:background="@drawable/bg_input"
                 android:hint="Name (e.g. Gram)"
                 android:inputType="text"
-                android:paddingHorizontal="12dp"
-                android:textSize="14sp" />
+                android:paddingHorizontal="@dimen/dp_12"
+                android:textSize="@dimen/sp_14" />
 
             <EditText
                 android:id="@+id/et_unit_code"
-                android:layout_width="90dp"
-                android:layout_height="44dp"
-                android:layout_marginStart="8dp"
+                android:layout_width="@dimen/dp_90"
+                android:layout_height="@dimen/dp_44"
+                android:layout_marginStart="@dimen/dp_8"
                 android:background="@drawable/bg_input"
                 android:hint="Code (g)"
                 android:inputType="text"
-                android:paddingHorizontal="12dp"
-                android:textSize="14sp" />
+                android:paddingHorizontal="@dimen/dp_12"
+                android:textSize="@dimen/sp_14" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_add_unit"
                 android:layout_width="wrap_content"
-                android:layout_height="44dp"
-                android:layout_marginStart="8dp"
+                android:layout_height="@dimen/dp_44"
+                android:layout_marginStart="@dimen/dp_8"
                 android:text="@string/action_add"
                 app:backgroundTint="@color/color_accent" />
         </LinearLayout>
@@ -68,7 +68,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="@dimen/dp_24"
         android:visibility="gone" />
 
     <androidx.recyclerview.widget.RecyclerView
@@ -76,7 +76,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"
+        android:paddingBottom="@dimen/dp_16"
         tools:listitem="@layout/item_admin_unit" />
 
 </LinearLayout>

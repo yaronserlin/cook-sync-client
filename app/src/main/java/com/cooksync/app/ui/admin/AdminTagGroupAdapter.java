@@ -14,10 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.cooksync.app.R;
+import com.cooksync.app.ui.base.BaseAdapter;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 import com.dtos.response.admin.TagVariantResponse;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -29,7 +29,7 @@ import java.util.List;
  * @version 1.1
  * @since 07/08/2026
  */
-public class AdminTagGroupAdapter extends RecyclerView.Adapter<AdminTagGroupAdapter.ViewHolder> {
+public class AdminTagGroupAdapter extends BaseAdapter<DuplicateTagGroupResponse, AdminTagGroupAdapter.ViewHolder> {
 
     /** Notified when the moderator taps a group card's "merge →" action. */
     public interface OnMergeRequestListener {
@@ -37,13 +37,10 @@ public class AdminTagGroupAdapter extends RecyclerView.Adapter<AdminTagGroupAdap
         void onMergeRequested(DuplicateTagGroupResponse group);
     }
 
-    private final List<DuplicateTagGroupResponse> groups = new ArrayList<>();
     private OnMergeRequestListener listener;
 
     public void setGroups(List<DuplicateTagGroupResponse> newGroups) {
-        groups.clear();
-        groups.addAll(newGroups);
-        notifyDataSetChanged();
+        setItems(newGroups);
     }
 
     public void setOnMergeRequestListener(OnMergeRequestListener listener) {
@@ -59,7 +56,7 @@ public class AdminTagGroupAdapter extends RecyclerView.Adapter<AdminTagGroupAdap
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        DuplicateTagGroupResponse group = groups.get(position);
+        DuplicateTagGroupResponse group = getItem(position);
         holder.groupName.setText(group.normalizedName());
 
         holder.variantsContainer.removeAllViews();
@@ -76,11 +73,6 @@ public class AdminTagGroupAdapter extends RecyclerView.Adapter<AdminTagGroupAdap
         holder.mergeAction.setOnClickListener(v -> {
             if (listener != null) listener.onMergeRequested(group);
         });
-    }
-
-    @Override
-    public int getItemCount() {
-        return groups.size();
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {

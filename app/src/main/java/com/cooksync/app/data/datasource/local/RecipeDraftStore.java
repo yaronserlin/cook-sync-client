@@ -135,6 +135,19 @@ public final class RecipeDraftStore {
         persist(drafts);
     }
 
+    /**
+     * Discards every stored draft, e.g. when a different user signs in on this device — a
+     * draft is device-local scratch state, not per-account, so leaving it in place would let
+     * one account's in-progress recipe leak into another account's "resume draft" prompt.
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     */
+    public static void clearAll() {
+        prefs().edit().remove(KEY_DRAFTS_JSON).apply();
+    }
+
     private static void persist(List<RecipeDraft> drafts) {
         prefs().edit().putString(KEY_DRAFTS_JSON, GSON.toJson(drafts)).apply();
     }

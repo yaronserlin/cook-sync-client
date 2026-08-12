@@ -11,27 +11,27 @@
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/color_surface"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="0dp">
+    app:cardCornerRadius="@dimen/dp_18"
+    app:cardElevation="@dimen/dp_0"
+    app:strokeWidth="@dimen/dp_0">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="14dp">
+        android:paddingHorizontal="@dimen/dp_16"
+        android:paddingVertical="@dimen/dp_14">
 
         <FrameLayout
-            android:layout_width="38dp"
-            android:layout_height="38dp"
+            android:layout_width="@dimen/dp_38"
+            android:layout_height="@dimen/dp_38"
             android:background="@drawable/bg_accent2_circle_100">
 
             <ImageView
                 android:id="@+id/iv_row_icon"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
+                android:layout_width="@dimen/dp_18"
+                android:layout_height="@dimen/dp_18"
                 android:layout_gravity="center"
                 android:contentDescription="@null"
                 app:tint="@color/color_accent_2_800"
@@ -40,9 +40,9 @@
         </FrameLayout>
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:layout_marginStart="@dimen/dp_12"
             android:layout_weight="1"
             android:orientation="vertical">
 
@@ -51,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/color_text"
-                android:textSize="14.5sp"
+                android:textSize="@dimen/sp_14_5"
                 android:textStyle="bold"
                 tools:text="Favorites" />
 
@@ -59,17 +59,17 @@
                 android:id="@+id/tv_row_sub"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="1dp"
+                android:layout_marginTop="@dimen/dp_1"
                 android:alpha="0.6"
                 android:textColor="@color/color_text"
-                android:textSize="12sp"
+                android:textSize="@dimen/sp_12"
                 tools:text="12 saved" />
 
         </LinearLayout>
 
         <ImageView
-            android:layout_width="16dp"
-            android:layout_height="16dp"
+            android:layout_width="@dimen/dp_16"
+            android:layout_height="@dimen/dp_16"
             android:alpha="0.4"
             android:contentDescription="@null"
             android:src="@drawable/ic_arrow_forward" />

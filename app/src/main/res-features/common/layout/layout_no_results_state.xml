@@ -13,18 +13,18 @@
     android:layout_gravity="center"
     android:orientation="vertical"
     android:gravity="center"
-    android:paddingHorizontal="32dp"
+    android:paddingHorizontal="@dimen/dp_32"
     android:visibility="gone"
     tools:visibility="visible">
 
     <FrameLayout
-        android:layout_width="88dp"
-        android:layout_height="88dp"
+        android:layout_width="@dimen/dp_88"
+        android:layout_height="@dimen/dp_88"
         android:background="@drawable/bg_accent2_circle_100">
 
         <ImageView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="@dimen/dp_36"
+            android:layout_height="@dimen/dp_36"
             android:layout_gravity="center"
             android:contentDescription="@null"
             android:src="@drawable/ic_search"
@@ -36,29 +36,29 @@
         android:id="@+id/tv_no_results_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
+        android:layout_marginTop="@dimen/dp_18"
         android:fontFamily="@font/caprasimo"
         android:text="@string/search_no_results_title"
         android:textColor="@color/color_text"
-        android:textSize="22sp" />
+        android:textSize="@dimen/sp_22" />
 
     <TextView
         android:id="@+id/tv_no_results_subtitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="@dimen/dp_6"
         android:alpha="0.72"
         android:gravity="center"
         android:text="@string/search_no_results_subtitle"
         android:textColor="@color/color_text"
-        android:textSize="14sp" />
+        android:textSize="@dimen/sp_14" />
 
     <com.google.android.material.chip.ChipGroup
         android:id="@+id/cg_removable_constraints"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        app:chipSpacingHorizontal="6dp"
+        android:layout_marginTop="@dimen/dp_18"
+        app:chipSpacingHorizontal="@dimen/dp_6"
         app:singleLine="false" />
 
     <com.google.android.material.button.MaterialButton
@@ -66,9 +66,9 @@
         style="@style/CookSync.Button.Secondary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="14dp"
-        android:minWidth="0dp"
-        android:paddingHorizontal="20dp"
+        android:layout_marginTop="@dimen/dp_14"
+        android:minWidth="@dimen/dp_0"
+        android:paddingHorizontal="@dimen/dp_20"
         android:text="@string/search_action_clear_all" />
 
 </LinearLayout>

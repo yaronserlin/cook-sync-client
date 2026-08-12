@@ -3,10 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="@dimen/dp_10"
     android:background="@drawable/bg_card_outline"
     android:orientation="vertical"
-    android:padding="13dp">
+    android:padding="@dimen/dp_13">
 
     <TextView
         android:id="@+id/tv_group_name"
@@ -16,7 +16,7 @@
         android:letterSpacing="0.1"
         android:textAllCaps="true"
         android:textColor="@color/color_text"
-        android:textSize="10.5sp"
+        android:textSize="@dimen/sp_10_5"
         android:textStyle="bold"
         tools:text="vegan" />
 
@@ -24,7 +24,7 @@
         android:id="@+id/ll_group_variants"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="@dimen/dp_4"
         android:orientation="vertical" />
 
     <TextView
@@ -32,11 +32,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
-        android:layout_marginTop="4dp"
-        android:padding="4dp"
+        android:layout_marginTop="@dimen/dp_4"
+        android:padding="@dimen/dp_4"
         android:text="@string/admin_merge_action"
         android:textColor="@color/color_accent_700"
-        android:textSize="12sp"
+        android:textSize="@dimen/sp_12"
         android:textStyle="bold" />
 
 </LinearLayout>

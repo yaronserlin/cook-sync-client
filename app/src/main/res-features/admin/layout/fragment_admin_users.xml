@@ -6,8 +6,8 @@
     android:layout_height="match_parent"
     android:background="@color/color_bg"
     android:orientation="vertical"
-    android:paddingHorizontal="16dp"
-    android:paddingTop="16dp">
+    android:paddingHorizontal="@dimen/dp_16"
+    android:paddingTop="@dimen/dp_16">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,7 +18,7 @@
         <EditText
             android:id="@+id/et_user_search"
             style="@style/CookSync.Input"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:hint="@string/admin_users_search_hint"
@@ -28,12 +28,12 @@
 
         <ImageButton
             android:id="@+id/btn_user_sort"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
+            android:layout_width="@dimen/dp_40"
+            android:layout_height="@dimen/dp_40"
+            android:layout_marginStart="@dimen/dp_8"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@string/action_sort"
-            android:padding="9dp"
+            android:padding="@dimen/dp_9"
             android:src="@drawable/ic_sort"
             app:tint="@color/color_text" />
 
@@ -42,7 +42,7 @@
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
+        android:layout_marginTop="@dimen/dp_12"
         android:scrollbars="none">
 
         <LinearLayout
@@ -62,7 +62,7 @@
                 style="@style/CookSync.Button.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/dp_6"
                 android:text="@string/admin_users_filter_active" />
 
             <com.google.android.material.button.MaterialButton
@@ -70,7 +70,7 @@
                 style="@style/CookSync.Button.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/dp_6"
                 android:text="@string/admin_users_filter_deactivated" />
 
             <com.google.android.material.button.MaterialButton
@@ -78,7 +78,7 @@
                 style="@style/CookSync.Button.FilterChip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="@dimen/dp_6"
                 android:text="@string/admin_users_filter_suspended" />
 
         </LinearLayout>
@@ -89,33 +89,33 @@
         android:id="@+id/tv_users_count_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="13dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="@dimen/dp_13"
+        android:layout_marginBottom="@dimen/dp_8"
         android:alpha="0.55"
         android:letterSpacing="0.12"
         android:textAllCaps="true"
         android:textColor="@color/color_text"
-        android:textSize="10.5sp"
+        android:textSize="@dimen/sp_10_5"
         android:textStyle="bold"
         tools:text="812 users" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_admin_users"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:clipToPadding="false"
-        android:paddingBottom="16dp" />
+        android:paddingBottom="@dimen/dp_16" />
 
     <TextView
         android:id="@+id/tv_users_empty"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="@dimen/dp_0"
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/admin_users_empty"
         android:textColor="@color/color_text"
-        android:textSize="13sp"
+        android:textSize="@dimen/sp_13"
         android:visibility="gone" />
 
 </LinearLayout>

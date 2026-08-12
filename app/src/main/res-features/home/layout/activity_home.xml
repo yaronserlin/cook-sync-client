@@ -11,96 +11,96 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        app:elevation="0dp">
+        app:elevation="@dimen/dp_0">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingTop="16dp">
+            android:paddingTop="@dimen/dp_16">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
+                android:layout_marginHorizontal="@dimen/dp_16"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <TextView
                     android:id="@+id/tv_discover_title"
                     style="@style/CookSync.Heading.H2"
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/dp_0"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="@string/home_title" />
 
                 <com.cooksync.app.ui.common.AvatarView
                     android:id="@+id/avatar_view_profile"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp" />
+                    android:layout_width="@dimen/dp_40"
+                    android:layout_height="@dimen/dp_40" />
 
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/search_bar_tap_target"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="16dp"
+                android:layout_height="@dimen/dp_48"
+                android:layout_marginHorizontal="@dimen/dp_16"
+                android:layout_marginTop="@dimen/dp_16"
                 android:background="@drawable/bg_input"
                 android:clickable="true"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackground"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="14dp">
+                android:paddingHorizontal="@dimen/dp_14">
 
                 <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_marginEnd="10dp"
+                    android:layout_width="@dimen/dp_18"
+                    android:layout_height="@dimen/dp_18"
+                    android:layout_marginEnd="@dimen/dp_10"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_search"
                     app:tint="@color/color_accent_700" />
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/dp_0"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:alpha="0.5"
                     android:text="@string/home_search_hint"
                     android:textColor="@color/color_text"
-                    android:textSize="14sp" />
+                    android:textSize="@dimen/sp_14" />
 
             </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="@dimen/dp_16"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
+                android:paddingHorizontal="@dimen/dp_16">
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_filters"
                     style="@style/CookSync.Button.FilterChip"
                     android:layout_width="wrap_content"
-                    android:layout_height="48dp"
-                    android:paddingHorizontal="16dp"
+                    android:layout_height="@dimen/dp_48"
+                    android:paddingHorizontal="@dimen/dp_16"
                     android:text="@string/filters_count_format"
                     app:icon="@drawable/ic_filter"
-                    app:iconPadding="8dp"
-                    app:iconSize="18dp" />
+                    app:iconPadding="@dimen/dp_8"
+                    app:iconSize="@dimen/dp_18" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_tags"
-                    android:layout_width="0dp"
+                    android:layout_width="@dimen/dp_0"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:clipToPadding="false"
                     android:orientation="horizontal"
-                    android:paddingStart="8dp"
+                    android:paddingStart="@dimen/dp_8"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     tools:listitem="@layout/item_tag_chip" />
 
@@ -110,11 +110,11 @@
                 android:id="@+id/tv_active_filters_summary"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:paddingHorizontal="16dp"
+                android:layout_marginTop="@dimen/dp_8"
+                android:paddingHorizontal="@dimen/dp_16"
                 android:alpha="0.6"
                 android:textColor="@color/color_text"
-                android:textSize="12.5sp"
+                android:textSize="@dimen/sp_12_5"
                 android:textStyle="bold"
                 android:visibility="gone"
                 tools:text="Applied: Easy · Vegan, Dessert · 4.0+ · Under 30 min"
@@ -134,8 +134,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
-            android:paddingTop="8dp"
-            android:paddingBottom="80dp"
+            android:paddingTop="@dimen/dp_8"
+            android:paddingBottom="@dimen/dp_80"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:listitem="@layout/item_recipe_card" />
 
@@ -150,13 +150,13 @@
             android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="vertical"
-            android:paddingHorizontal="40dp"
+            android:paddingHorizontal="@dimen/dp_40"
             android:visibility="gone">
 
             <ImageView
                 android:id="@+id/iv_empty_icon"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="@dimen/dp_56"
+                android:layout_height="@dimen/dp_56"
                 android:src="@drawable/ic_book"
                 app:tint="@color/color_accent_700" />
 
@@ -165,19 +165,19 @@
                 style="@style/CookSync.Heading.H2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="No recipes yet" />
+                android:layout_marginTop="@dimen/dp_16"
+                android:text="@string/home_empty_title" />
 
             <TextView
                 android:id="@+id/tv_empty_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="@dimen/dp_8"
                 android:alpha="0.7"
                 android:gravity="center"
                 android:textColor="@color/color_text"
-                android:textSize="14sp"
-                android:text="Be the first to publish a recipe!" />
+                android:textSize="@dimen/sp_14"
+                android:text="@string/home_empty_subtitle" />
 
         </LinearLayout>
 
@@ -200,8 +200,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="88dp"
+        android:layout_marginEnd="@dimen/dp_16"
+        android:layout_marginBottom="@dimen/dp_88"
         android:contentDescription="@string/wizard_title"
         android:src="@drawable/ic_add" />
 

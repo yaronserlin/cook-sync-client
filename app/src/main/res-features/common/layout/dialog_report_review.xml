@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:paddingHorizontal="20dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="24dp">
+    android:paddingHorizontal="@dimen/dp_20"
+    android:paddingTop="@dimen/dp_8"
+    android:paddingBottom="@dimen/dp_24">
 
     <RadioGroup
         android:id="@+id/rg_report_reason"
@@ -37,11 +37,11 @@
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        app:boxCornerRadiusBottomEnd="12dp"
-        app:boxCornerRadiusBottomStart="12dp"
-        app:boxCornerRadiusTopEnd="12dp"
-        app:boxCornerRadiusTopStart="12dp">
+        android:layout_marginTop="@dimen/dp_16"
+        app:boxCornerRadiusBottomEnd="@dimen/dp_12"
+        app:boxCornerRadiusBottomStart="@dimen/dp_12"
+        app:boxCornerRadiusTopEnd="@dimen/dp_12"
+        app:boxCornerRadiusTopStart="@dimen/dp_12">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/et_report_comment"

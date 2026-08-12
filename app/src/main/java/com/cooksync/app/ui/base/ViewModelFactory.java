@@ -22,7 +22,11 @@ import com.cooksync.app.data.repository.TagRepository;
 import com.cooksync.app.data.repository.impl.TagRepositoryImpl;
 import com.cooksync.app.data.repository.UnitRepository;
 import com.cooksync.app.data.repository.impl.UnitRepositoryImpl;
-import com.cooksync.app.ui.admin.AdminViewModel;
+import com.cooksync.app.ui.admin.AdminReportsViewModel;
+import com.cooksync.app.ui.admin.AdminStatsViewModel;
+import com.cooksync.app.ui.admin.AdminTagsViewModel;
+import com.cooksync.app.ui.admin.AdminUnitsViewModel;
+import com.cooksync.app.ui.admin.AdminUsersViewModel;
 import com.cooksync.app.ui.auth.ForgotPasswordViewModel;
 import com.cooksync.app.ui.auth.LoginViewModel;
 import com.cooksync.app.ui.auth.RegisterViewModel;
@@ -113,8 +117,16 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new MyRecipesViewModel(recipeRepository, tagRepository);
         } else if (modelClass.isAssignableFrom(ReviewViewModel.class)) {
             return (T) new ReviewViewModel(recipeRepository);
-        } else if (modelClass.isAssignableFrom(AdminViewModel.class)) {
-            return (T) new AdminViewModel(adminRepository, recipeRepository, unitRepository);
+        } else if (modelClass.isAssignableFrom(AdminStatsViewModel.class)) {
+            return (T) new AdminStatsViewModel(adminRepository);
+        } else if (modelClass.isAssignableFrom(AdminReportsViewModel.class)) {
+            return (T) new AdminReportsViewModel(adminRepository, recipeRepository);
+        } else if (modelClass.isAssignableFrom(AdminTagsViewModel.class)) {
+            return (T) new AdminTagsViewModel(adminRepository);
+        } else if (modelClass.isAssignableFrom(AdminUsersViewModel.class)) {
+            return (T) new AdminUsersViewModel(adminRepository);
+        } else if (modelClass.isAssignableFrom(AdminUnitsViewModel.class)) {
+            return (T) new AdminUnitsViewModel(unitRepository);
         } else if (modelClass.isAssignableFrom(AddRecipeViewModel.class)) {
             return (T) new AddRecipeViewModel(recipeRepository, tagRepository, unitRepository, mediaRepository);
         } else if (modelClass.isAssignableFrom(UserProfileViewModel.class)) {
