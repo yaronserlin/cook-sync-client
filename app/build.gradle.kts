@@ -35,6 +35,20 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            // Ensure the APK contains libraries for all common architectures.
+            // This fixes "0 split apks compatible" errors during deployment.
+            abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a", "x86", "x86_64"))
+        }
+    }
+
+    splits {
+        // Explicitly disable APK splits to ensure a single "universal" APK is built,
+        // preventing the "none of the 0 split apks are compatible" deployment error.
+        abi {
+            isEnable = false
+        }
     }
 
     // Selects which backend the app talks to. "dev" hits the local network server used during

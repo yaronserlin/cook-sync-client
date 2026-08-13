@@ -12,8 +12,11 @@ import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
+import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
+import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.user.UserResponse;
 
 /**
@@ -43,12 +46,31 @@ public interface AuthRepository {
     void login(LoginRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget);
 
     /**
-     * Registers a new user account and starts a session immediately on success.
+     * Initiates registration for a new account. No session is started yet — a one-time
+     * verification code is emailed to the given address, and the registration is only
+     * completed by calling {@link #verifyRegistrationOtp}.
      *
      * @param request     registration payload
      * @param resultTarget live data target the result will be posted to
      */
-    void register(RegisterRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget);
+    void register(RegisterRequestDTO request, MutableLiveData<ApiResult<PendingRegistrationResponse>> resultTarget);
+
+    /**
+     * Completes registration by submitting the OTP code emailed for a pending registration.
+     * Starts a session immediately on success.
+     *
+     * @param request     OTP verification payload
+     * @param resultTarget live data target the result will be posted to
+     */
+    void verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget);
+
+    /**
+     * Regenerates and re-emails a fresh OTP code for an existing pending registration.
+     *
+     * @param request     resend request payload
+     * @param resultTarget live data target the result will be posted to
+     */
+    void resendRegistrationOtp(ResendRegistrationOtpRequestDTO request, MutableLiveData<ApiResult<PendingRegistrationResponse>> resultTarget);
 
     /**
      * Logs the current user out, invalidating the server-side refresh token and clearing

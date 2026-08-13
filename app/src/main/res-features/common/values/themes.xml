@@ -31,6 +31,16 @@
         <item name="android:textColorHint">#73201E1D</item>
     </style>
 
+    <!-- Centered 6-digit numeric code input, shared by the registration OTP screen and the
+         forgot-password reset-code screen: the standard pill input plus code-entry-specific
+         behavior (numeric keypad, 6-char cap, spaced/centered digits). -->
+    <style name="CookSync.Input.Code" parent="CookSync.Input">
+        <item name="android:inputType">number</item>
+        <item name="android:maxLength">6</item>
+        <item name="android:letterSpacing">0.3</item>
+        <item name="android:gravity">center</item>
+    </style>
+
     <!-- Reusable primary/filled button, matching the design system's ".btn-primary". -->
     <style name="CookSync.Button.Primary" parent="Widget.MaterialComponents.Button">
         <item name="android:minHeight">54dp</item>

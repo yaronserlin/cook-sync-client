@@ -12,8 +12,9 @@ import okhttp3.Response;
 /**
  * OkHttp {@link Interceptor} that stamps every outgoing request with the current JWT access
  * token, except for the handful of endpoints that must remain reachable without one
- * (login, register, and the refresh-token exchange itself — attaching a possibly-expired
- * token to that call would be pointless and could mask the real 401 reason).
+ * (login, register, the registration OTP verify/resend endpoints — no session exists yet at
+ * that stage — and the refresh-token exchange itself, since attaching a possibly-expired token
+ * to that call would be pointless and could mask the real 401 reason).
  *
  * @author Yaron Serlin
  * @version 1.0
@@ -24,7 +25,9 @@ public class AuthInterceptor implements Interceptor {
     private static final String[] PUBLIC_PATH_SUFFIXES = {
             "api/auth/login",
             "api/auth/register",
-            "api/auth/refresh-token"
+            "api/auth/refresh-token",
+            "api/auth/verify-registration-otp",
+            "api/auth/resend-registration-otp"
     };
 
     /**

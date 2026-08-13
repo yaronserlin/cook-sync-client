@@ -52,6 +52,12 @@ public final class InputValidator {
     private static final Pattern PASSWORD_POLICY =
             Pattern.compile("^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{6,}$");
 
+    /**
+     * Registration OTP code format — exact copy of the {@code @Pattern} constraint on
+     * {@code VerifyRegistrationOtpRequestDTO#code}: exactly 6 digits.
+     */
+    private static final Pattern OTP_CODE_FORMAT = Pattern.compile("^\\d{6}$");
+
     // ─── Inner result type ───────────────────────────────────────────────────────
 
     /**
@@ -292,6 +298,34 @@ public final class InputValidator {
     public static ValidationResult validateTermsAccepted(boolean accepted) {
         if (!accepted) {
             return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_terms_required));
+        }
+        return ValidationResult.valid();
+    }
+
+    /**
+     * Validates a registration OTP code.
+     *
+     * <p>Rules (mirror {@code VerifyRegistrationOtpRequestDTO#code}):</p>
+     * <ol>
+     *   <li>Not blank</li>
+     *   <li>Exactly 6 digits</li>
+     * </ol>
+     *
+     * Complexity:
+     * Time: O(1)
+     * Space: O(1)
+     *
+     * @param raw raw value from the OTP code {@code EditText}
+     * @return the validation result
+     */
+    @NonNull
+    public static ValidationResult validateOtpCode(@Nullable String raw) {
+        String value = InputSanitizer.trim(raw);
+        if (value.isEmpty()) {
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_otp_blank));
+        }
+        if (!OTP_CODE_FORMAT.matcher(value).matches()) {
+            return ValidationResult.invalid(CookSyncApplication.getAppContext().getString(R.string.error_validation_otp_invalid));
         }
         return ValidationResult.valid();
     }

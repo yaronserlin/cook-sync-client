@@ -9,8 +9,10 @@ import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
+import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
+import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.request.tags.TagMergeRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.PagedResponse;
@@ -18,6 +20,7 @@ import com.dtos.response.admin.AdminStatsResponse;
 import com.dtos.response.admin.DuplicateTagGroupResponse;
 import com.dtos.response.admin.ReportedReviewResponse;
 import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.cloudinary.CloudinarySignatureResponse;
 import com.dtos.response.user.UserResponse;
 
@@ -46,13 +49,33 @@ import retrofit2.http.Query;
 public interface ApiService {
 
     /**
-     * Registers a new user account.
+     * Initiates registration for a new account. No session is created yet — a one-time
+     * verification code is emailed to the given address, and the registration is only
+     * completed by calling {@link #verifyRegistrationOtp}.
      *
      * @param request registration payload
-     * @return call yielding the newly created session
+     * @return call yielding an acknowledgement of the pending registration
      */
     @POST("api/auth/register")
-    Call<ApiResponse<AuthResponse>> register(@Body RegisterRequestDTO request);
+    Call<ApiResponse<PendingRegistrationResponse>> register(@Body RegisterRequestDTO request);
+
+    /**
+     * Completes registration by submitting the OTP code emailed for a pending registration.
+     *
+     * @param request OTP verification payload
+     * @return call yielding the newly created session
+     */
+    @POST("api/auth/verify-registration-otp")
+    Call<ApiResponse<AuthResponse>> verifyRegistrationOtp(@Body VerifyRegistrationOtpRequestDTO request);
+
+    /**
+     * Regenerates and re-emails a fresh OTP code for an existing pending registration.
+     *
+     * @param request resend request payload
+     * @return call yielding an acknowledgement of the newly issued OTP
+     */
+    @POST("api/auth/resend-registration-otp")
+    Call<ApiResponse<PendingRegistrationResponse>> resendRegistrationOtp(@Body ResendRegistrationOtpRequestDTO request);
 
     /**
      * Authenticates an existing user with email and password.

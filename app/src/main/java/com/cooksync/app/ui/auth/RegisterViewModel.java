@@ -13,7 +13,7 @@ import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.util.InputSanitizer;
 import com.cooksync.app.util.InputValidator;
 import com.dtos.request.auth.RegisterRequestDTO;
-import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.auth.PendingRegistrationResponse;
 
 /**
  * ViewModel for {@link RegisterActivity}. Validates all five registration fields through
@@ -35,7 +35,7 @@ public class RegisterViewModel extends BaseViewModel {
 
     private final AuthRepository authRepository;
 
-    private final MutableLiveData<ApiResult<AuthResponse>> registerResult = new MutableLiveData<>();
+    private final MutableLiveData<ApiResult<PendingRegistrationResponse>> registerResult = new MutableLiveData<>();
     private final MutableLiveData<String> firstNameError = new MutableLiveData<>();
     private final MutableLiveData<String> lastNameError = new MutableLiveData<>();
     private final MutableLiveData<String> emailError = new MutableLiveData<>();
@@ -123,8 +123,9 @@ public class RegisterViewModel extends BaseViewModel {
         );
     }
 
-    /** @return observable registration result (Loading → Success/Error) */
-    public LiveData<ApiResult<AuthResponse>> getRegisterResult() { return registerResult; }
+    /** @return observable registration result (Loading → Success/Error); success means an OTP
+     * code was emailed, not that a session has started */
+    public LiveData<ApiResult<PendingRegistrationResponse>> getRegisterResult() { return registerResult; }
     /** @return observable first-name error, {@code null} when valid */
     public LiveData<String> getFirstNameError() { return firstNameError; }
     /** @return observable last-name error, {@code null} when valid */

@@ -4,7 +4,6 @@ import com.cooksync.app.ui.base.BaseViewModel;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,7 +19,6 @@ import com.cooksync.app.domain.ApiResult;
 import com.cooksync.app.ui.base.BaseActivity;
 import com.cooksync.app.ui.base.Navigator;
 import com.cooksync.app.ui.base.ViewModelFactory;
-import com.cooksync.app.ui.home.HomeActivity;
 import com.cooksync.app.ui.settings.LegalLinkSpanner;
 import com.google.android.material.checkbox.MaterialCheckBox;
 
@@ -170,7 +168,7 @@ public class RegisterActivity extends BaseActivity {
                 progress.setVisibility(View.VISIBLE);
                 setFormButtonsEnabled(false);
             } else if (result instanceof ApiResult.Success) {
-                navigateToMain();
+                navigateToVerifyOtp(etEmail.getText().toString());
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
                 setFormButtonsEnabled(true);
@@ -250,16 +248,17 @@ public class RegisterActivity extends BaseActivity {
     }
 
     /**
-     * Navigates to the main screen after a successful registration.
+     * Navigates to the OTP verification screen after a successful registration submission. No
+     * session exists yet at this point — registration only completes once the emailed code is
+     * verified there.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
+     *
+     * @param email the email address the OTP code was sent to
      */
-    private void navigateToMain() {
-        Intent extras = new Intent();
-        extras.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-        Navigator.start(this, HomeActivity.class, extras);
-        Navigator.finish(this);
+    private void navigateToVerifyOtp(String email) {
+        Navigator.start(this, VerifyOtpActivity.newIntent(this, email));
     }
 }

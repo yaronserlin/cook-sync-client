@@ -18,10 +18,13 @@ import com.dtos.request.auth.LoginRequestDTO;
 import com.dtos.request.auth.PrivacySettingsUpdateRequestDTO;
 import com.dtos.request.auth.ProfileUpdateRequestDTO;
 import com.dtos.request.auth.RegisterRequestDTO;
+import com.dtos.request.auth.ResendRegistrationOtpRequestDTO;
 import com.dtos.request.auth.ResetPasswordRequestDTO;
 import com.dtos.request.auth.TokenRefreshRequestDTO;
+import com.dtos.request.auth.VerifyRegistrationOtpRequestDTO;
 import com.dtos.response.ApiResponse;
 import com.dtos.response.auth.AuthResponse;
+import com.dtos.response.auth.PendingRegistrationResponse;
 import com.dtos.response.user.UserResponse;
 
 import java.io.IOException;
@@ -80,20 +83,42 @@ public class AuthRepositoryImpl extends BaseRepository implements AuthRepository
      * {@inheritDoc}
      *
      * <p>Posts {@link ApiResult.Loading} immediately, then executes the registration call
-     * asynchronously. On success the session is started immediately (no separate login step
-     * needed) and {@link ApiResult.Success} is posted.</p>
+     * asynchronously. No session is started here — the server only emails an OTP code at this
+     * stage; the session starts once {@link #verifyRegistrationOtp} succeeds.</p>
      */
     @Override
-    public void register(RegisterRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
+    public void register(RegisterRequestDTO request, MutableLiveData<ApiResult<PendingRegistrationResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.register(request))));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * <p>Posts {@link ApiResult.Loading} immediately, then executes the OTP verification call
+     * asynchronously. On success the session is started immediately, exactly as registration
+     * itself used to do before the OTP step existed.</p>
+     */
+    @Override
+    public void verifyRegistrationOtp(VerifyRegistrationOtpRequestDTO request, MutableLiveData<ApiResult<AuthResponse>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> {
-            ApiResult<AuthResponse> result = executeCall(apiService.register(request));
+            ApiResult<AuthResponse> result = executeCall(apiService.verifyRegistrationOtp(request));
             if (result instanceof ApiResult.Success) {
                 SessionManager.getInstance().startSession(((ApiResult.Success<AuthResponse>) result).getData());
                 SessionManager.getInstance().cacheEmail(request.email());
             }
             resultTarget.postValue(result);
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void resendRegistrationOtp(ResendRegistrationOtpRequestDTO request, MutableLiveData<ApiResult<PendingRegistrationResponse>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.resendRegistrationOtp(request))));
     }
 
     /**

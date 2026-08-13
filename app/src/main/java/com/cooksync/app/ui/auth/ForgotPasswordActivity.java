@@ -36,13 +36,14 @@ public class ForgotPasswordActivity extends BaseActivity {
     private View requestStage;
     private View resetStage;
     private EditText etEmail;
-    private EditText etToken;
+    private EditText etCode;
     private EditText etNewPassword;
     private EditText etRepeatPassword;
     private TextView tvEmailError;
-    private TextView tvTokenError;
+    private TextView tvCodeError;
     private TextView tvNewPasswordError;
     private TextView tvRepeatPasswordError;
+    private com.google.android.material.button.MaterialButton btnResendCode;
     private ProgressBar progress;
 
     @Override
@@ -62,23 +63,34 @@ public class ForgotPasswordActivity extends BaseActivity {
         resetStage = findViewById(R.id.reset_stage);
 
         etEmail = findViewById(R.id.et_email);
-        etToken = findViewById(R.id.et_token);
+        etCode = findViewById(R.id.et_code);
         etNewPassword = findViewById(R.id.et_new_password);
         etRepeatPassword = findViewById(R.id.et_repeat_password);
 
         tvEmailError = findViewById(R.id.tv_email_error);
-        tvTokenError = findViewById(R.id.tv_token_error);
+        tvCodeError = findViewById(R.id.tv_code_error);
         tvNewPasswordError = findViewById(R.id.tv_new_password_error);
         tvRepeatPasswordError = findViewById(R.id.tv_repeat_password_error);
+        btnResendCode = findViewById(R.id.btn_resend_code);
 
         progress = findViewById(R.id.progress);
     }
 
     private void observeViewModel() {
         viewModel.getEmailError().observe(this, e -> showFieldError(tvEmailError, e));
-        viewModel.getTokenError().observe(this, e -> showFieldError(tvTokenError, e));
+        viewModel.getCodeError().observe(this, e -> showFieldError(tvCodeError, e));
         viewModel.getNewPasswordError().observe(this, e -> showFieldError(tvNewPasswordError, e));
         viewModel.getRepeatPasswordError().observe(this, e -> showFieldError(tvRepeatPasswordError, e));
+
+        viewModel.getResendCooldownSeconds().observe(this, seconds -> {
+            if (seconds == null || seconds <= 0) {
+                btnResendCode.setEnabled(true);
+                btnResendCode.setText(R.string.action_resend_code);
+            } else {
+                btnResendCode.setEnabled(false);
+                btnResendCode.setText(getString(R.string.action_resend_code_countdown, seconds));
+            }
+        });
 
         viewModel.getForgotPasswordResult().observe(this, result -> {
             if (result instanceof ApiResult.Loading) {
@@ -89,6 +101,14 @@ public class ForgotPasswordActivity extends BaseActivity {
                 resetStage.setVisibility(View.VISIBLE);
             } else if (result instanceof ApiResult.Error<?> error) {
                 progress.setVisibility(View.GONE);
+                showError(error.getMessage(), null);
+            }
+        });
+
+        viewModel.getResendCodeResult().observe(this, result -> {
+            if (result instanceof ApiResult.Success) {
+                showSuccess(getString(R.string.resend_otp_success), null);
+            } else if (result instanceof ApiResult.Error<?> error) {
                 showError(error.getMessage(), null);
             }
         });
@@ -112,9 +132,10 @@ public class ForgotPasswordActivity extends BaseActivity {
         findViewById(R.id.btn_send_reset_link).setOnClickListener(v ->
                 viewModel.requestReset(etEmail.getText().toString())
         );
+        btnResendCode.setOnClickListener(v -> viewModel.resendCode());
         findViewById(R.id.btn_reset_password).setOnClickListener(v ->
                 viewModel.resetPassword(
-                        etToken.getText().toString(),
+                        etCode.getText().toString(),
                         etNewPassword.getText().toString(),
                         etRepeatPassword.getText().toString()
                 )

@@ -25,6 +25,7 @@ import com.cooksync.app.ui.auth.ForgotPasswordViewModel;
 import com.cooksync.app.ui.auth.LoginViewModel;
 import com.cooksync.app.ui.auth.RegisterViewModel;
 import com.cooksync.app.ui.auth.UserProfileViewModel;
+import com.cooksync.app.ui.auth.VerifyOtpViewModel;
 import com.cooksync.app.ui.home.HomeViewModel;
 import com.cooksync.app.ui.recipe.cooking.CookingModeViewModel;
 import com.cooksync.app.ui.recipe.detail.RecipeDetailViewModel;
@@ -97,6 +98,8 @@ public class ViewModelFactory implements ViewModelProvider.Factory {
             return (T) new RegisterViewModel(authRepository);
         } else if (modelClass.isAssignableFrom(ForgotPasswordViewModel.class)) {
             return (T) new ForgotPasswordViewModel(authRepository);
+        } else if (modelClass.isAssignableFrom(VerifyOtpViewModel.class)) {
+            return (T) new VerifyOtpViewModel(authRepository);
         } else if (modelClass.isAssignableFrom(SearchViewModel.class)) {
             return (T) new SearchViewModel(recipeRepository, tagRepository);
         } else if (modelClass.isAssignableFrom(RecipeDetailViewModel.class)) {
