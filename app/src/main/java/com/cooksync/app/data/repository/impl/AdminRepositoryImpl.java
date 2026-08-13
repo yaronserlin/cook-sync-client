@@ -71,6 +71,12 @@ public class AdminRepositoryImpl extends BaseRepository implements AdminReposito
     }
 
     @Override
+    public void deleteUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.deleteUser(userId))));
+    }
+
+    @Override
     public void getDuplicateTagGroups(int page, int size,
                                        MutableLiveData<ApiResult<PagedResponse<DuplicateTagGroupResponse>>> resultTarget) {
         resultTarget.postValue(new ApiResult.Loading<>());

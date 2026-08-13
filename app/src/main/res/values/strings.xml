@@ -409,6 +409,13 @@
     <string name="admin_users_count_format">%1$d users</string>
     <string name="admin_confirm_suspend_title">Suspend this account?</string>
     <string name="admin_confirm_suspend_message">%1$s won\'t be able to sign in until reactivated.</string>
+    <string name="admin_confirm_delete_danger_title">Danger Zone — Delete User Permanently</string>
+    <string name="admin_confirm_delete_danger_message_format">Are you sure you want to delete %1$s? This permanently removes their account, recipes, and reviews. This cannot be undone.</string>
+    <string name="admin_confirm_delete_typed_title">Confirm permanent deletion</string>
+    <string name="admin_confirm_delete_typed_message_format">Type \"%1$s\" to confirm.</string>
+    <string name="admin_confirm_delete_typed_phrase_format">delete %1$s</string>
+    <string name="admin_toast_user_deleted_format">%1$s permanently deleted</string>
+    <string name="action_delete_permanently">Delete permanently</string>
 
     <!-- Create Recipe wizard -->
     <string name="wizard_title">New recipe</string>

@@ -45,4 +45,13 @@ public class MediaRepositoryImpl extends BaseRepository implements MediaReposito
         resultTarget.postValue(new ApiResult.Loading<>());
         EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getMediaSignature(folder, publicId))));
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void getBaseFolder(MutableLiveData<ApiResult<String>> resultTarget) {
+        resultTarget.postValue(new ApiResult.Loading<>());
+        EXECUTOR.execute(() -> resultTarget.postValue(executeCall(apiService.getCloudinaryBaseFolder())));
+    }
 }

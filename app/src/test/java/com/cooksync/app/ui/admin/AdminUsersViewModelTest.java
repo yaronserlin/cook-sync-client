@@ -102,6 +102,39 @@ public class AdminUsersViewModelTest {
         assertTrue(viewModel.getReportsResyncNeeded().getValue().getContentIfNotHandled());
     }
 
+    @Test
+    public void deleteUser_success_removesRow_decrementsCount_andFiresDeletedEvent() {
+        loadOnePageContainingActiveUser();
+        doAnswer(ApiResultAnswers.<Void>success(null))
+                .when(adminRepository).deleteUser(eq("u1"), any());
+
+        viewModel.deleteUser(activeUser);
+
+        ApiResult<List<UserResponse>> result = viewModel.getUsersResult().getValue();
+        assertTrue(((ApiResult.Success<List<UserResponse>>) result).getData().isEmpty());
+        assertEquals(0, viewModel.getUsersTotalElements());
+
+        ApiResult<String> deleteResult = viewModel.getUserDeletedResult().getValue().getContentIfNotHandled();
+        assertTrue(deleteResult instanceof ApiResult.Success<String>);
+        assertEquals("Ada Lovelace", ((ApiResult.Success<String>) deleteResult).getData());
+    }
+
+    @Test
+    public void deleteUser_serverError_firesErrorEvent_andKeepsRow() {
+        loadOnePageContainingActiveUser();
+        doAnswer(ApiResultAnswers.<Void>error("network error"))
+                .when(adminRepository).deleteUser(eq("u1"), any());
+
+        viewModel.deleteUser(activeUser);
+
+        assertEquals(activeUser, firstUser());
+        assertEquals(1, viewModel.getUsersTotalElements());
+
+        ApiResult<String> deleteResult = viewModel.getUserDeletedResult().getValue().getContentIfNotHandled();
+        assertTrue(deleteResult instanceof ApiResult.Error<String>);
+        assertEquals("network error", ((ApiResult.Error<String>) deleteResult).getMessage());
+    }
+
     private UserResponse firstUser() {
         ApiResult<List<UserResponse>> result = viewModel.getUsersResult().getValue();
         return ((ApiResult.Success<List<UserResponse>>) result).getData().get(0);

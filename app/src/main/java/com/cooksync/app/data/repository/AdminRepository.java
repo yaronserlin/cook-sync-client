@@ -76,6 +76,15 @@ public interface AdminRepository {
     void disableUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget);
 
     /**
+     * Permanently deletes a user account and everything it owns, bypassing the normal 30-day
+     * self-service deletion grace period.
+     *
+     * @param userId the ID of the user to permanently delete
+     * @param resultTarget LiveData target to post the outcome
+     */
+    void deleteUser(String userId, MutableLiveData<ApiResult<Void>> resultTarget);
+
+    /**
      * Fetches a paginated page of tags that appear to be duplicates of one another.
      *
      * @param page 0-based page index

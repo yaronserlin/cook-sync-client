@@ -46,6 +46,7 @@ public class AdminUsersViewModel extends BaseViewModel {
     private final MutableLiveData<Event<ApiResult<Void>>> userActionResult = new MutableLiveData<>();
     private final MutableLiveData<Event<String>> userDisabledEvent = new MutableLiveData<>();
     private final MutableLiveData<Event<Boolean>> reportsResyncNeeded = new MutableLiveData<>();
+    private final MutableLiveData<Event<ApiResult<String>>> userDeletedResult = new MutableLiveData<>();
     private final List<UserResponse> currentUsers = new ArrayList<>();
     private int usersPage = 0;
     private boolean usersLastPage = false;
@@ -89,6 +90,18 @@ public class AdminUsersViewModel extends BaseViewModel {
      * @return a one-shot event stream (payload is unused; only occurrence matters)
      */
     public LiveData<Event<Boolean>> getReportsResyncNeeded() { return reportsResyncNeeded; }
+
+    /**
+     * Fires once a {@link #deleteUser} call resolves: on success, the payload is the deleted
+     * user's display name (already removed from {@link #currentUsers} by then), for the
+     * fragment to build its confirmation toast from; on failure, an error the fragment can
+     * surface. Unlike {@link #setUserEnabled}, there is no optimistic update and no undo
+     * window — the deletion is permanent, so the row only disappears, and any confirmation is
+     * only shown, once the server has actually confirmed it.
+     *
+     * @return a one-shot event stream of the delete outcome
+     */
+    public LiveData<Event<ApiResult<String>>> getUserDeletedResult() { return userDeletedResult; }
 
     /**
      * Resets pagination and reloads the Users tab from the first page. Called whenever the
@@ -186,6 +199,37 @@ public class AdminUsersViewModel extends BaseViewModel {
         if (pendingActions.cancel(userStatusKey(user))) {
             patchUserEnabled(user.id(), user.enabled(), user.status());
         }
+    }
+
+    /**
+     * Permanently deletes a user account and everything it owns, bypassing the normal 30-day
+     * self-service deletion grace period. Sent straight to the server with no optimistic update
+     * and no undo window, unlike {@link #setUserEnabled} — the row is only removed from
+     * {@link #currentUsers} once the deletion is confirmed, since there is no way to undo it
+     * afterward.
+     *
+     * @param user the user row to permanently delete
+     */
+    public void deleteUser(UserResponse user) {
+        String fullName = ((user.firstName() == null ? "" : user.firstName()) + " "
+                + (user.lastName() == null ? "" : user.lastName())).trim();
+        MutableLiveData<ApiResult<Void>> result = new MutableLiveData<>();
+        observeOnce(result, apiResult -> {
+            if (apiResult instanceof ApiResult.Success<Void>) {
+                for (int i = 0; i < currentUsers.size(); i++) {
+                    if (Objects.equals(currentUsers.get(i).id(), user.id())) {
+                        currentUsers.remove(i);
+                        break;
+                    }
+                }
+                usersTotalElements = Math.max(0, usersTotalElements - 1);
+                usersResult.postValue(new ApiResult.Success<>(new ArrayList<>(currentUsers)));
+                userDeletedResult.postValue(new Event<>(new ApiResult.Success<>(fullName)));
+            } else if (apiResult instanceof ApiResult.Error<Void> error) {
+                userDeletedResult.postValue(new Event<>(new ApiResult.Error<>(error.getMessage(), error.getCause())));
+            }
+        });
+        adminRepository.deleteUser(user.id(), result);
     }
 
     private String userStatusKey(UserResponse user) { return "user-status-" + user.id(); }

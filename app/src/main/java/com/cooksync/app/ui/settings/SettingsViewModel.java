@@ -127,19 +127,32 @@ public class SettingsViewModel extends BaseViewModel {
 
     /**
      * Requests a fresh Cloudinary upload signature, used just before uploading a newly
-     * picked avatar image.
+     * picked avatar image. First resolves the server-configured root upload folder, then
+     * builds the target folder as {@code [baseFolder]/[userEmail]/avatar} before requesting
+     * the signature.
      *
      * Complexity:
      * Time: O(1)
      * Space: O(1)
      */
     public void requestUploadSignature() {
-        String userId = com.cooksync.app.util.SessionManager.getInstance().getUserId();
-        String first = com.cooksync.app.util.SessionManager.getInstance().getFirstName() == null ? "" : com.cooksync.app.util.SessionManager.getInstance().getFirstName().trim();
-        String last = com.cooksync.app.util.SessionManager.getInstance().getLastName() == null ? "" : com.cooksync.app.util.SessionManager.getInstance().getLastName().trim();
-        pendingFolder = "cooksync/" + userId + "/avatar";
-        pendingPublicId = first + "_" + last + "_" + userId + "_" + System.currentTimeMillis();
-        mediaRepository.getUploadSignature(pendingFolder, pendingPublicId, signatureResult);
+        MutableLiveData<ApiResult<String>> baseFolderResult = new MutableLiveData<>();
+        observeOnce(baseFolderResult, result -> {
+            if (!(result instanceof ApiResult.Success<String> success)) {
+                signatureResult.postValue(new ApiResult.Error<>(
+                        "Failed to resolve upload folder", null));
+                return;
+            }
+
+            String userId = com.cooksync.app.util.SessionManager.getInstance().getUserId();
+            String userEmail = com.cooksync.app.util.SessionManager.getInstance().getEmail();
+            String first = com.cooksync.app.util.SessionManager.getInstance().getFirstName() == null ? "" : com.cooksync.app.util.SessionManager.getInstance().getFirstName().trim();
+            String last = com.cooksync.app.util.SessionManager.getInstance().getLastName() == null ? "" : com.cooksync.app.util.SessionManager.getInstance().getLastName().trim();
+            pendingFolder = success.getData() + "/" + userEmail + "/avatar";
+            pendingPublicId = first + "_" + last + "_" + userId + "_" + System.currentTimeMillis();
+            mediaRepository.getUploadSignature(pendingFolder, pendingPublicId, signatureResult);
+        });
+        mediaRepository.getBaseFolder(baseFolderResult);
     }
 
     /**

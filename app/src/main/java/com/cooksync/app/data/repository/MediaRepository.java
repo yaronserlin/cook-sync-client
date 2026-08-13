@@ -30,4 +30,12 @@ public interface MediaRepository {
      * @param resultTarget live data target the result will be posted to
      */
     void getUploadSignature(String folder, String publicId, MutableLiveData<ApiResult<CloudinarySignatureResponse>> resultTarget);
+
+    /**
+     * Fetches the environment-specific root Cloudinary folder from the server, used to build
+     * upload folder paths without hardcoding an environment-specific value on the client.
+     *
+     * @param resultTarget live data target the result will be posted to
+     */
+    void getBaseFolder(MutableLiveData<ApiResult<String>> resultTarget);
 }

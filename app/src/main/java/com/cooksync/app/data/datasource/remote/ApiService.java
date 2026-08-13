@@ -257,6 +257,16 @@ public interface ApiService {
             @retrofit2.http.Query("publicId") String publicId
     );
 
+    /**
+     * Fetches the environment-specific root Cloudinary folder (e.g. {@code "cooksync-dev"}
+     * locally, {@code "CookSyncApp"} in production) so upload folder paths can be built
+     * without hardcoding an environment-specific value on the client.
+     *
+     * @return call yielding the configured base folder name
+     */
+    @GET("api/cloudinary/base-folder")
+    Call<ApiResponse<String>> getCloudinaryBaseFolder();
+
     // ── Recipe Feed & Discovery ────────────────────────────────────
 
     /**
@@ -641,6 +651,17 @@ public interface ApiService {
      */
     @PATCH("api/admin/users/{id}/disable")
     Call<ApiResponse<Void>> disableUser(@Path("id") String userId);
+
+    /**
+     * Permanently deletes a user account and everything it owns (recipes, reviews, favorites,
+     * notes, media), bypassing the normal 30-day self-service deletion grace period. Refused by
+     * the server if the target is the acting admin's own account or another admin account.
+     *
+     * @param userId the ID of the user to permanently delete
+     * @return call yielding an empty acknowledgement
+     */
+    @DELETE("api/admin/users/{id}")
+    Call<ApiResponse<Void>> deleteUser(@Path("id") String userId);
 
     /**
      * Fetches a paginated page of tags that appear to be duplicates of one another, for the

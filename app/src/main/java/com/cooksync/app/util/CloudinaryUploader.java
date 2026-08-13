@@ -25,15 +25,6 @@ import java.util.Map;
  */
 public final class CloudinaryUploader {
 
-    /**
-     * Upload folder. Must match {@code CloudinaryService.UPLOAD_FOLDER} on the server exactly:
-     * the server signs the upload request including {@code folder}, so any request that omits
-     * or mismatches it recomputes to a different signature and Cloudinary rejects it with a
-     * 401 "Invalid Signature" — this is not a credentials problem, it's a signed-params
-     * mismatch between client and server.
-     */
-    private static final String UPLOAD_FOLDER = "CookSyncApp";
-
     private static volatile boolean initialized = false;
 
     /** Callback for the outcome of an upload. */
@@ -79,12 +70,14 @@ public final class CloudinaryUploader {
                                @NonNull CloudinarySignatureResponse signature, @NonNull Callback callback) {
         ensureInitialized(context, signature.cloudName());
 
-        String targetFolder = (folder == null || folder.isBlank()) ? UPLOAD_FOLDER : folder;
         com.cloudinary.android.UploadRequest request = MediaManager.get().upload(fileUri)
                 .option("api_key", signature.apiKey())
                 .option("timestamp", signature.timestamp())
-                .option("folder", targetFolder)
                 .option("signature", signature.signature());
+
+        if (folder != null && !folder.isBlank()) {
+            request.option("folder", folder);
+        }
 
         if (publicId != null && !publicId.isBlank()) {
             request.option("public_id", publicId);

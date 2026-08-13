@@ -167,6 +167,19 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
                 OrganicToast.showError(requireActivity(), null, error.getMessage());
             }
         });
+
+        viewModel.getUserDeletedResult().observe(getViewLifecycleOwner(), event -> {
+            if (event == null) return;
+            ApiResult<String> result = event.getContentIfNotHandled();
+            if (result == null) return;
+            if (result instanceof ApiResult.Success<String> success) {
+                tvCountLabel.setText(getString(R.string.admin_users_count_format, viewModel.getUsersTotalElements()));
+                OrganicToast.show(requireActivity(), null,
+                        getString(R.string.admin_toast_user_deleted_format, success.getData()));
+            } else if (result instanceof ApiResult.Error<String> error) {
+                OrganicToast.showError(requireActivity(), null, error.getMessage());
+            }
+        });
     }
 
     private void styleChips() {
@@ -198,6 +211,29 @@ public class AdminUsersFragment extends Fragment implements AdminUserAdapter.OnU
                     OrganicToast.showWithAction(requireActivity(), null, R.drawable.ic_user_x,
                             getString(R.string.admin_toast_user_suspended_format, fullName),
                             getString(R.string.action_undo), () -> viewModel.undoSetUserEnabled(user));
+                });
+    }
+
+    @Override
+    public void onDeleteUser(UserResponse user) {
+        String fullName = ((user.firstName() == null ? "" : user.firstName()) + " "
+                + (user.lastName() == null ? "" : user.lastName())).trim();
+
+        OrganicConfirmDialog.show(requireContext(),
+                OrganicConfirmDialog.dangerHeading(requireContext(), getString(R.string.admin_confirm_delete_danger_title)),
+                getString(R.string.admin_confirm_delete_danger_message_format, fullName),
+                getString(R.string.action_delete_permanently),
+                getString(R.string.action_cancel),
+                true,
+                () -> {
+                    String requiredPhrase = getString(R.string.admin_confirm_delete_typed_phrase_format, fullName);
+                    OrganicConfirmDialog.showWithTextConfirm(requireContext(),
+                            OrganicConfirmDialog.dangerHeading(requireContext(), getString(R.string.admin_confirm_delete_typed_title)),
+                            getString(R.string.admin_confirm_delete_typed_message_format, requiredPhrase),
+                            requiredPhrase,
+                            getString(R.string.action_delete_permanently),
+                            getString(R.string.action_cancel),
+                            () -> viewModel.deleteUser(user));
                 });
     }
 

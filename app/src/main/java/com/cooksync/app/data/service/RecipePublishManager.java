@@ -153,8 +153,14 @@ public class RecipePublishManager {
                 int totalImages = pending.size();
 
                 String userId = SessionManager.getInstance().getUserId();
+                String userEmail = SessionManager.getInstance().getEmail();
                 String recipeTitle = (draft.title == null || draft.title.isBlank()) ? "recipe" : draft.title.trim().replaceAll("[^a-zA-Z0-9_]", "_");
-                String folder = "cooksync/" + userId + "/" + recipeTitle;
+                String baseFolder = fetchBaseFolderSync();
+                if (baseFolder == null) {
+                    publishState.postValue(PublishState.error("Failed to resolve upload folder"));
+                    return;
+                }
+                String folder = baseFolder + "/" + userEmail + "/" + recipeTitle;
 
                 for (int i = 0; i < totalImages; i++) {
                     com.cooksync.app.data.model.recipe.RecipeDraftMediaHelper.PendingImageUpload item = pending.get(i);
@@ -276,6 +282,23 @@ public class RecipePublishManager {
                 onSettled.accept(value);
             }
         });
+    }
+
+    private String fetchBaseFolderSync() throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<String> result = new AtomicReference<>();
+        MutableLiveData<ApiResult<String>> target = new MutableLiveData<>();
+
+        mainHandler.post(() -> observeOnceForever(target, res -> {
+            if (res instanceof ApiResult.Success<String> s) {
+                result.set(s.getData());
+            }
+            latch.countDown();
+        }));
+
+        mediaRepository.getBaseFolder(target);
+        latch.await();
+        return result.get();
     }
 
     private CloudinarySignatureResponse fetchSignatureSync(String folder, String publicId) throws InterruptedException {

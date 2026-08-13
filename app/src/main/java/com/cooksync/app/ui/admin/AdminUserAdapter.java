@@ -43,6 +43,9 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
 
         /** @param user the row whose mail action was tapped */
         void onEmail(UserResponse user);
+
+        /** @param user the row that was long-pressed, to start the permanent-delete flow */
+        void onDeleteUser(UserResponse user);
     }
 
     private OnUserActionListener listener;
@@ -119,6 +122,10 @@ public class AdminUserAdapter extends BaseAdapter<UserResponse, AdminUserAdapter
         });
         holder.emailButton.setOnClickListener(v -> {
             if (listener != null) listener.onEmail(user);
+        });
+        holder.itemView.setOnLongClickListener(v -> {
+            if (listener != null) listener.onDeleteUser(user);
+            return true;
         });
     }
 

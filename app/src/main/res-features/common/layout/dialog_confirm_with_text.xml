@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Body for OrganicConfirmDialog#showWithTextConfirm: a danger confirm message followed by a
+     free-text field the user must type an exact phrase into before the confirm button enables,
+     used for irreversible actions that warrant more friction than a plain confirm/cancel. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/dp_20"
+    android:paddingTop="@dimen/dp_4"
+    android:paddingBottom="@dimen/dp_20">
+
+    <TextView
+        android:id="@+id/tv_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:alpha="0.85"
+        android:textColor="@color/color_text"
+        android:textSize="@dimen/sp_14"
+        tools:text="Type &quot;delete Dana Cohen&quot; to confirm." />
+
+    <EditText
+        android:id="@+id/et_confirm_text"
+        style="@style/CookSync.Input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dp_16"
+        android:inputType="text"
+        android:maxLines="1"
+        tools:hint="delete Dana Cohen" />
+
+</LinearLayout>
