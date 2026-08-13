@@ -44,15 +44,6 @@
             android:textSize="@dimen/sp_16"
             tools:text="Shakshuka with feta" />
 
-        <ImageView
-            android:layout_width="@dimen/dp_24"
-            android:layout_height="@dimen/dp_24"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:contentDescription="@null"
-            android:src="@drawable/ic_more_horiz"
-            app:tint="@color/color_accent_200" />
-
     </RelativeLayout>
 
     <LinearLayout
